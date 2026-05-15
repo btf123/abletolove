@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { addAccount, setConfig } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { addAccount, setConfig, getAccounts } from '@/lib/api';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const PLATFORMS = [
   {
@@ -53,11 +55,36 @@ export default function SetupPage() {
   const [connecting, setConnecting] = useState<string | null>(null);
   const [connected, setConnected] = useState<Set<string>>(new Set());
   const [credentials, setCredentials] = useState<Record<string, Record<string, string>>>({});
+  const [oauthUrls, setOauthUrls] = useState<Record<string, string | null>>({});
   const [niche, setNiche] = useState('social media growth tips, content creation, followers, engagement, algorithm');
   const [tone, setTone] = useState('friendly, helpful, and expert');
   const [postsPerDay, setPostsPerDay] = useState('2');
   const [error, setError] = useState('');
   const [setupComplete, setSetupComplete] = useState(false);
+
+  useEffect(() => {
+    // Check URL params for OAuth callback results
+    const params = new URLSearchParams(window.location.search);
+    const connectedPlatform = params.get('connected');
+    const oauthError = params.get('error');
+    if (connectedPlatform) setConnected((prev) => new Set([...prev, connectedPlatform]));
+    if (oauthError) setError(oauthError);
+
+    // Fetch existing accounts and OAuth URLs
+    getAccounts().then((accs) => {
+      const alreadyConnected = new Set(accs.map((a: any) => a.platform));
+      setConnected(alreadyConnected);
+    }).catch(() => {});
+
+    fetch(`${API_BASE}/api/oauth/urls`)
+      .then((r) => r.json())
+      .then((data: any[]) => {
+        const urls: Record<string, string | null> = {};
+        data.forEach((d) => { urls[d.platform] = d.url; });
+        setOauthUrls(urls);
+      })
+      .catch(() => {});
+  }, []);
 
   function updateCredential(platform: string, key: string, value: string) {
     setCredentials((prev) => ({
@@ -148,6 +175,17 @@ export default function SetupPage() {
                 </div>
                 {!connected.has(platform.id) && (
                   <div className="space-y-3">
+                    {oauthUrls[platform.id] && (
+                      <div className="mb-3">
+                        <a
+                          href={oauthUrls[platform.id]!}
+                          className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+                        >
+                          Connect with OAuth (Recommended)
+                        </a>
+                        <p className="text-xs text-gray-500 mt-2">Or enter tokens manually below:</p>
+                      </div>
+                    )}
                     {platform.fields.map((field) => (
                       <div key={field.key}>
                         <label className="block text-xs text-gray-400 mb-1">{field.label}</label>

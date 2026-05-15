@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getContent, updateContent } from '@/lib/api';
+import { getContent, updateContent, deleteContent } from '@/lib/api';
 
 type Status = 'all' | 'draft' | 'approved' | 'scheduled' | 'published' | 'failed';
 
@@ -139,6 +139,12 @@ export default function ContentPage() {
                       className="px-3 py-1.5 bg-gray-700 text-gray-300 rounded-lg text-sm hover:bg-gray-600"
                     >
                       Edit
+                    </button>
+                    <button
+                      onClick={async () => { await deleteContent(item.id); loadContent(); }}
+                      className="px-3 py-1.5 bg-red-600/20 text-red-400 rounded-lg text-sm hover:bg-red-600/30"
+                    >
+                      Delete
                     </button>
                   </div>
                 </>

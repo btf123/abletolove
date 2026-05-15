@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAccounts, getConfig, setConfig, addAccount } from '@/lib/api';
+import { getAccounts, getConfig, setConfig, addAccount, updateAccount, deleteAccount } from '@/lib/api';
 
 export default function SettingsPage() {
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -63,9 +63,30 @@ export default function SettingsPage() {
                   <span className="capitalize font-medium">{acc.platform}</span>
                   <span className="text-gray-400 ml-2">@{acc.accountName}</span>
                 </div>
-                <span className={`text-xs ${acc.isActive ? 'text-green-400' : 'text-gray-500'}`}>
-                  {acc.isActive ? 'Active' : 'Inactive'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      await updateAccount(acc.id, { isActive: !acc.isActive });
+                      const accs = await getAccounts();
+                      setAccounts(accs);
+                    }}
+                    className={`text-xs px-2 py-1 rounded ${acc.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-500'}`}
+                  >
+                    {acc.isActive ? 'Active' : 'Inactive'}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (confirm(`Remove ${acc.platform} account @${acc.accountName}?`)) {
+                        await deleteAccount(acc.id);
+                        const accs = await getAccounts();
+                        setAccounts(accs);
+                      }
+                    }}
+                    className="text-xs px-2 py-1 rounded bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             ))}
           </div>

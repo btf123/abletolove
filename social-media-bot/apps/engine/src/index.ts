@@ -9,6 +9,13 @@ import { TikTokAdapter } from './platforms/tiktok/adapter.js';
 import { InstagramAdapter } from './platforms/instagram/adapter.js';
 import { YouTubeAdapter } from './platforms/youtube/adapter.js';
 import { getDashboardOverview } from './analytics/aggregator.js';
+import {
+  getOAuthUrl,
+  exchangeTwitterCode,
+  exchangeTikTokCode,
+  exchangeInstagramCode,
+  exchangeYouTubeCode,
+} from './platforms/oauth.js';
 import { db } from './db/client.js';
 import {
   contentQueue as contentQueueTable,
@@ -19,7 +26,12 @@ import {
   systemConfig,
   analyticsSnapshots,
 } from './db/schema.js';
-import { eq, desc, gt, and } from 'drizzle-orm';
+import { eq, desc, gt, and, sql } from 'drizzle-orm';
+import { discoverTrends } from './pipelines/trending/aggregator.js';
+import { generateContent } from './pipelines/content/generator.js';
+import { processComments } from './pipelines/engagement/responder.js';
+import { collectAnalytics, refreshAllTokens } from './analytics/collector.js';
+import { getRegisteredPlatformNames } from './platforms/registry.js';
 
 // Import workers to start them
 import './scheduler/workers/trend-discovery.js';
@@ -155,6 +167,161 @@ async function start() {
       .where(eq(analyticsSnapshots.accountId, accountId))
       .orderBy(desc(analyticsSnapshots.snapshotDate))
       .limit(90);
+  });
+
+  // Manual trigger endpoints — run pipelines on demand from the dashboard
+  app.post('/api/trigger/trends', async () => {
+    const count = await discoverTrends();
+    return { success: true, trendsDiscovered: count };
+  });
+
+  app.post('/api/trigger/content', async () => {
+    const count = await generateContent();
+    return { success: true, contentGenerated: count };
+  });
+
+  app.post('/api/trigger/engagement', async () => {
+    const result = await processComments();
+    return { success: true, ...result };
+  });
+
+  app.post('/api/trigger/analytics', async () => {
+    const result = await collectAnalytics();
+    return { success: true, ...result };
+  });
+
+  app.post('/api/trigger/tokens', async () => {
+    const result = await refreshAllTokens();
+    return { success: true, ...result };
+  });
+
+  // Status endpoint — full system status
+  app.get('/api/status', async () => {
+    const [accountCount] = await db.select({ count: sql<number>`count(*)` }).from(platformAccounts).where(eq(platformAccounts.isActive, true));
+    const [pendingPosts] = await db.select({ count: sql<number>`count(*)` }).from(scheduledPosts).where(eq(scheduledPosts.status, 'pending'));
+    const [publishedPosts] = await db.select({ count: sql<number>`count(*)` }).from(scheduledPosts).where(eq(scheduledPosts.status, 'published'));
+    const [draftContent] = await db.select({ count: sql<number>`count(*)` }).from(contentQueueTable).where(eq(contentQueueTable.status, 'draft'));
+    const [activeTrends] = await db.select({ count: sql<number>`count(*)` }).from(trendingTopics).where(gt(trendingTopics.expiresAt, new Date()));
+    const [repliesSent] = await db.select({ count: sql<number>`count(*)` }).from(engagementReplies).where(eq(engagementReplies.replyStatus, 'sent'));
+    const [repliesFlagged] = await db.select({ count: sql<number>`count(*)` }).from(engagementReplies).where(eq(engagementReplies.replyStatus, 'flagged'));
+
+    return {
+      platforms: getRegisteredPlatformNames(),
+      connectedAccounts: Number(accountCount?.count || 0),
+      pendingPosts: Number(pendingPosts?.count || 0),
+      publishedPosts: Number(publishedPosts?.count || 0),
+      draftContent: Number(draftContent?.count || 0),
+      activeTrends: Number(activeTrends?.count || 0),
+      repliesSent: Number(repliesSent?.count || 0),
+      repliesFlagged: Number(repliesFlagged?.count || 0),
+      openaiConfigured: !!env.OPENAI_API_KEY,
+    };
+  });
+
+  // Delete content
+  app.delete('/api/content/:id', async (req) => {
+    const { id } = req.params as { id: string };
+    await db.delete(scheduledPosts).where(eq(scheduledPosts.contentId, id));
+    await db.delete(contentQueueTable).where(eq(contentQueueTable.id, id));
+    return { success: true };
+  });
+
+  // Toggle account active/inactive
+  app.patch('/api/accounts/:id', async (req) => {
+    const { id } = req.params as { id: string };
+    const body = req.body as { isActive?: boolean };
+    const [updated] = await db.update(platformAccounts)
+      .set({ isActive: body.isActive })
+      .where(eq(platformAccounts.id, id))
+      .returning();
+    return updated;
+  });
+
+  // Delete account
+  app.delete('/api/accounts/:id', async (req) => {
+    const { id } = req.params as { id: string };
+    await db.delete(platformAccounts).where(eq(platformAccounts.id, id));
+    return { success: true };
+  });
+
+  // OAuth flow endpoints — start and callback
+  app.get('/api/oauth/start/:platform', async (req, reply) => {
+    const { platform } = req.params as { platform: string };
+    const url = getOAuthUrl(platform);
+    if (!url) {
+      return reply.code(400).send({ error: `OAuth not configured for ${platform}. Set API keys in .env first.` });
+    }
+    return { url };
+  });
+
+  app.get('/api/oauth/callback/twitter', async (req, reply) => {
+    const { code } = req.query as { code: string };
+    try {
+      const tokens = await exchangeTwitterCode(code);
+      const me = await (await fetch('https://api.twitter.com/2/users/me', {
+        headers: { 'Authorization': `Bearer ${tokens.accessToken}` },
+      })).json() as any;
+
+      await db.insert(platformAccounts).values({
+        platform: 'twitter',
+        accountName: me.data?.username || 'twitter_user',
+        credentials: { ...tokens, expiresAt: Date.now() + 7200000 },
+      });
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?connected=twitter`);
+    } catch (error) {
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?error=${encodeURIComponent((error as Error).message)}`);
+    }
+  });
+
+  app.get('/api/oauth/callback/tiktok', async (req, reply) => {
+    const { code } = req.query as { code: string };
+    try {
+      const tokens = await exchangeTikTokCode(code);
+      await db.insert(platformAccounts).values({
+        platform: 'tiktok',
+        accountName: 'tiktok_user',
+        credentials: { ...tokens, expiresAt: Date.now() + 86400000 },
+      });
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?connected=tiktok`);
+    } catch (error) {
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?error=${encodeURIComponent((error as Error).message)}`);
+    }
+  });
+
+  app.get('/api/oauth/callback/instagram', async (req, reply) => {
+    const { code } = req.query as { code: string };
+    try {
+      const tokens = await exchangeInstagramCode(code);
+      await db.insert(platformAccounts).values({
+        platform: 'instagram',
+        accountName: 'instagram_user',
+        credentials: { ...tokens, expiresAt: Date.now() + 5184000000 },
+      });
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?connected=instagram`);
+    } catch (error) {
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?error=${encodeURIComponent((error as Error).message)}`);
+    }
+  });
+
+  app.get('/api/oauth/callback/youtube', async (req, reply) => {
+    const { code } = req.query as { code: string };
+    try {
+      const tokens = await exchangeYouTubeCode(code);
+      await db.insert(platformAccounts).values({
+        platform: 'youtube',
+        accountName: 'youtube_channel',
+        credentials: { ...tokens, expiresAt: Date.now() + 3600000 },
+      });
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?connected=youtube`);
+    } catch (error) {
+      return reply.redirect(`${env.DASHBOARD_URL}/setup?error=${encodeURIComponent((error as Error).message)}`);
+    }
+  });
+
+  // List available OAuth URLs for the setup wizard
+  app.get('/api/oauth/urls', async () => {
+    const platforms = ['twitter', 'tiktok', 'instagram', 'youtube'];
+    return platforms.map((p) => ({ platform: p, url: getOAuthUrl(p), configured: !!getOAuthUrl(p) }));
   });
 
   await app.listen({ port: env.ENGINE_PORT, host: '0.0.0.0' });

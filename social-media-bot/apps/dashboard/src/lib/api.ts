@@ -64,3 +64,42 @@ export async function setConfig(key: string, value: any) {
 export async function getAnalytics(accountId: string) {
   return fetchApi<any[]>(`/api/analytics/${accountId}`);
 }
+
+export async function getStatus() {
+  return fetchApi<any>('/api/status');
+}
+
+export async function deleteContent(id: string) {
+  return fetchApi<any>(`/api/content/${id}`, { method: 'DELETE' });
+}
+
+export async function updateAccount(id: string, updates: { isActive?: boolean }) {
+  return fetchApi<any>(`/api/accounts/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deleteAccount(id: string) {
+  return fetchApi<any>(`/api/accounts/${id}`, { method: 'DELETE' });
+}
+
+export async function triggerTrends() {
+  return fetchApi<any>('/api/trigger/trends', { method: 'POST' });
+}
+
+export async function triggerContent() {
+  return fetchApi<any>('/api/trigger/content', { method: 'POST' });
+}
+
+export async function triggerEngagement() {
+  return fetchApi<any>('/api/trigger/engagement', { method: 'POST' });
+}
+
+export async function triggerAnalytics() {
+  return fetchApi<any>('/api/trigger/analytics', { method: 'POST' });
+}
+
+export async function triggerTokenRefresh() {
+  return fetchApi<any>('/api/trigger/tokens', { method: 'POST' });
+}

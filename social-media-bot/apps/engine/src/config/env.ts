@@ -2,9 +2,9 @@ import { z } from 'zod';
 import 'dotenv/config';
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().url(),
-  REDIS_URL: z.string().url(),
-  OPENAI_API_KEY: z.string().min(1),
+  DATABASE_URL: z.string().default('postgresql://smbot:smbot_dev@localhost:5432/social_media_bot'),
+  REDIS_URL: z.string().default('redis://localhost:6379'),
+  OPENAI_API_KEY: z.string().default(''),
   TIKTOK_CLIENT_KEY: z.string().optional(),
   TIKTOK_CLIENT_SECRET: z.string().optional(),
   INSTAGRAM_APP_ID: z.string().optional(),

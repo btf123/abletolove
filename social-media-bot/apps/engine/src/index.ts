@@ -29,22 +29,32 @@ import './scheduler/workers/comment-responder.js';
 import './scheduler/workers/analytics-collector.js';
 
 async function start() {
-  console.log('🚀 Social Media Bot Engine starting...');
+  console.log('Social Media Bot Engine starting...');
 
   // Register platform adapters
   registerPlatform(new TwitterAdapter());
   registerPlatform(new TikTokAdapter());
   registerPlatform(new InstagramAdapter());
   registerPlatform(new YouTubeAdapter());
-  console.log('✓ Platform adapters registered');
+  console.log('[OK] Platform adapters registered');
 
-  // Register cron jobs
-  await registerCronJobs();
-  console.log('✓ Cron jobs registered');
+  // Register cron jobs (requires Redis)
+  try {
+    await registerCronJobs();
+    console.log('[OK] Cron jobs registered');
+  } catch (error) {
+    console.warn('[WARN] Could not register cron jobs (is Redis running?):', (error as Error).message);
+    console.warn('[WARN] The API will still work, but automated jobs will not run.');
+  }
 
   // Start REST API for dashboard
   const app = Fastify({ logger: false });
   await app.register(cors, { origin: env.DASHBOARD_URL });
+
+  // Health check
+  app.get('/api/health', async () => {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+  });
 
   // Dashboard API routes
   app.get('/api/overview', async () => {
@@ -148,11 +158,13 @@ async function start() {
   });
 
   await app.listen({ port: env.ENGINE_PORT, host: '0.0.0.0' });
-  console.log(`✓ API server running on port ${env.ENGINE_PORT}`);
+  console.log(`[OK] API server running on port ${env.ENGINE_PORT}`);
   console.log('');
-  console.log('🤖 Social Media Bot Engine is running!');
-  console.log('   Dashboard API: http://localhost:' + env.ENGINE_PORT);
-  console.log('   Cron jobs active and scheduling posts automatically.');
+  console.log('Social Media Bot Engine is running!');
+  console.log(`  API:       http://localhost:${env.ENGINE_PORT}`);
+  console.log(`  Health:    http://localhost:${env.ENGINE_PORT}/api/health`);
+  console.log(`  Dashboard: ${env.DASHBOARD_URL}`);
+  console.log(`  Setup:     ${env.DASHBOARD_URL}/setup`);
 }
 
 start().catch((error) => {

@@ -6,7 +6,7 @@ import { fetchTwitterTrends } from './sources/twitter-trends.js';
 import { fetchYouTubeTrends } from './sources/youtube-trending.js';
 import { fetchTikTokCreativeTrends } from './sources/tiktok-creative.js';
 import { scoreAndFilterTrends } from './scorer.js';
-import { gt } from 'drizzle-orm';
+import { lt } from 'drizzle-orm';
 
 export async function discoverTrends(): Promise<number> {
   console.log('[Trends] Starting trend discovery...');
@@ -54,8 +54,8 @@ export async function discoverTrends(): Promise<number> {
 }
 
 export async function cleanupExpiredTrends(): Promise<number> {
-  const result = await db.delete(trendingTopics).where(
-    gt(new Date(), trendingTopics.expiresAt),
+  await db.delete(trendingTopics).where(
+    lt(trendingTopics.expiresAt, new Date()),
   );
   return 0;
 }

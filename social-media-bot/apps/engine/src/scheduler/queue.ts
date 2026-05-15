@@ -1,8 +1,8 @@
 import { Queue } from 'bullmq';
-import IORedis from 'ioredis';
+import { Redis } from 'ioredis';
 import { env } from '../config/env.js';
 
-export const connection = new IORedis(env.REDIS_URL, { maxRetriesPerRequest: null });
+export const connection = new Redis(env.REDIS_URL, { maxRetriesPerRequest: null });
 
 export const trendsQueue = new Queue('trends', { connection });
 export const contentQueue = new Queue('content', { connection });

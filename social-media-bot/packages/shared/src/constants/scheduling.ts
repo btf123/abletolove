@@ -1,0 +1,22 @@
+export const CRON_SCHEDULES = {
+  TREND_DISCOVERY: '0 */4 * * *',
+  CONTENT_GENERATION: '0 2 * * *',
+  POST_PUBLISHER: '*/15 * * * *',
+  COMMENT_RESPONDER: '*/30 * * * *',
+  ANALYTICS_COLLECTOR: '0 */6 * * *',
+  TOKEN_REFRESHER: '0 0 * * *',
+  STALE_CLEANUP: '0 3 * * 0',
+} as const;
+
+export const ENGAGEMENT_LIMITS = {
+  MAX_REPLIES_PER_POST_PER_HOUR: 10,
+  MAX_TOTAL_REPLIES_PER_HOUR: 50,
+  REPLY_MAX_LENGTH: 200,
+  COMMENT_MIN_LENGTH: 3,
+} as const;
+
+export const TREND_CONFIG = {
+  RELEVANCE_THRESHOLD: 0.3,
+  EXPIRY_HOURS: 48,
+  MAX_TRENDS_PER_SOURCE: 20,
+} as const;

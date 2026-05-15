@@ -1,0 +1,21 @@
+{
+  "name": "social-media-bot",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:engine": "npm run dev -w apps/engine",
+    "dev:dashboard": "npm run dev -w apps/dashboard",
+    "dev": "concurrently \"npm run dev:engine\" \"npm run dev:dashboard\"",
+    "build": "npm run build -w packages/shared && npm run build -w apps/engine && npm run build -w apps/dashboard",
+    "migrate": "npm run migrate -w apps/engine",
+    "migrate:generate": "npm run migrate:generate -w apps/engine"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.8.3"
+  }
+}

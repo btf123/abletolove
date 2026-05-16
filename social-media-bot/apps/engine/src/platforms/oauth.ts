@@ -1,4 +1,15 @@
+import { createHash, randomBytes } from 'crypto';
 import { env } from '../config/env.js';
+
+const TIKTOK_CODE_VERIFIER = randomBytes(32).toString('hex');
+
+function sha256Base64Url(value: string): string {
+  return createHash('sha256').update(value).digest('base64url');
+}
+
+export function getTikTokCodeVerifier(): string {
+  return TIKTOK_CODE_VERIFIER;
+}
 
 export function getOAuthUrl(platform: string): string | null {
   switch (platform) {
@@ -24,6 +35,8 @@ export function getOAuthUrl(platform: string): string | null {
         scope: 'user.info.basic,video.publish,video.list',
         redirect_uri: `http://localhost:${env.ENGINE_PORT}/api/oauth/callback/tiktok`,
         state: 'tiktok',
+        code_challenge: sha256Base64Url(TIKTOK_CODE_VERIFIER),
+        code_challenge_method: 'S256',
       });
       return `https://www.tiktok.com/v2/auth/authorize/?${params}`;
     }
@@ -88,6 +101,7 @@ export async function exchangeTikTokCode(code: string): Promise<{ accessToken: s
       code,
       grant_type: 'authorization_code',
       redirect_uri: `http://localhost:${env.ENGINE_PORT}/api/oauth/callback/tiktok`,
+      code_verifier: TIKTOK_CODE_VERIFIER,
     }),
   });
   if (!response.ok) throw new Error(`TikTok token exchange failed: ${await response.text()}`);

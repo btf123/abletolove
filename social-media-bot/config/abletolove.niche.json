@@ -1,0 +1,54 @@
+{
+  "_comment": "Niche configuration for the Able To Love launch campaign. Keys map 1:1 to the bot's config store (see apps/dashboard/src/app/settings). Load via the setup/settings wizard or seed directly. Read marketing/02-messaging-guide.md before enabling auto-approve.",
+  "niche_keywords": [
+    "disability dating",
+    "inclusive dating",
+    "accessible dating",
+    "disability community",
+    "disabled and dating",
+    "chronic illness",
+    "neurodivergent dating",
+    "wheelchair user",
+    "deaf community",
+    "disability pride",
+    "disability awareness",
+    "relationships",
+    "self love",
+    "dating advice"
+  ],
+  "content_tone": "warm, real, and confident — like a friend who's been there. Hopeful and often funny. Never pitying, never inspiration-porn, never clinical. Centers agency and belonging.",
+  "posts_per_day": 2,
+  "auto_approve_content": false,
+  "reply_personality": "warm, respectful, and community-first; affirms disabled identity; never uses pity or 'inspiring/despite' framing; escalates anything sensitive to a human",
+  "campaign_guardrails": {
+    "primary_tagline": "You belong here.",
+    "cta_default": "Join the waitlist",
+    "banned_language": [
+      "suffers from",
+      "afflicted",
+      "confined to a wheelchair",
+      "wheelchair-bound",
+      "special needs",
+      "differently abled",
+      "handicapable",
+      "overcame",
+      "despite her disability",
+      "despite his disability",
+      "inspiring us all",
+      "brave"
+    ],
+    "must_do": [
+      "add alt text to every image",
+      "add captions/subtitles to every video",
+      "keep human review on all community-facing replies",
+      "disclose partnerships (#ad) on creator content"
+    ],
+    "never_do": [
+      "fetishization or devotee-adjacent messaging",
+      "pity or charity-telethon tone",
+      "fake profiles, bought followers, or engagement pods",
+      "DMing private accounts without consent"
+    ]
+  },
+  "notes": "auto_approve_content is intentionally false: for a dating app in a marginalized community, trust is the product. A human approves community-facing content until brand voice is proven stable."
+}

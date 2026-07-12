@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Able to Love brand mark: two round lobes + sharp V point, per the app icon -->
+  <defs>
+    <linearGradient id="hg" gradientUnits="userSpaceOnUse" x1="0" y1="28" x2="0" y2="175">
+      <stop offset="0" stop-color="#426FAF"/>
+      <stop offset="0.5" stop-color="#936695"/>
+      <stop offset="1" stop-color="#E35C7B"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#hg)">
+    <circle cx="63" cy="72" r="41"/>
+    <circle cx="137" cy="72" r="41"/>
+    <polygon points="25,88 175,88 100,172"/>
+  </g>
+</svg>

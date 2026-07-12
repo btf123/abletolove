@@ -1,42 +1,43 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><style>
   html,body{margin:0;padding:0}
-  body{width:1500px;height:500px;overflow:hidden;position:relative;background:#FDF6F4;
-    font-family:"Liberation Serif","DejaVu Serif",serif;color:#2A1720}
-  .wash{position:absolute;inset:0;
-    background:linear-gradient(115deg,rgba(233,30,99,.10) 0%,rgba(253,246,244,0) 45%,rgba(156,39,176,.10) 100%)}
-  .bigheart{position:absolute;right:-70px;top:-120px;width:640px;height:640px;opacity:.10}
-  .smallheart{position:absolute;left:1150px;top:300px;width:64px;height:64px;opacity:.35;transform:rotate(-12deg)}
-  /* X overlays the circular avatar over the banner's bottom-left — keep that corner quiet */
-  .content{position:absolute;left:150px;top:74px}
-  .brandrow{display:flex;align-items:center;gap:18px;margin-bottom:34px}
-  .badge{width:58px;height:58px;border-radius:16px;background:linear-gradient(140deg,#E91E63,#9C27B0);
-    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(233,30,99,.30)}
-  .badge svg{width:36px;height:36px}
-  .brandname{font-size:40px;font-weight:700;letter-spacing:-.5px}
-  h1{margin:0;font-size:128px;line-height:1;font-weight:700;letter-spacing:-3px}
-  h1 .accent{color:#E91E63;position:relative;display:inline-block}
-  h1 .accent svg{position:absolute;left:-1%;bottom:-24px;width:102%;height:26px;overflow:visible}
-  .sub{margin-top:44px;font-family:"Liberation Sans","DejaVu Sans",sans-serif;
-    font-size:27px;font-weight:700;letter-spacing:6px;color:#7A5A66}
+  html{background:#0C1221}
+  body{width:1500px;height:500px;overflow:hidden;position:relative;
+    background:linear-gradient(115deg,#0C1221 0%,#101729 45%,#1E2845 100%);
+    font-family:"Liberation Sans","DejaVu Sans",sans-serif;color:#fff;
+    display:flex;align-items:center;justify-content:center}
+  /* faint oversize brand heart, echoing the store feature graphic */
+  .ghost{position:absolute;right:-60px;top:-90px;width:520px;height:520px;opacity:.07}
+  .lockup{display:flex;align-items:center;gap:56px}
+  .mark{width:240px;height:240px}
+  h1{margin:0;font-size:110px;font-weight:700;letter-spacing:-2px;line-height:1}
+  .tagline{margin-top:22px;font-size:44px;font-weight:400;letter-spacing:.5px;color:#8FA2CC}
 </style></head><body>
-  <div class="wash"></div>
-  <svg class="bigheart" viewBox="0 0 40 40" fill="none">
-    <path d="M20 34s-12.6-7.35-16.05-14.7C1.55 14.3 4.1 8.75 9.5 8.75c3.45 0 5.55 1.95 6.9 4.05L20 17.9l3.6-5.1c1.35-2.1 3.45-4.05 6.9-4.05 5.4 0 7.95 5.55 5.55 10.55C32.6 26.65 20 34 20 34z" fill="#E91E63"/>
+  <svg class="ghost" viewBox="0 0 200 200" aria-hidden="true">
+    <g fill="#8FA2CC">
+      <circle cx="63" cy="72" r="41"/>
+      <circle cx="137" cy="72" r="41"/>
+      <polygon points="25,88 175,88 100,172"/>
+    </g>
   </svg>
-  <svg class="smallheart" viewBox="0 0 40 40" fill="none">
-    <path d="M20 34s-12.6-7.35-16.05-14.7C1.55 14.3 4.1 8.75 9.5 8.75c3.45 0 5.55 1.95 6.9 4.05L20 17.9l3.6-5.1c1.35-2.1 3.45-4.05 6.9-4.05 5.4 0 7.95 5.55 5.55 10.55C32.6 26.65 20 34 20 34z" fill="#9C27B0"/>
-  </svg>
-  <div class="content">
-    <div class="brandrow">
-      <div class="badge">
-        <svg viewBox="0 0 40 40" fill="none">
-          <path d="M20 34s-12.6-7.35-16.05-14.7C1.55 14.3 4.1 8.75 9.5 8.75c3.45 0 5.55 1.95 6.9 4.05L20 17.9l3.6-5.1c1.35-2.1 3.45-4.05 6.9-4.05 5.4 0 7.95 5.55 5.55 10.55C32.6 26.65 20 34 20 34z" fill="#fff"/>
-        </svg>
-      </div>
-      <div class="brandname">Able To Love</div>
+  <div class="lockup">
+    <svg class="mark" viewBox="0 0 200 200" aria-hidden="true">
+      <defs>
+        <linearGradient id="hg" gradientUnits="userSpaceOnUse" x1="0" y1="28" x2="0" y2="175">
+          <stop offset="0" stop-color="#426FAF"/>
+          <stop offset="0.5" stop-color="#936695"/>
+          <stop offset="1" stop-color="#E35C7B"/>
+        </linearGradient>
+      </defs>
+      <g fill="url(#hg)">
+        <circle cx="63" cy="72" r="41"/>
+        <circle cx="137" cy="72" r="41"/>
+        <polygon points="25,88 175,88 100,172"/>
+      </g>
+    </svg>
+    <div>
+      <h1>Able to Love</h1>
+      <div class="tagline">Able to astonish</div>
     </div>
-    <h1>Able to <span class="accent">astonish.<svg viewBox="0 0 300 12" fill="none" preserveAspectRatio="none"><path d="M3 8.5C60 3.5 150 2.5 297 6.5" stroke="#E91E63" stroke-width="5" stroke-linecap="round"/></svg></span></h1>
-    <div class="sub">DATING WHERE YOU BELONG&nbsp;&nbsp;·&nbsp;&nbsp;ABLETOLOVE.APP</div>
   </div>
 </body></html>

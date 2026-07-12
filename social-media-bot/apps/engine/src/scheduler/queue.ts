@@ -9,3 +9,4 @@ export const contentQueue = new Queue('content', { connection });
 export const publishingQueue = new Queue('publishing', { connection });
 export const engagementQueue = new Queue('engagement', { connection });
 export const analyticsQueue = new Queue('analytics', { connection });
+export const campaignQueue = new Queue('campaign', { connection });

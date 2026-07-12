@@ -1,11 +1,20 @@
 import type { ContentType, PlatformType } from '@smbot/shared';
 import { PLATFORM_LIMITS } from '@smbot/shared';
 
-export function getContentSystemPrompt(niche: string, tone: string): string {
-  return `You are a social media content expert in the niche of "${niche}".
+export function getContentSystemPrompt(niche: string, tone: string, brandRules?: string): string {
+  let prompt = `You are a social media content expert in the niche of "${niche}".
 Your tone is ${tone}: helpful, friendly, knowledgeable, and actionable.
 You create content that provides genuine value and drives engagement.
 Never be salesy or spammy. Focus on helping people achieve real results.`;
+
+  if (brandRules) {
+    prompt += `
+
+Brand rules you must follow in every piece of content:
+${brandRules}`;
+  }
+
+  return prompt;
 }
 
 export function getPostGenerationPrompt(

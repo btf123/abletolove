@@ -1,5 +1,5 @@
 {
-  "_comment": "Niche configuration for the Able2Love launch campaign. Keys map 1:1 to the bot's config store (see apps/dashboard/src/app/settings). Load via the setup/settings wizard or seed directly. Read marketing/02-messaging-guide.md before enabling auto-approve.",
+  "_comment": "Niche configuration for the Able2Love launch campaign. Keys map 1:1 to the bot's config store (see apps/dashboard/src/app/settings). Load via the setup/settings wizard or seed directly. Read marketing/02-messaging-guide.md before enabling auto-approve. Voice and factual rules derive from the founder master prompt; see marketing/08-founder-voice.md.",
   "niche_keywords": [
     "disability dating",
     "inclusive dating",
@@ -40,7 +40,11 @@
       "journey to love",
       "empowering",
       "transformative",
-      "inspirational"
+      "inspirational",
+      "empowering every journey",
+      "celebrating all abilities",
+      "love knows no limits",
+      "giving disabled people a chance"
     ],
     "must_do": [
       "add alt text to every image",
@@ -56,7 +60,14 @@
       "DMing private accounts without consent",
       "em dashes in any public copy (use commas, colons, brackets or full stops)"
     ],
-    "audience": "disabled and non-disabled people open to dating one another; visible disability normalised, not hidden or fetishised"
+    "audience": "disabled and non-disabled people open to dating one another; visible disability normalised, not hidden or fetishised",
+    "factual_rules": [
+      "Never invent app features, release dates, prices, user numbers, testimonials, safety guarantees, accessibility claims, partnerships, awards or statistics.",
+      "Say honestly when something is planned rather than live. Do not manufacture momentum.",
+      "Never praise non-disabled users merely for being willing to date a disabled person.",
+      "Never make disabled bodies, care needs or private trauma the punchline.",
+      "Never reference the founder's private life or health. Public facts only: performer, comedy writer, musician, producer, University of Salford graduate, wheelchair user, founder of Able2Love."
+    ]
   },
   "notes": "auto_approve_content is intentionally false: for a dating app in a marginalized community, trust is the product. A human approves community-facing content until brand voice is proven stable."
 }

@@ -168,7 +168,7 @@ export default function ProfileScreen() {
               marginBottom: 12,
             }}
           >
-            Welcome to Able To Love
+            Welcome to Able2Love
           </Text>
 
           <Text

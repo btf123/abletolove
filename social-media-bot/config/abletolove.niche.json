@@ -1,5 +1,5 @@
 {
-  "_comment": "Niche configuration for the Able To Love launch campaign. Keys map 1:1 to the bot's config store (see apps/dashboard/src/app/settings). Load via the setup/settings wizard or seed directly. Read marketing/02-messaging-guide.md before enabling auto-approve.",
+  "_comment": "Niche configuration for the Able2Love launch campaign. Keys map 1:1 to the bot's config store (see apps/dashboard/src/app/settings). Load via the setup/settings wizard or seed directly. Read marketing/02-messaging-guide.md before enabling auto-approve.",
   "niche_keywords": [
     "disability dating",
     "inclusive dating",

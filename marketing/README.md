@@ -1,6 +1,6 @@
-# Able To Love — Growth & Marketing
+# Able2Love — Growth & Marketing
 
-Everything needed to launch and grow **Able To Love**, the dating app built for and with the disability community. This directory is the single source of truth for how we talk about the app, where we show up, and what we ship.
+Everything needed to launch and grow **Able2Love**, the dating app built for and with the disability community. This directory is the single source of truth for how we talk about the app, where we show up, and what we ship.
 
 ## What's here
 
@@ -19,6 +19,6 @@ We are marketing a product for a community that has been talked *about* far more
 
 ## How to use the social-media-bot with this campaign
 
-The repo already contains `social-media-bot/`, an automation engine for scheduling and publishing. A niche configuration tuned for Able To Love lives at `social-media-bot/config/abletolove.niche.json`. Load it in the setup wizard (or seed it directly) so trend discovery and content generation stay on-brand and inside the guardrails in the messaging guide.
+The repo already contains `social-media-bot/`, an automation engine for scheduling and publishing. A niche configuration tuned for Able2Love lives at `social-media-bot/config/abletolove.niche.json`. Load it in the setup wizard (or seed it directly) so trend discovery and content generation stay on-brand and inside the guardrails in the messaging guide.
 
 > Automation amplifies reach; it does not replace judgment. Keep the "flagged replies for review" queue staffed by a human — community trust is the entire moat of a dating app.

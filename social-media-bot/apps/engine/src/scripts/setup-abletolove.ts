@@ -7,7 +7,7 @@ import { seedCampaign } from '../pipelines/campaign/seeder.js';
 
 // One-command campaign setup:
 //   npm run setup:abletolove -w apps/engine
-// Loads the Able To Love niche config into system_config and seeds the
+// Loads the Able2Love niche config into system_config and seeds the
 // 30-day launch campaign as drafts awaiting approval in the dashboard.
 
 async function setConfig(key: string, value: any): Promise<void> {
@@ -21,7 +21,7 @@ async function main() {
     || path.resolve(process.cwd(), '../../config/abletolove.niche.json');
   const niche = JSON.parse(await readFile(nichePath, 'utf8'));
 
-  console.log('[Setup] Loading Able To Love niche config...');
+  console.log('[Setup] Loading Able2Love niche config...');
 
   await setConfig('niche_keywords', niche.niche_keywords);
   await setConfig('content_tone', niche.content_tone);
@@ -43,7 +43,7 @@ async function main() {
 
   await setConfig('campaign_repeat', 'yearly');
   if (!process.env.CAMPAIGN_LINK) {
-    console.log('[Setup] Tip: set CAMPAIGN_LINK (or the campaign_link config key) to your live waitlist URL. Using abletolove.app for now.');
+    console.log('[Setup] Tip: set CAMPAIGN_LINK (or the campaign_link config key) to your live waitlist URL. Using able2love.app for now.');
   } else {
     await setConfig('campaign_link', process.env.CAMPAIGN_LINK);
   }

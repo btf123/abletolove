@@ -1,4 +1,4 @@
-# Able To Love — Marketing Autopilot
+# Able2Love — Marketing Autopilot
 
 This is the "I don't want to make content" setup. The bot writes everything, schedules everything, and posts everything. **Your only job is to tap Approve** — nothing goes out without it, so nothing stupid ever gets posted.
 
@@ -23,7 +23,7 @@ Three layers of protection before anything reaches the internet:
    ```bash
    CAMPAIGN_LINK=https://your-waitlist-link.com npm run setup:abletolove
    ```
-   This loads the Able To Love brand settings and drops the entire 30-day launch campaign (38 pre-written posts) into your review queue.
+   This loads the Able2Love brand settings and drops the entire 30-day launch campaign (38 pre-written posts) into your review queue.
 
 ## Your weekly routine (the only work you have)
 

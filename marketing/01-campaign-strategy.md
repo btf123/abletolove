@@ -1,17 +1,17 @@
 # Campaign Strategy — "You Belong Here"
 
 ## The product in one line
-Able To Love is a dating app built with the disability community, where sharing how you move through the world is a normal part of your profile — not an awkward reveal on the third date.
+Able2Love is a dating app built with the disability community, where sharing how you move through the world is a normal part of your profile — not an awkward reveal on the third date.
 
 ## Why now
 - ~1 in 4 adults lives with a disability, yet mainstream dating apps treat disability as an edge case or something to hide.
-- The most common pain point disabled daters report is **the disclosure moment** — deciding when and how to tell a match. Able To Love removes that anxiety by making disclosure a first-class, optional, opt-in profile field surrounded by people who already get it.
+- The most common pain point disabled daters report is **the disclosure moment** — deciding when and how to tell a match. Able2Love removes that anxiety by making disclosure a first-class, optional, opt-in profile field surrounded by people who already get it.
 - Accessibility isn't a feature bolted on; it's the reason the app exists. That is a defensible, authentic wedge no incumbent can copy without rebuilding their culture.
 
 ## Positioning
 **For** disabled adults and the people who love them
 **Who** are tired of hiding, over-explaining, or being fetishized on generic dating apps,
-**Able To Love is** a dating app where your disability is context, not a caveat,
+**Able2Love is** a dating app where your disability is context, not a caveat,
 **Unlike** Tinder/Hinge/Bumble that treat accessibility as an afterthought,
 **We** built the whole experience — profiles, filters, chat, and community norms — around the community, with the community.
 

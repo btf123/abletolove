@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <!-- Able to Love official mark: two figures, heads touching, forming a heart -->
+  <!-- Able2Love official mark: two figures, heads touching, forming a heart -->
   <defs>
     <clipPath id="leftHalf"><rect x="0" y="0" width="512" height="1024"/></clipPath>
     <clipPath id="rightHalf"><rect x="512" y="0" width="512" height="1024"/></clipPath>

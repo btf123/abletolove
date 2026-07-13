@@ -3,7 +3,7 @@
 ## App Store Optimization (ASO)
 
 ### App name / subtitle
-- **Name:** Able To Love
+- **Name:** Able2Love
 - **Subtitle (iOS, 30 chars):** Dating that gets it
 - **Short description (Play, 80 chars):** Inclusive dating for the disability community. Your terms. Your story.
 
@@ -13,7 +13,7 @@
 ### Long description (draft)
 > **You belong here.**
 >
-> Able To Love is a dating app built with the disability community — where sharing how you move through the world is just part of your profile, not a nervous third-date reveal.
+> Able2Love is a dating app built with the disability community — where sharing how you move through the world is just part of your profile, not a nervous third-date reveal.
 >
 > **Why people are switching:**
 > • **Optional, opt-in disclosure** — share what you want, when you want, with people who already get it.
@@ -23,7 +23,7 @@
 >
 > No pity. No fetishizing. No over-explaining. Just dating.
 >
-> Download Able To Love and find your people.
+> Download Able2Love and find your people.
 
 ### Screenshot captions (store gallery)
 1. "You belong here."
@@ -40,18 +40,18 @@ Trigger the review prompt after a positive moment (a first match or a good conve
 ## Press Kit
 
 ### Boilerplate
-> Able To Love is a dating app built with and for the disability community. By making disability disclosure an optional, opt-in part of every profile and building accessibility into the core experience, Able To Love removes the "disclosure dread" disabled daters face on mainstream apps — creating a space where connection starts from understanding.
+> Able2Love is a dating app built with and for the disability community. By making disability disclosure an optional, opt-in part of every profile and building accessibility into the core experience, Able2Love removes the "disclosure dread" disabled daters face on mainstream apps — creating a space where connection starts from understanding.
 
 ### Pitch angles (tailor per outlet)
 - **Lifestyle/dating press:** "The dating app removing the most stressful moment in disabled dating."
-- **Tech press:** "Accessibility-first from line one: how Able To Love was built with the community."
+- **Tech press:** "Accessibility-first from line one: how Able2Love was built with the community."
 - **Disability/advocacy press:** "Built with, not for — disabled founders and users designing their own dating experience."
 - **Local press:** founder + local beta-user story.
 
 ### Sample press release headline + lede
 > **FOR IMMEDIATE RELEASE**
-> **Able To Love Launches: A Dating App Built With the Disability Community**
-> [City, Date] — Able To Love, a new dating app designed with and for disabled adults, launches today on iOS and Android. The app makes disability disclosure optional and user-controlled and builds accessibility into its core, addressing the single most-cited pain point among disabled daters: when and how to disclose.
+> **Able2Love Launches: A Dating App Built With the Disability Community**
+> [City, Date] — Able2Love, a new dating app designed with and for disabled adults, launches today on iOS and Android. The app makes disability disclosure optional and user-controlled and builds accessibility into its core, addressing the single most-cited pain point among disabled daters: when and how to disclose.
 
 ### Spokesperson Q&A prep
 - *Isn't a separate app "segregating" disabled people?* → It's a choice, not a wall. Members date whoever they want; the difference is starting from a community that already gets it, without the disclosure tax.
@@ -67,4 +67,4 @@ Trigger the review prompt after a positive moment (a first match or a good conve
 - [ ] All assets shipped **with alt text and captions** — the press kit models our own accessibility standard.
 
 ### Media contact
-`press@abletolove.app` *(set up before the first pitch)*
+`press@able2love.app` *(set up before the first pitch)*

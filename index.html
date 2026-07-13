@@ -198,7 +198,7 @@
           <p class="microcopy" id="micro1">Be first in when we launch. No spam, ever — unsubscribe anytime.</p>
           <div class="success" id="success1" role="status" aria-live="polite" tabindex="-1">
             <strong>You're on the list. ♥</strong> We'll email you the moment doors open.
-            <div class="ref">Want to move up the queue? Share your invite link: <code id="reflink1">able2love.app/?ref=you</code></div>
+            <div class="ref">Want to move up the queue? Share your invite link: <code id="reflink1">able2love.netlify.app/?ref=you</code></div>
           </div>
 
           <div class="trust">
@@ -279,8 +279,8 @@
       <p>Dating that gets it.</p>
       <nav aria-label="Footer">
         <a href="#main">Home</a>
-        <a href="mailto:hello@able2love.app">Contact</a>
-        <a href="mailto:press@able2love.app">Press</a>
+        <a href="mailto:broganfox1@gmail.com">Contact</a>
+        <a href="mailto:broganfox1@gmail.com?subject=Press%20enquiry%20—%20Able2Love">Press</a>
         <a href="#signup">Join the waitlist</a>
       </nav>
       <p class="note">This is a marketing landing page. Email addresses entered here are only used to notify you about the launch. Before going live, replace the placeholder form handler in the script with your email provider's endpoint (Mailchimp, ConvertKit, Beehiiv, or your own backend).</p>
@@ -336,7 +336,7 @@
         await submitEmail(email);
         form.style.display = 'none';
         var success = document.getElementById(successId);
-        if(refId){ var el = document.getElementById(refId); if(el){ el.textContent = 'able2love.app/?ref=' + refCode(email); } }
+        if(refId){ var el = document.getElementById(refId); if(el){ el.textContent = 'able2love.netlify.app/?ref=' + refCode(email); } }
         if(success){ success.classList.add('show'); if(success.focus){ success.focus(); } }
       });
     }

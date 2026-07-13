@@ -1,5 +1,5 @@
 import { CRON_SCHEDULES } from '@smbot/shared';
-import { trendsQueue, contentQueue, publishingQueue, engagementQueue, analyticsQueue } from './queue.js';
+import { trendsQueue, contentQueue, publishingQueue, engagementQueue, analyticsQueue, campaignQueue } from './queue.js';
 
 export async function registerCronJobs(): Promise<void> {
   console.log('[Scheduler] Registering cron jobs...');
@@ -31,6 +31,10 @@ export async function registerCronJobs(): Promise<void> {
   await trendsQueue.upsertJobScheduler('stale-cleanup', {
     pattern: CRON_SCHEDULES.STALE_CLEANUP,
   }, { name: 'cleanup-stale' });
+
+  await campaignQueue.upsertJobScheduler('campaign-seeder', {
+    pattern: CRON_SCHEDULES.CAMPAIGN_SEEDER,
+  }, { name: 'seed-campaign' });
 
   console.log('[Scheduler] All cron jobs registered');
 }

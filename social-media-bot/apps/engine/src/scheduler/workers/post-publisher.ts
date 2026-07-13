@@ -3,7 +3,7 @@ import { connection } from '../queue.js';
 import { db } from '../../db/client.js';
 import { scheduledPosts, contentQueue } from '../../db/schema.js';
 import { getPlatform } from '../../platforms/registry.js';
-import { eq, and, lte } from 'drizzle-orm';
+import { eq, and, lte, inArray } from 'drizzle-orm';
 import type { PlatformType, ContentType } from '@smbot/shared';
 
 export const publisherWorker = new Worker('publishing', async (job) => {
@@ -19,6 +19,9 @@ export const publisherWorker = new Worker('publishing', async (job) => {
       and(
         eq(scheduledPosts.status, 'pending'),
         lte(scheduledPosts.scheduledFor, windowEnd),
+        // Never publish content a human hasn't approved: drafts and failed
+        // content are excluded even if a scheduled row exists for them.
+        inArray(contentQueue.status, ['approved', 'scheduled', 'publishing', 'published']),
       ),
     );
 

@@ -31,6 +31,8 @@ import { discoverTrends } from './pipelines/trending/aggregator.js';
 import { generateContent } from './pipelines/content/generator.js';
 import { processComments } from './pipelines/engagement/responder.js';
 import { collectAnalytics, refreshAllTokens } from './analytics/collector.js';
+import { scheduleApprovedContent } from './pipelines/scheduling.js';
+import { seedCampaign } from './pipelines/campaign/seeder.js';
 import { getRegisteredPlatformNames } from './platforms/registry.js';
 
 // Import workers to start them
@@ -39,6 +41,7 @@ import './scheduler/workers/content-generation.js';
 import './scheduler/workers/post-publisher.js';
 import './scheduler/workers/comment-responder.js';
 import './scheduler/workers/analytics-collector.js';
+import './scheduler/workers/campaign-seeder.js';
 
 async function start() {
   console.log('Social Media Bot Engine starting...');
@@ -98,6 +101,16 @@ async function start() {
       .set(updates)
       .where(eq(contentQueueTable.id, id))
       .returning();
+
+    // Approval is what puts a post on the calendar: create scheduled_posts
+    // rows at the campaign-planned time (or next optimal window).
+    if (body.status === 'approved' && updated) {
+      const scheduled = await scheduleApprovedContent(id);
+      if (scheduled > 0) {
+        const [rescheduled] = await db.select().from(contentQueueTable).where(eq(contentQueueTable.id, id));
+        return rescheduled;
+      }
+    }
     return updated;
   });
 
@@ -192,6 +205,11 @@ async function start() {
 
   app.post('/api/trigger/tokens', async () => {
     const result = await refreshAllTokens();
+    return { success: true, ...result };
+  });
+
+  app.post('/api/trigger/campaign', async () => {
+    const result = await seedCampaign({ force: true });
     return { success: true, ...result };
   });
 

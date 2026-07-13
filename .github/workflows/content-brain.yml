@@ -1,0 +1,59 @@
+name: Content brain (weekly posts)
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # every Monday 09:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install browser for image cards
+        working-directory: automation
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Generate this week's aligned Instagram + X posts and cards
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node automation/generate-week.mjs
+
+      - name: Commit the batches
+        id: commit
+        run: |
+          git config user.name "able2love-content-brain"
+          git config user.email "actions@github.com"
+          git add content-queue/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Weekly post batch [skip ci]"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open a review issue
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE=$(date +%F)
+          BODY="body.md"
+          echo "This week's Able2Love posts are ready to review. One subject a day, Instagram and X in tandem, same image both places." > "$BODY"
+          echo "" >> "$BODY"
+          echo "Card images are in \`content-queue/week-$DATE/\` in the repo." >> "$BODY"
+          echo "" >> "$BODY"
+          cat "content-queue/week-$DATE/schedule.md" >> "$BODY" 2>/dev/null || echo "(no batch generated)" >> "$BODY"
+          gh issue create --title "Review this week's Able2Love posts ($DATE)" --body-file "$BODY"

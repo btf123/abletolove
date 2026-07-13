@@ -12,7 +12,8 @@
     "dev": "concurrently \"npm run dev:engine\" \"npm run dev:dashboard\"",
     "build": "npm run build -w packages/shared && npm run build -w apps/engine && npm run build -w apps/dashboard",
     "migrate": "npm run migrate -w apps/engine",
-    "migrate:generate": "npm run migrate:generate -w apps/engine"
+    "migrate:generate": "npm run migrate:generate -w apps/engine",
+    "setup:abletolove": "npm run setup:abletolove -w apps/engine"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

@@ -6,6 +6,7 @@ export const CRON_SCHEDULES = {
   ANALYTICS_COLLECTOR: '0 */6 * * *',
   TOKEN_REFRESHER: '0 0 * * *',
   STALE_CLEANUP: '0 3 * * 0',
+  CAMPAIGN_SEEDER: '0 1 * * *',
 } as const;
 
 export const ENGAGEMENT_LIMITS = {

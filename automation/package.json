@@ -1,0 +1,9 @@
+{
+  "name": "able2love-automation",
+  "private": true,
+  "type": "module",
+  "description": "Weekly content brain for X and Instagram",
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

@@ -3,6 +3,7 @@ import { db } from '../../db/client.js';
 import { trendingTopics, contentQueue, scheduledPosts, platformAccounts, systemConfig } from '../../db/schema.js';
 import { env } from '../../config/env.js';
 import { getContentSystemPrompt, getPostGenerationPrompt } from './prompts.js';
+import { getBannedLanguage, findGuardrailViolation } from './guardrails.js';
 import { formatForPlatform, getContentTypeForPlatform } from './formatter.js';
 import { DEFAULT_POSTING_WINDOWS } from '@smbot/shared';
 import { desc, eq, gt, and, isNull } from 'drizzle-orm';
@@ -10,15 +11,22 @@ import type { PlatformType } from '@smbot/shared';
 
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
-async function getConfig(): Promise<{ niche: string; tone: string; postsPerDay: number; autoApprove: boolean }> {
+async function getConfig(): Promise<{ niche: string; tone: string; postsPerDay: number; autoApprove: boolean; brandRules?: string }> {
   try {
     const configs = await db.select().from(systemConfig);
     const configMap = Object.fromEntries(configs.map((c) => [c.key, c.value]));
+    // The dashboard saves the niche as niche_keywords (string array); older
+    // setups may have a plain niche string. Support both.
+    const keywords = configMap.niche_keywords;
+    const niche = Array.isArray(keywords) && keywords.length > 0
+      ? keywords.join(', ')
+      : (configMap.niche as string) || 'social media growth tips';
     return {
-      niche: (configMap.niche as string) || 'social media growth tips',
+      niche,
       tone: (configMap.content_tone as string) || 'friendly, helpful, and expert',
       postsPerDay: (configMap.posts_per_day as number) || 2,
       autoApprove: (configMap.auto_approve_content as boolean) ?? true,
+      brandRules: (configMap.brand_rules as string) || undefined,
     };
   } catch {
     return { niche: 'social media growth tips', tone: 'friendly, helpful, and expert', postsPerDay: 2, autoApprove: true };
@@ -53,7 +61,9 @@ export async function generateContent(): Promise<number> {
   }
 
   const platformSet = new Set(accounts.map((a) => a.platform));
+  const bannedLanguage = await getBannedLanguage();
   let totalGenerated = 0;
+  let totalRejected = 0;
 
   for (let day = 0; day < 7; day++) {
     for (const platform of platformSet) {
@@ -66,7 +76,7 @@ export async function generateContent(): Promise<number> {
           const response = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
-              { role: 'system', content: getContentSystemPrompt(config.niche, config.tone) },
+              { role: 'system', content: getContentSystemPrompt(config.niche, config.tone, config.brandRules) },
               { role: 'user', content: getPostGenerationPrompt(topic, platform, contentType) },
             ],
             response_format: { type: 'json_object' },
@@ -75,6 +85,16 @@ export async function generateContent(): Promise<number> {
 
           const rawContent = JSON.parse(response.choices[0].message.content || '{}');
           const formatted = formatForPlatform(rawContent, platform, contentType);
+
+          const violation = findGuardrailViolation(
+            `${formatted.caption} ${formatted.hashtags.join(' ')}`,
+            bannedLanguage,
+          );
+          if (violation) {
+            console.warn(`[Content] Rejected generated post for ${platform}: contains banned phrase "${violation}"`);
+            totalRejected++;
+            continue;
+          }
 
           const [inserted] = await db.insert(contentQueue).values({
             status: config.autoApprove ? 'approved' : 'draft',
@@ -108,6 +128,9 @@ export async function generateContent(): Promise<number> {
     }
   }
 
+  if (totalRejected > 0) {
+    console.log(`[Content] Guardrails rejected ${totalRejected} items before review`);
+  }
   console.log(`[Content] Generated ${totalGenerated} content items`);
   return totalGenerated;
 }

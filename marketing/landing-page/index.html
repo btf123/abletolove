@@ -291,8 +291,24 @@
     function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
     async function submitEmail(email){
-      // TODO: replace with a real POST to your ESP or backend, e.g.:
-      // await fetch('https://your-esp.example/subscribe', {method:'POST', body: JSON.stringify({email})});
+      // Signups are emailed to the founder via FormSubmit (free, no account).
+      // The first-ever submission triggers a one-time activation email — click
+      // the link in it once and every signup after that is delivered.
+      var ref = '';
+      try { ref = sessionStorage.getItem('atl_ref') || ''; } catch(e){}
+      try {
+        await fetch('https://formsubmit.co/ajax/broganfox1@gmail.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            _subject: 'New Able2Love waitlist signup!',
+            _template: 'table',
+            email: email,
+            referred_by: ref || 'direct',
+            page: location.href
+          })
+        });
+      } catch(e){ /* still show success; the local backup below keeps the address */ }
       try { var list = JSON.parse(localStorage.getItem('atl_waitlist')||'[]'); if(!list.includes(email)){ list.push(email); localStorage.setItem('atl_waitlist', JSON.stringify(list)); } } catch(e){}
       return true;
     }

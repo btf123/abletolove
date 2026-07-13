@@ -72,7 +72,7 @@ export async function seedCampaign(options: { force?: boolean } = {}): Promise<{
     }
   }
 
-  const link = (config.campaign_link as string) || 'able2love.app';
+  const link = (config.campaign_link as string) || 'https://able2love.netlify.app';
   const startDateRaw = config.campaign_start_date as string | undefined;
   let start = startDateRaw ? new Date(startDateRaw) : new Date();
   if (Number.isNaN(start.getTime()) || start < new Date()) {

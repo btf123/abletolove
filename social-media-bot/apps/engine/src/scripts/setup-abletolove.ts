@@ -43,7 +43,7 @@ async function main() {
 
   await setConfig('campaign_repeat', 'yearly');
   if (!process.env.CAMPAIGN_LINK) {
-    console.log('[Setup] Tip: set CAMPAIGN_LINK (or the campaign_link config key) to your live waitlist URL. Using able2love.app for now.');
+    console.log('[Setup] Tip: set CAMPAIGN_LINK (or the campaign_link config key) to your live waitlist URL. Using https://able2love.netlify.app for now.');
   } else {
     await setConfig('campaign_link', process.env.CAMPAIGN_LINK);
   }

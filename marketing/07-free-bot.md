@@ -57,6 +57,20 @@ Do not enter any payment details anywhere; every step here is free.
 - `content-queue/EXAMPLE-batch.md` — what a weekly batch looks like.
 - `marketing/06-posting-setup-buffer.md` — the mouth: Buffer setup + the 38 launch posts.
 
+
+## Instagram, on the same footing as X
+
+Instagram refuses to post without an image, so the brain writes Instagram posts **and generates a branded card image for each one** (`automation/generate-instagram.mjs` + `automation/lib/render-cards.mjs`). Every Monday you get, in `content-queue/instagram/<date>/`:
+- `captions.md` (caption + hashtags + alt text per post)
+- `card-01.png`, `card-02.png`, `card-03.png` (the ready-to-post images)
+
+The images are typographic brand cards, not fake photos of people. That is deliberate: auto-generating fake "disabled daters" would break the representation rules in the founder prompt. Real photos and reels stay something you add by hand when you have them.
+
+### Connecting Instagram for posting
+1. Make sure the Instagram account is a **Business or Creator** account (Instagram app: Settings, Account type and tools, Switch to professional account). Buffer can only auto-publish to professional accounts.
+2. In Buffer, connect the Instagram channel (same "Connect channel" flow as X).
+3. Each week, load the card + caption from `content-queue/instagram/<date>/` into Buffer's Instagram queue, or hand the folder to the Claude browser extension.
+
 ## If you ever want zero-touch posting (the paid upgrade)
 
 The full engine in `social-media-bot/` still exists and can post to X directly with **pay-per-use API pricing** (~1.5¢ per post, ~20¢ if it contains a link — a few pounds a month at our volume, plus the developer.x.com signup). That's the only step up from here, and it buys removing the 2-minute weekly paste. Until that trade feels worth it, this setup does everything for free.

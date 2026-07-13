@@ -19,27 +19,49 @@ jobs:
         with:
           node-version: 22
 
-      - name: Generate this week's posts
+      - name: Install browser for image cards
+        working-directory: automation
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+
+      - name: Generate this week's X posts
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node automation/generate-posts.mjs
 
-      - name: Commit the batch
+      - name: Generate this week's Instagram posts and cards
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node automation/generate-instagram.mjs
+
+      - name: Commit the batches
         id: commit
         run: |
           git config user.name "able2love-content-brain"
           git config user.email "actions@github.com"
           git add content-queue/
-          FILE=$(git diff --cached --name-only | head -1)
-          echo "file=$FILE" >> "$GITHUB_OUTPUT"
-          git commit -m "Weekly post batch [skip ci]" || echo "nothing to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Weekly post batch [skip ci]"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Open a review issue
-        if: steps.commit.outputs.file != ''
+        if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh issue create \
-            --title "Review this week's Able2Love posts ($(date +%F))" \
-            --body-file "${{ steps.commit.outputs.file }}"
+          DATE=$(date +%F)
+          BODY="body.md"
+          echo "This week's Able2Love posts are ready to review." > "$BODY"
+          echo "" >> "$BODY"
+          echo "## X / Twitter" >> "$BODY"
+          cat "content-queue/batch-$DATE.md" >> "$BODY" 2>/dev/null || echo "(no X batch)" >> "$BODY"
+          echo "" >> "$BODY"
+          echo "## Instagram" >> "$BODY"
+          echo "Captions and card images are in \`content-queue/instagram/$DATE/\` in the repo." >> "$BODY"
+          cat "content-queue/instagram/$DATE/captions.md" >> "$BODY" 2>/dev/null || echo "(no Instagram batch)" >> "$BODY"
+          gh issue create --title "Review this week's Able2Love posts ($DATE)" --body-file "$BODY"

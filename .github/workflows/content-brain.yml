@@ -25,15 +25,10 @@ jobs:
           npm install
           npx playwright install --with-deps chromium
 
-      - name: Generate this week's X posts
+      - name: Generate this week's aligned Instagram + X posts and cards
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node automation/generate-posts.mjs
-
-      - name: Generate this week's Instagram posts and cards
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node automation/generate-instagram.mjs
+        run: node automation/generate-week.mjs
 
       - name: Commit the batches
         id: commit
@@ -56,12 +51,9 @@ jobs:
         run: |
           DATE=$(date +%F)
           BODY="body.md"
-          echo "This week's Able2Love posts are ready to review." > "$BODY"
+          echo "This week's Able2Love posts are ready to review. One subject a day, Instagram and X in tandem, same image both places." > "$BODY"
           echo "" >> "$BODY"
-          echo "## X / Twitter" >> "$BODY"
-          cat "content-queue/batch-$DATE.md" >> "$BODY" 2>/dev/null || echo "(no X batch)" >> "$BODY"
+          echo "Card images are in \`content-queue/week-$DATE/\` in the repo." >> "$BODY"
           echo "" >> "$BODY"
-          echo "## Instagram" >> "$BODY"
-          echo "Captions and card images are in \`content-queue/instagram/$DATE/\` in the repo." >> "$BODY"
-          cat "content-queue/instagram/$DATE/captions.md" >> "$BODY" 2>/dev/null || echo "(no Instagram batch)" >> "$BODY"
+          cat "content-queue/week-$DATE/schedule.md" >> "$BODY" 2>/dev/null || echo "(no batch generated)" >> "$BODY"
           gh issue create --title "Review this week's Able2Love posts ($DATE)" --body-file "$BODY"

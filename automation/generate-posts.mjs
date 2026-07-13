@@ -41,8 +41,12 @@ const DEFAULT_BANNED = [
   'suffers from', 'afflicted', 'confined to a wheelchair', 'wheelchair-bound',
   'special needs', 'differently abled', 'handicapable', 'overcame',
   'despite her disability', 'despite his disability', 'despite their disability',
-  'inspiring us all', 'brave',
+  'inspiring us all', 'brave', 'passionate', 'empowering', 'transformative',
+  'inspirational', 'journey to love',
 ];
+
+// Formatting the founder has explicitly outlawed in public copy.
+const BANNED_CHARACTERS = ['\u2014', '\u2013']; // em dash, en dash
 
 function isoWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -64,20 +68,24 @@ function buildPrompt(niche, theme) {
   const tone = niche.content_tone || 'warm, real, and confident';
   const keywords = (niche.niche_keywords || []).join(', ');
   const banned = (niche.campaign_guardrails?.banned_language || DEFAULT_BANNED).join('; ');
-  return `You write social media posts for Able2Love, a dating app built with the disability community.
+  return `You write social media posts for Able2Love, a dating app that connects disabled and non-disabled people open to dating one another. Visible disability is normalised here, never hidden or fetishised. The posts are written in the voice of the founder: a Manchester comedy writer and full-time wheelchair user. Performer first; the wheelchair is part of the picture, never the whole picture.
 
 Tone: ${tone}
 Topics we live in: ${keywords}
 This week's theme: ${theme}
 
 Write ${POSTS_PER_BATCH} posts for X (Twitter). Rules:
+- UK English spelling only (normalise, colour, maths).
+- NEVER use an em dash or en dash. Use commas, brackets, colons or full stops.
 - Max 240 characters each, including hashtags.
 - 1-2 hashtags per post, lowercase, no more.
-- Vary the format: observations, questions to the community, light jokes, one clear app plug.
+- Vary the format: dry observations, questions to the community, blunt jokes, one clear app plug.
 - Exactly two of the posts should invite people to download the app; end those with "${SITE_LINK}".
 - The rest should be community-first with no link.
+- Funny is encouraged: dry, observational, a bit dark is fine. Cruel is not.
+- Direct beats padded. No corporate speak, no influencer earnestness.
 - Never use pity or inspiration framing. Never use any of these words/phrases: ${banned}.
-- Disabled people are the audience, not the subject. Write like a friend who gets it.
+- Disabled people are part of the audience, not the subject. Write like a mate who gets it.
 
 Return ONLY a JSON array of strings, one per post. No markdown, no commentary.`;
 }
@@ -125,7 +133,7 @@ function parsePosts(raw) {
 }
 
 const SAMPLE_POSTS = [
-  'Normalize "what works best for you?" as a first-date question. Curiosity beats assumptions every time. #disabilitycommunity',
+  'Normalise "what works best for you?" as a first-date question. Curiosity beats assumptions every time. #disabilitycommunity',
   'The bar: an app where your access needs are just part of the plan, not a plot twist. That\'s the whole app. able2love.netlify.app',
   'Poll for the community: best low-energy first date? Wrong answers welcome. 😅 #datinglife',
 ];
@@ -153,6 +161,10 @@ async function main() {
       console.warn(`Guardrails rejected a post (contains "${violation}"): ${post.slice(0, 60)}...`);
       continue;
     }
+    if (BANNED_CHARACTERS.some((ch) => post.includes(ch))) {
+      console.warn(`Guardrails rejected a post (contains an em/en dash): ${post.slice(0, 60)}...`);
+      continue;
+    }
     if (post.length > 275) {
       console.warn(`Rejected over-length post (${post.length} chars)`);
       continue;
@@ -161,19 +173,19 @@ async function main() {
   }
 
   if (!dryRun && approved.length < 3) {
-    console.error(`Only ${approved.length} posts survived the guardrails — not writing a batch. Re-run the workflow.`);
+    console.error(`Only ${approved.length} posts survived the guardrails, not writing a batch. Re-run the workflow.`);
     process.exit(1);
   }
 
   const stamp = now.toISOString().slice(0, 10);
   const file = path.join(OUT_DIR, `batch-${stamp}.md`);
   const lines = [];
-  lines.push(`# Able2Love post batch — ${stamp}`);
+  lines.push(`# Able2Love post batch: ${stamp}`);
   lines.push('');
   lines.push(`Theme: **${theme}**`);
   lines.push('');
   lines.push('Written by the content brain, checked against the brand guardrails.');
-  lines.push('**Review each post** (edit or delete anything you dislike), then paste the keepers into Buffer\'s X queue — or hand this file to the Claude browser extension to load for you.');
+  lines.push('**Review each post** (edit or delete anything you dislike), then paste the keepers into Buffer\'s X queue, or hand this file to the Claude browser extension to load for you.');
   lines.push('');
   approved.forEach((post, i) => {
     lines.push(`**Post ${i + 1}:**`);

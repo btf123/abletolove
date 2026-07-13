@@ -1,5 +1,5 @@
 {
-  "_comment": "Able2Love launch campaign as postable data. Seeded into the bot by the campaign seeder (npm run setup:abletolove). Every post lands as a DRAFT in the dashboard Content queue — nothing publishes until a human approves it. {{LINK}} is replaced with the campaign_link config value at seed time. Twitter posts are fully automatable (text). Instagram entries need an image/carousel attached before approving (mediaRequired: true).",
+  "_comment": "Able2Love launch campaign as postable data. Seeded into the bot by the campaign seeder (npm run setup:abletolove). Every post lands as a DRAFT in the dashboard Content queue; nothing publishes until a human approves it. {{LINK}} is replaced with the campaign_link config value at seed time. Twitter posts are fully automatable (text). Instagram entries need an image/carousel attached before approving (mediaRequired: true).",
   "name": "abletolove-launch",
   "repeat": "yearly",
   "posts": [
@@ -10,7 +10,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "Dating apps weren't built for us. So we built one. 💗 Able2Love — where sharing how you move through the world is just part of your profile. You belong here. Join the waitlist → {{LINK}}",
+      "caption": "Dating apps weren't built for us. So we built one. 💗 Able2Love. Where sharing how you move through the world is just part of your profile. You belong here. Join the waitlist → {{LINK}}",
       "hashtags": [
         "disabilitycommunity",
         "inclusivedating"
@@ -40,7 +40,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "1 in 4 adults lives with a disability. Zero mainstream dating apps were designed with us in mind. That math never made sense to us — so we're fixing it. → {{LINK}}",
+      "caption": "1 in 4 adults lives with a disability. Zero mainstream dating apps were designed with us in mind. That maths never made sense to us, so we're fixing it. → {{LINK}}",
       "hashtags": [
         "disability",
         "dating"
@@ -66,7 +66,7 @@
       ],
       "contentType": "carousel",
       "mediaRequired": true,
-      "caption": "The disclosure dread is real. We built the app that removes it. 💗 Swipe through — and join the waitlist via the link in bio.",
+      "caption": "The disclosure dread is real. We built the app that removes it. 💗 Swipe through. And join the waitlist via the link in bio.",
       "hashtags": [
         "disabilitydating",
         "dating",
@@ -80,7 +80,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "\"So, there's something I should tell you...\" — the text no one on Able2Love ever has to draft. Your story is a green flag here. → {{LINK}}",
+      "caption": "\"So, there's something I should tell you...\". The text no one on Able2Love ever has to draft. Your story is a green flag here. → {{LINK}}",
       "hashtags": [
         "greenflags",
         "dating"
@@ -93,7 +93,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "Accessibility isn't a settings toggle on Able2Love. Screen-reader friendly, high contrast, big touch targets — it's the foundation, because it was built with the community, not for it. → {{LINK}}",
+      "caption": "Accessibility isn't a settings toggle on Able2Love. Screen-reader friendly, high contrast, big touch targets. It's the foundation, because it was built with the community, not for it. → {{LINK}}",
       "hashtags": [
         "accessibility",
         "a11y"
@@ -119,7 +119,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "One week since we opened the waitlist. To everyone who signed up, shared, and sent us notes: you're why this exists. If you haven't joined yet — you belong here. → {{LINK}}",
+      "caption": "One week since we opened the waitlist. To everyone who signed up, shared, and sent us notes: you're why this exists. If you haven't joined yet. You belong here. → {{LINK}}",
       "hashtags": [
         "able2love"
       ]
@@ -170,7 +170,7 @@
       ],
       "contentType": "image",
       "mediaRequired": true,
-      "caption": "Feature spotlight 🔍 Disclosure on YOUR terms.\n\nShare everything, something, or nothing — it's optional, opt-in, and yours to control. Among people who already get it.\n\nWaitlist link in bio. 💗",
+      "caption": "Feature spotlight 🔍 Disclosure on YOUR terms.\n\nShare everything, something, or nothing. It's optional, opt-in, and yours to control. Among people who already get it.\n\nWaitlist link in bio. 💗",
       "hashtags": [
         "disabilitydating",
         "able2love",
@@ -184,7 +184,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "Chronic illness, neurodivergence, sensory, mobility — however you move through the world, you shouldn't have to write a cover letter to date. Able2Love gets it. → {{LINK}}",
+      "caption": "Chronic illness, neurodivergence, sensory, mobility. However you move through the world, you shouldn't have to write a cover letter to date. Able2Love gets it. → {{LINK}}",
       "hashtags": [
         "chronicillness",
         "neurodivergent"
@@ -235,7 +235,7 @@
       ],
       "contentType": "carousel",
       "mediaRequired": true,
-      "caption": "Accessible by design — a quick tour. 🧭\n\nScreen-reader friendly. High contrast. Large touch targets. Built in from line one, because accessibility is the reason we exist, not a checkbox.\n\nWaitlist in bio. 💗",
+      "caption": "Accessible by design. A quick tour. 🧭\n\nScreen-reader friendly. High contrast. Large touch targets. Built in from line one, because accessibility is the reason we exist, not a checkbox.\n\nWaitlist in bio. 💗",
       "hashtags": [
         "accessibility",
         "a11y",
@@ -275,7 +275,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "\"For the first time I didn't have to decide WHEN to bring it up. It was just there — and so was everyone else's.\" — beta member, on the disclosure field. This is why. → {{LINK}}",
+      "caption": "\"For the first time I didn't have to decide WHEN to bring it up. It was just there, and so was everyone else's.\" (A beta member, on the disclosure field.) This is why. → {{LINK}}",
       "hashtags": [
         "able2love"
       ]
@@ -300,7 +300,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "📅 It's official: we have a launch date. Waitlist members hear it first — check your inbox. Not on the list yet? Fix that → {{LINK}}",
+      "caption": "📅 It's official: we have a launch date. Waitlist members hear it first. Check your inbox. Not on the list yet? Fix that → {{LINK}}",
       "hashtags": [
         "able2love",
         "launch"
@@ -365,7 +365,7 @@
       ],
       "contentType": "carousel",
       "mediaRequired": true,
-      "caption": "What beta members are saying 💬 (shared with consent)\n\nSwipe through. Four days to launch — waitlist in bio gets you in first. 💗",
+      "caption": "What beta members are saying 💬 (shared with consent)\n\nSwipe through. Four days to launch. Waitlist in bio gets you in first. 💗",
       "hashtags": [
         "able2love",
         "disabilitydating",
@@ -417,7 +417,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "The doors are open. Able2Love is LIVE. 💗 Dating where you belong — disclosure on your terms, accessibility by design, people who get it. Download now → {{LINK}}",
+      "caption": "The doors are open. Able2Love is LIVE. 💗 Dating where you belong. Disclosure on your terms, accessibility by design, people who get it. Download now → {{LINK}}",
       "hashtags": [
         "launch",
         "able2love",
@@ -432,7 +432,7 @@
       ],
       "contentType": "image",
       "mediaRequired": true,
-      "caption": "WE'RE LIVE. 💗\n\nAble2Love is officially here — dating where you belong. Disclosure on your terms. Accessibility by design. A community that gets it.\n\nDownload link in bio. Go find your people.",
+      "caption": "WE'RE LIVE. 💗\n\nAble2Love is officially here. Dating where you belong. Disclosure on your terms. Accessibility by design. A community that gets it.\n\nDownload link in bio. Go find your people.",
       "hashtags": [
         "launchday",
         "able2love",
@@ -460,7 +460,7 @@
         "twitter"
       ],
       "contentType": "text",
-      "caption": "Day 2 energy: first matches are turning into first conversations. If you downloaded and haven't finished your profile — that's the fun part. Go. 💗 → {{LINK}}",
+      "caption": "Day 2 energy: first matches are turning into first conversations. If you downloaded and haven't finished your profile. That's the fun part. Go. 💗 → {{LINK}}",
       "hashtags": [
         "able2love"
       ]

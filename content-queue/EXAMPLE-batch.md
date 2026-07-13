@@ -1,13 +1,13 @@
-# EXAMPLE — Able2Love post batch (what the robot produces each Monday)
+# EXAMPLE: Able2Love post batch (what the robot produces each Monday)
 
 Theme: **chronic illness and dating honestly**
 
 Written by the content brain, checked against the brand guardrails.
-**Review each post** (edit or delete anything you dislike), then paste the keepers into Buffer's X queue — or hand this file to the Claude browser extension to load for you.
+**Review each post** (edit or delete anything you dislike), then paste the keepers into Buffer's X queue, or hand this file to the Claude browser extension to load for you.
 
 **Post 1:**
 ```
-Normalize "what works best for you?" as a first-date question. Curiosity beats assumptions every time. #disabilitycommunity
+Normalise "what works best for you?" as a first-date question. Curiosity beats assumptions every time. #disabilitycommunity
 ```
 
 **Post 2:**

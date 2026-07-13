@@ -1,49 +1,26 @@
-# Able2Love — Posting Setup (Buffer)
+# Able2Love: Posting Setup (Buffer)
 
-Your **home base for posts**: a free tool called **Buffer**. You load posts in once, it auto-posts them on schedule to X and Instagram. No hosting, no cost, and — unlike the custom bot — **no developer.x.com keys needed** (Buffer is already an approved app, so connecting your account is just a normal login).
+Your **home base for posts**: a free tool called **Buffer**. Load posts in once and it auto-posts them on schedule to X and Instagram. No hosting, no cost, and no developer keys (Buffer is an approved app, so connecting your account is a normal login).
 
-## Why this instead of the two options we discussed
-
-- **Better than posting by hand:** you set it up once; it posts for you automatically.
-- **Simpler than hosting the custom bot:** nothing to run or pay for; Buffer is a live website you just log into.
-- The 38 posts are already written (below) — Buffer's job is only to schedule and send them.
-
-> Free-plan limit: Buffer queues **10 posts per channel** at a time. Our X campaign is ~1/day, so about every 10 days you (or the Claude extension) top up the next batch. Or upgrade (~$5/channel/month) to load all at once. Start free.
+> Free-plan limit: Buffer queues **10 posts per channel** at a time. Top up the next batch every ten days or so, or hand this file to the Claude browser extension and let it do the loading.
 
 ## One-time setup
 
-1. Go to **buffer.com** → Sign up (free — Google login is fastest). No card needed.
-2. **Connect a channel → X (Twitter)** → log in as **@Able2LoveApp** → authorise. (This is the normal Twitter login, not the developer site.)
+1. Go to **buffer.com**, sign up free (Google login is fastest). No card needed.
+2. **Connect a channel: X (Twitter)**, log in as **@Able2LoveApp** and authorise.
 3. Optionally connect **Instagram** the same way.
-4. Set your posting times, then paste the posts below into the queue in order.
-
-## Extension briefing (paste to your Claude Chrome extension on the Buffer tab)
-
-```
-CONTEXT: I'm Brogan, founder of the dating app "Able2Love". I'm setting up
-Buffer to schedule my launch tweets. I'm logged in to Buffer already.
-TASK:
-1. Connect my X / Twitter channel (account @Able2LoveApp) if not already
-   connected — use the normal "Connect channel" flow and authorise.
-2. Then add the following posts to the X queue, one per day starting
-   tomorrow, in this order. Post text for each is between the --- lines.
-   Do not change the wording. Schedule roughly one per day.
-(I'll paste the list of posts under this message.)
-Do NOT connect any paid plan or enter card details.
-```
+4. Set posting times, then paste the posts below into the queue in order.
 
 ## Your X posts, in order (ready to paste)
 
-Copy these into Buffer's X queue, one per day:
-
 **Post 1 (day 1):**
 ```
-Dating apps weren't built for us. So we built one. 💗 Able2Love — where sharing how you move through the world is just part of your profile. You belong here. Join the waitlist → able2love.netlify.app #disabilitycommunity #inclusivedating
+Dating apps weren't built for us. So we built one. 💗 Able2Love. Where sharing how you move through the world is just part of your profile. You belong here. Join the waitlist → able2love.netlify.app #disabilitycommunity #inclusivedating
 ```
 
 **Post 2 (day 2):**
 ```
-1 in 4 adults lives with a disability. Zero mainstream dating apps were designed with us in mind. That math never made sense to us — so we're fixing it. → able2love.netlify.app #disability #dating
+1 in 4 adults lives with a disability. Zero mainstream dating apps were designed with us in mind. That maths never made sense to us, so we're fixing it. → able2love.netlify.app #disability #dating
 ```
 
 **Post 3 (day 3):**
@@ -53,12 +30,12 @@ Every disabled dater knows THE moment. Do I put it in my bio? Wait for the date?
 
 **Post 4 (day 4):**
 ```
-"So, there's something I should tell you..." — the text no one on Able2Love ever has to draft. Your story is a green flag here. → able2love.netlify.app #greenflags #dating
+"So, there's something I should tell you...". The text no one on Able2Love ever has to draft. Your story is a green flag here. → able2love.netlify.app #greenflags #dating
 ```
 
 **Post 5 (day 5):**
 ```
-Accessibility isn't a settings toggle on Able2Love. Screen-reader friendly, high contrast, big touch targets — it's the foundation, because it was built with the community, not for it. → able2love.netlify.app #accessibility #a11y
+Accessibility isn't a settings toggle on Able2Love. Screen-reader friendly, high contrast, big touch targets. It's the foundation, because it was built with the community, not for it. → able2love.netlify.app #accessibility #a11y
 ```
 
 **Post 6 (day 6):**
@@ -68,7 +45,7 @@ We didn't add accessibility to a dating app. We built a dating app out of access
 
 **Post 7 (day 7):**
 ```
-One week since we opened the waitlist. To everyone who signed up, shared, and sent us notes: you're why this exists. If you haven't joined yet — you belong here. → able2love.netlify.app #able2love
+One week since we opened the waitlist. To everyone who signed up, shared, and sent us notes: you're why this exists. If you haven't joined yet. You belong here. → able2love.netlify.app #able2love
 ```
 
 **Post 8 (day 8):**
@@ -88,7 +65,7 @@ Feature spotlight: on Able2Love, the "about my disability" section is optional a
 
 **Post 11 (day 11):**
 ```
-Chronic illness, neurodivergence, sensory, mobility — however you move through the world, you shouldn't have to write a cover letter to date. Able2Love gets it. → able2love.netlify.app #chronicillness #neurodivergent
+Chronic illness, neurodivergence, sensory, mobility. However you move through the world, you shouldn't have to write a cover letter to date. Able2Love gets it. → able2love.netlify.app #chronicillness #neurodivergent
 ```
 
 **Post 12 (day 12):**
@@ -118,7 +95,7 @@ To the adaptive sports crews, the advocacy orgs, the condition-specific group ch
 
 **Post 17 (day 17):**
 ```
-"For the first time I didn't have to decide WHEN to bring it up. It was just there — and so was everyone else's." — beta member, on the disclosure field. This is why. → able2love.netlify.app #able2love
+"For the first time I didn't have to decide WHEN to bring it up. It was just there, and so was everyone else's." (A beta member, on the disclosure field.) This is why. → able2love.netlify.app #able2love
 ```
 
 **Post 18 (day 18):**
@@ -128,7 +105,7 @@ To the adaptive sports crews, the advocacy orgs, the condition-specific group ch
 
 **Post 19 (day 19):**
 ```
-📅 It's official: we have a launch date. Waitlist members hear it first — check your inbox. Not on the list yet? Fix that → able2love.netlify.app #able2love #launch
+📅 It's official: we have a launch date. Waitlist members hear it first. Check your inbox. Not on the list yet? Fix that → able2love.netlify.app #able2love #launch
 ```
 
 **Post 20 (day 20):**
@@ -168,7 +145,7 @@ Tomorrow. 💗 #able2love
 
 **Post 27 (day 27):**
 ```
-The doors are open. Able2Love is LIVE. 💗 Dating where you belong — disclosure on your terms, accessibility by design, people who get it. Download now → able2love.netlify.app #launch #able2love #inclusivedating
+The doors are open. Able2Love is LIVE. 💗 Dating where you belong. Disclosure on your terms, accessibility by design, people who get it. Download now → able2love.netlify.app #launch #able2love #inclusivedating
 ```
 
 **Post 28 (day 27):**
@@ -178,7 +155,7 @@ Launch day, evening check-in: signups are rolling, first matches are happening, 
 
 **Post 29 (day 28):**
 ```
-Day 2 energy: first matches are turning into first conversations. If you downloaded and haven't finished your profile — that's the fun part. Go. 💗 → able2love.netlify.app #able2love
+Day 2 energy: first matches are turning into first conversations. If you downloaded and haven't finished your profile. That's the fun part. Go. 💗 → able2love.netlify.app #able2love
 ```
 
 **Post 30 (day 29):**
@@ -208,7 +185,7 @@ You belong here. Waitlist link in bio.
 
 **IG Post 2 (day 3, carousel):**
 ```
-The disclosure dread is real. We built the app that removes it. 💗 Swipe through — and join the waitlist via the link in bio.
+The disclosure dread is real. We built the app that removes it. 💗 Swipe through. And join the waitlist via the link in bio.
 
 #disabilitydating #dating #disabilitycommunity
 ```
@@ -217,7 +194,7 @@ The disclosure dread is real. We built the app that removes it. 💗 Swipe throu
 ```
 Feature spotlight 🔍 Disclosure on YOUR terms.
 
-Share everything, something, or nothing — it's optional, opt-in, and yours to control. Among people who already get it.
+Share everything, something, or nothing. It's optional, opt-in, and yours to control. Among people who already get it.
 
 Waitlist link in bio. 💗
 
@@ -226,7 +203,7 @@ Waitlist link in bio. 💗
 
 **IG Post 4 (day 14, carousel):**
 ```
-Accessible by design — a quick tour. 🧭
+Accessible by design. A quick tour. 🧭
 
 Screen-reader friendly. High contrast. Large touch targets. Built in from line one, because accessibility is the reason we exist, not a checkbox.
 
@@ -239,7 +216,7 @@ Waitlist in bio. 💗
 ```
 What beta members are saying 💬 (shared with consent)
 
-Swipe through. Four days to launch — waitlist in bio gets you in first. 💗
+Swipe through. Four days to launch. Waitlist in bio gets you in first. 💗
 
 #able2love #disabilitydating #testimonial
 ```
@@ -248,7 +225,7 @@ Swipe through. Four days to launch — waitlist in bio gets you in first. 💗
 ```
 WE'RE LIVE. 💗
 
-Able2Love is officially here — dating where you belong. Disclosure on your terms. Accessibility by design. A community that gets it.
+Able2Love is officially here. Dating where you belong. Disclosure on your terms. Accessibility by design. A community that gets it.
 
 Download link in bio. Go find your people.
 

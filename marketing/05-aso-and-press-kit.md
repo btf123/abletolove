@@ -56,7 +56,12 @@ Trigger the review prompt after a positive moment (a first match or a good conve
 ### Spokesperson Q&A prep
 - *Isn't a separate app "segregating" disabled people?* → It's a choice, not a wall. Members date whoever they want; the difference is starting from a community that already gets it, without the disclosure tax.
 - *How do you prevent fetishization/"devotees"?* → Community norms, reporting tools, human review of flagged behavior, and zero tolerance in enforcement.
-- *Who built it?* → Disabled people. Built with the community, not for it.
+- *Who built it?* → A disabled founder. Built with the community, not for it.
+
+### Founder bio (approved public version)
+> Able2Love was founded by Brogan Fox, a Manchester-based comedy writer, performer and producer, and a University of Salford Comedy Writing and Performance graduate. A full-time wheelchair user, Brogan made his name with the first-class autobiographical show *Sitting Right Here*, about how audiences see the wheelchair before the person. Able2Love is that argument turned into a product: dating where disabled and non-disabled people meet as people first.
+
+Use only creative credits in public biographies. No personal health or care details, ever.
 
 ### Assets checklist (to produce)
 - [ ] Logo pack (SVG + PNG, light/dark) in brand pink `#E91E63` / purple `#9C27B0`

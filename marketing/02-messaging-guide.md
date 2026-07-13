@@ -24,6 +24,14 @@ Keep marketing visuals consistent with the in-app palette so the ad-to-store-to-
 3. **Real connection, real people.** This is about dating and relationships — the fun, hopeful, human parts. We keep it light where it should be light.
 4. **You set the terms.** Disclosure is optional and opt-in. You control what you share and when.
 
+## Founder voice (read marketing/08-founder-voice.md first)
+
+The brand speaks in the founder's voice: a Manchester comedy writer who is a full-time wheelchair user. Three extra hard rules from him:
+1. **UK English** in everything public.
+2. **No em dashes, ever.** Commas, brackets, colons or full stops.
+3. **No AI-cliché words:** passionate, journey, empowering, inspiring, unique, transformative.
+And the audience framing: Able2Love connects **disabled and non-disabled people open to dating one another**. Ordinary attraction, choice and confidence, not vulnerability.
+
 ## Language rules (non-negotiable)
 
 ### Do

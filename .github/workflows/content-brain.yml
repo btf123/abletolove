@@ -1,0 +1,45 @@
+name: Content brain (weekly posts)
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # every Monday 09:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate this week's posts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node automation/generate-posts.mjs
+
+      - name: Commit the batch
+        id: commit
+        run: |
+          git config user.name "able2love-content-brain"
+          git config user.email "actions@github.com"
+          git add content-queue/
+          FILE=$(git diff --cached --name-only | head -1)
+          echo "file=$FILE" >> "$GITHUB_OUTPUT"
+          git commit -m "Weekly post batch [skip ci]" || echo "nothing to commit"
+          git push
+
+      - name: Open a review issue
+        if: steps.commit.outputs.file != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "Review this week's Able2Love posts ($(date +%F))" \
+            --body-file "${{ steps.commit.outputs.file }}"

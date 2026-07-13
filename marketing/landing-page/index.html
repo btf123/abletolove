@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Able2Love — Dating that gets it</title>
-  <meta name="description" content="Able2Love is a dating app built with the disability community. Disclosure on your terms, accessibility by design. Join the waitlist." />
+  <meta name="description" content="Able2Love is a dating app built with the disability community. Disclosure on your terms, accessibility by design. Free on Google Play." />
   <meta property="og:title" content="Able2Love — You belong here" />
-  <meta property="og:description" content="Dating where sharing how you move through the world is just part of your profile. Join the waitlist." />
+  <meta property="og:description" content="Dating where sharing how you move through the world is just part of your profile. Download free on Google Play." />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#E91E63" />
   <style>
@@ -157,6 +157,18 @@
     footer nav a:hover{color:var(--ink);text-decoration:underline}
     .note{font-size:12.5px;max-width:64ch;line-height:1.6;opacity:.85}
 
+    /* google play download button */
+    .stores{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+    .store-badge{display:inline-flex;align-items:center;gap:12px;background:#000;color:#fff;
+      text-decoration:none;padding:13px 22px 13px 20px;border-radius:14px;transition:transform .1s, box-shadow .15s;
+      box-shadow:0 8px 22px -10px rgba(0,0,0,.5)}
+    .store-badge:hover{transform:translateY(-1px);box-shadow:0 12px 26px -10px rgba(0,0,0,.6)}
+    .store-badge:active{transform:translateY(0)}
+    .store-badge svg{width:30px;height:30px;flex:none}
+    .store-badge .txt{display:flex;flex-direction:column;line-height:1.1;text-align:left}
+    .store-badge .txt small{font-size:11px;letter-spacing:.04em;opacity:.85;font-weight:500}
+    .store-badge .txt b{font-size:20px;font-weight:700;letter-spacing:-.01em}
+
     @media (prefers-reduced-motion: reduce){
       html{scroll-behavior:auto}
       .reveal{opacity:1;transform:none;animation:none}
@@ -165,7 +177,7 @@
   </style>
 </head>
 <body>
-  <a class="skip" href="#signup">Skip to sign up</a>
+  <a class="skip" href="#get">Skip to download</a>
 
   <header>
     <div class="wrap bar">
@@ -176,30 +188,27 @@
         </svg>
         Able2Love
       </a>
-      <a class="nav-cta" href="#signup">Join the waitlist</a>
+      <a class="nav-cta" href="#get">Download</a>
     </div>
   </header>
 
   <main id="main">
     <section class="hero">
       <div class="wrap">
-        <span class="label reveal d1">Now building · Join the waitlist</span>
+        <span class="label reveal d1">Out now · Free on Google Play</span>
         <h1 class="reveal d2">Dating where you
           <span class="under">belong.<svg viewBox="0 0 300 12" fill="none" aria-hidden="true"><path d="M3 8.5C60 3.5 150 2.5 297 6.5" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span>
         </h1>
         <p class="lead reveal d3">Able2Love is a dating app built <em>with</em> the disability community — where sharing how you move through the world is just part of your profile. No third-date reveal. No over-explaining. No pity. Just people who get it.</p>
 
         <div class="reveal d4">
-          <form class="signup" id="signup" novalidate aria-describedby="micro1">
-            <label class="sr" for="email1">Email address</label>
-            <input id="email1" type="email" name="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required />
-            <button class="btn" type="submit">Join the waitlist</button>
-          </form>
-          <p class="microcopy" id="micro1">Be first in when we launch. No spam, ever — unsubscribe anytime.</p>
-          <div class="success" id="success1" role="status" aria-live="polite" tabindex="-1">
-            <strong>You're on the list. ♥</strong> We'll email you the moment doors open.
-            <div class="ref">Want to move up the queue? Share your invite link: <code id="reflink1">able2love.netlify.app/?ref=you</code></div>
+          <div class="stores" id="get">
+            <a class="store-badge" href="https://play.google.com/store/search?q=Able2Love&c=apps" target="_blank" rel="noopener" aria-label="Get Able2Love on Google Play">
+              <svg viewBox="0 0 512 512" aria-hidden="true"><path fill="#EA4335" d="M325 232 105 12c-6-6-15-9-24-6l244 244z"/><path fill="#4285F4" d="M85 6C74 11 66 22 66 37v438c0 15 8 26 19 31l245-245z"/><path fill="#FBBC04" d="M411 210l-86-50-89 96 89 96 86-50c26-15 26-77 0-92z"/><path fill="#34A853" d="M85 506c8 4 18 3 27-2l213-124-89-96z"/></svg>
+              <span class="txt"><small>GET IT ON</small><b>Google Play</b></span>
+            </a>
           </div>
+          <p class="microcopy" id="micro1">Free to download. Available now on Android.</p>
 
           <div class="trust">
             <div><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Disclosure is optional &amp; opt-in</div>
@@ -253,16 +262,14 @@
       <div class="wrap">
         <span class="label">You belong here</span>
         <h2 id="final-h">Find your people <span class="heart">♥</span></h2>
-        <p class="lead" style="margin-inline:auto">Join the waitlist and be among the first through the door when we launch.</p>
-        <form class="signup" id="signup2" novalidate aria-describedby="micro2">
-          <label class="sr" for="email2">Email address</label>
-          <input id="email2" type="email" name="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required />
-          <button class="btn" type="submit">Join the waitlist</button>
-        </form>
-        <p class="microcopy" id="micro2">No spam, ever. Unsubscribe anytime.</p>
-        <div class="success" id="success2" role="status" aria-live="polite" tabindex="-1">
-          <strong>You're on the list. ♥</strong> We'll email you the moment doors open.
+        <p class="lead" style="margin-inline:auto">Download Able2Love free and start connecting with people who get it.</p>
+        <div class="stores" style="justify-content:center">
+          <a class="store-badge" href="https://play.google.com/store/search?q=Able2Love&c=apps" target="_blank" rel="noopener" aria-label="Get Able2Love on Google Play">
+            <svg viewBox="0 0 512 512" aria-hidden="true"><path fill="#EA4335" d="M325 232 105 12c-6-6-15-9-24-6l244 244z"/><path fill="#4285F4" d="M85 6C74 11 66 22 66 37v438c0 15 8 26 19 31l245-245z"/><path fill="#FBBC04" d="M411 210l-86-50-89 96 89 96 86-50c26-15 26-77 0-92z"/><path fill="#34A853" d="M85 506c8 4 18 3 27-2l213-124-89-96z"/></svg>
+            <span class="txt"><small>GET IT ON</small><b>Google Play</b></span>
+          </a>
         </div>
+        <p class="microcopy" id="micro2" style="text-align:center">Free on Android.</p>
       </div>
     </section>
   </main>
@@ -281,9 +288,9 @@
         <a href="#main">Home</a>
         <a href="mailto:broganfox1@gmail.com">Contact</a>
         <a href="mailto:broganfox1@gmail.com?subject=Press%20enquiry%20—%20Able2Love">Press</a>
-        <a href="#signup">Join the waitlist</a>
+        <a href="#get">Download</a>
       </nav>
-      <p class="note">This is a marketing landing page. Email addresses entered here are only used to notify you about the launch. Before going live, replace the placeholder form handler in the script with your email provider's endpoint (Mailchimp, ConvertKit, Beehiiv, or your own backend).</p>
+      <p class="note">Able2Love is free to download on Google Play. Dating built with the disability community.</p>
     </div>
   </footer>
 

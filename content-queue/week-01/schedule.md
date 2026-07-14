@@ -1,6 +1,8 @@
-# Week 1 — Instagram + X, in tandem
+# Week 1 — Instagram + X, in tandem (reach edition)
 
-Seven days, one theme a day, posted to **both** Instagram and X at your peak time. Same image both places. Instagram gets the longer caption, X gets the tight version. See Me First is day 7 on purpose, to give the app-fix time to land.
+Seven days, one theme a day, on **both** Instagram and X at your peak time, same image both places. Every post now ends with an **engagement hook** (a question or a "tag someone" prompt) to pull replies and shares, and carries a real hashtag set for discovery. Instagram gets 6 to 8 tags, X gets 2 (X favours few). See Me First is day 7, held until the unblur fix is confirmed.
+
+**Reach comes from more than the post.** Pair this with the daily routine in `marketing/10-reach-and-engagement.md` (reply in the community, tag relevant accounts when it genuinely fits, and get your own performer accounts to reshare). A cold account grows by showing up in other people's conversations, not just posting into its own.
 
 App link for the bio / posts: https://play.google.com/store/apps/details?id=com.abletolove.app
 
@@ -11,15 +13,21 @@ App link for the bio / posts: https://play.google.com/store/apps/details?id=com.
 
 **Instagram:**
 ```
-We got tired of dating apps that treat a disability like a plot twist you have to break gently in the DMs. So we built the one we actually wanted. Disabled and non-disabled people, all welcome, accessibility baked in from the start. Able2Love is live. Free on Google Play, link in bio.
+We got tired of dating apps that treat a disability like a plot twist you break gently in the DMs. So we built the one we actually wanted. Disabled and non-disabled people, all welcome, accessibility baked in from the start. Able2Love is live.
 
-#disabilitydating #inclusivedating #disabilitycommunity #able2love
+Tag someone who's given up on the apps. This one's different.
+
+Free on Google Play, link in bio.
+
+#Able2Love #disabilitydating #inclusivedating #disabilitycommunity #disabilitypride #datingwithadisability #accessibility
 ```
 **X:**
 ```
 We got tired of dating apps that treat a disability like a plot twist. So we built one that doesn't. Able2Love is live, free on Google Play.
 
-#disabilitydating
+Tag someone who's given up on the apps. This one's different.
+
+#disabilitydating #Able2Love
 ```
 
 ---
@@ -29,15 +37,21 @@ We got tired of dating apps that treat a disability like a plot twist. So we bui
 
 **Instagram:**
 ```
-Two problems, one map. Who is about, and which cafes and bars you can actually get into. Tap the green Accessible venues filter and the step-free spots light up. People are placed roughly, to about 100m, so nobody is handing out their address. A first date planned without ringing ahead to ask about the step. Free on Google Play, link in bio.
+Two problems, one map. Who's about, and which cafes and bars you can actually get into. Tap the green Accessible venues filter and the step-free spots light up. People are placed roughly, to about 100m, so nobody's handing out their address.
 
-#accessibledating #wheelchairaccessible #manchester #able2love
+What's the least accessible place a date has ever dragged you to? Go on.
+
+Free on Google Play, link in bio.
+
+#Able2Love #accessibledating #wheelchairaccessible #accessibility #disabilitycommunity #Manchester #wheelchairlife
 ```
 **X:**
 ```
-A map that shows who's about and which cafes and bars you can actually get into. Tap "Accessible venues" and the step-free spots light up. Able2Love, free on Google Play.
+A map that shows who's about and which cafes and bars you can actually get into. Tap "Accessible venues" and the step-free spots light up.
 
-#accessibility
+Least accessible place a date's ever taken you? Go.
+
+#accessibility #Able2Love
 ```
 
 ---
@@ -47,15 +61,21 @@ A map that shows who's about and which cafes and bars you can actually get into.
 
 **Instagram:**
 ```
-On most apps, your disability is a speech you rehearse in the DMs. On Able2Love it is a card on your profile. Deaf, wheelchair user, guide dog, whatever it is, you set it out once and people tap to read the detail. The first message gets to be a normal one for a change. Free on Google Play, link in bio.
+On most apps your disability is a speech you rehearse in the DMs. On Able2Love it's a card on your profile. Deaf, wheelchair user, guide dog, whatever it is, you set it out once and people tap to read the detail. The first message gets to be a normal one for a change.
 
-#disabilitydating #disabilitycommunity #accessibility #able2love
+What do you wish people just knew, so you didn't have to explain it every time?
+
+Free on Google Play, link in bio.
+
+#Able2Love #disabilitydating #invisibledisability #chronicillness #disabilitycommunity #actuallyautistic #deafcommunity
 ```
 **X:**
 ```
-Your disability shouldn't be a speech you rehearse in the DMs. On Able2Love it's a card on your profile. Set it out once, tap to reveal the detail, done. Free on Google Play.
+Your disability shouldn't be a speech you rehearse in the DMs. On Able2Love it's a card on your profile. Set it out once, done.
 
-#disabilitydating
+What do you wish people just knew without you having to explain?
+
+#disabilitydating #Able2Love
 ```
 
 ---
@@ -65,17 +85,21 @@ Your disability shouldn't be a speech you rehearse in the DMs. On Able2Love it's
 
 **Instagram:**
 ```
-58% of dating-app users with a health condition are unlikely to disclose it. 26% fear being stigmatised, 25% fear discrimination. That dread is the whole problem. On Able2Love your access needs are just part of your profile, no big nervous reveal required. Free on Google Play, link in bio.
+58% of dating-app users with a health condition are unlikely to disclose it. 26% fear being stigmatised, 25% fear discrimination. That dread is the whole problem. On Able2Love your access needs are just part of your profile, no big nervous reveal.
 
-Source: Abbott "Discrimidating" survey (UK).
+Ever skipped disclosing on an app because it felt like too much? You're not the only one.
 
-#chronicillness #disabilitydating #disabilitycommunity #able2love
+Free on Google Play, link in bio. Source: Abbott "Discrimidating" survey (UK).
+
+#Able2Love #chronicillness #spoonie #invisibleillness #disabilitydating #disabilitycommunity #invisibledisability
 ```
 **X:**
 ```
-58% of dating-app users with a health condition don't disclose it, fearing stigma and discrimination. On Able2Love it's just part of your profile. No big reveal needed. (Abbott "Discrimidating" survey)
+58% of dating-app users with a health condition don't disclose it, fearing stigma and discrimination. On Able2Love it's just part of your profile, no big reveal. (Abbott "Discrimidating" survey)
 
-#chronicillness
+Ever skipped disclosing because it felt too much?
+
+#chronicillness #Able2Love
 ```
 
 ---
@@ -85,15 +109,21 @@ Source: Abbott "Discrimidating" survey (UK).
 
 **Instagram:**
 ```
-Plan our date. Pick a spot that has already been checked for step-free access and send it straight to the person you are talking to, so you both sort the date in the chat. No ringing ahead. No "I'll just check if I can get in" the night before. Free on Google Play, link in bio.
+Plan our date. Pick a spot that's already been checked for step-free access and send it straight to the person you're talking to, so you both sort the date in the chat. No ringing ahead. No "I'll just check if I can get in" the night before.
 
-#accessibility #accessibledating #disabilitycommunity #able2love
+Drop your favourite genuinely step-free date spot below, help the rest of us out.
+
+Free on Google Play, link in bio.
+
+#Able2Love #accessibility #accessibledating #wheelchairlife #disabilitycommunity #Manchester #spoonie
 ```
 **X:**
 ```
-Plan our date: pick a spot already checked for step-free access and send it to your match, so you both sort it in the chat. No ringing ahead. Able2Love, free on Google Play.
+Plan our date: pick a spot already checked for step-free access and send it to your match, so you both sort it in the chat. No ringing ahead.
 
-#accessibledating
+Best genuinely step-free date spot you know? Drop it below.
+
+#accessibility #Able2Love
 ```
 
 ---
@@ -103,15 +133,21 @@ Plan our date: pick a spot already checked for step-free access and send it to y
 
 **Instagram:**
 ```
-Red flag: "Love to laugh, love to travel, no drama." Is that a personality or a departures board? Green flags only: asks instead of assumes, does not treat access needs like a favour, knows a wheelchair is freedom not a tragedy. Write a better bio. Free on Google Play, link in bio.
+Red flag: "Love to laugh, love to travel, no drama." Is that a personality or a departures board? Green flags only: asks instead of assumes, doesn't treat access needs like a favour, knows a wheelchair is freedom not a tragedy.
 
-#dating #disabilitydating #greenflags #able2love
+Worst bio cliche you've seen? I'll start.
+
+Write a better bio. Free on Google Play, link in bio.
+
+#Able2Love #disabilitydating #dating #greenflags #disabilitycommunity #neurodivergent #datingwithadisability
 ```
 **X:**
 ```
-Red flag: "Love to laugh, love to travel, no drama." A personality, or an airport? Green flags only on Able2Love. Free on Google Play.
+Red flag: "Love to laugh, love to travel, no drama." A personality, or an airport?
 
-#dating
+Worst bio cliche you've seen? I'll start.
+
+#disabilitydating #Able2Love
 ```
 
 ---
@@ -121,13 +157,19 @@ Red flag: "Love to laugh, love to travel, no drama." A personality, or an airpor
 
 **Instagram:**
 ```
-See Me First. Their other photos start blurred and come into focus the more you actually talk. So you get to know a person instead of swiping on a jawline and hoping for a personality later. Turns out earning the second photo is more fun than doomscrolling the grid. Free on Google Play, link in bio.
+See Me First. Their other photos start blurred and come into focus the more you actually talk. So you get to know a person instead of swiping on a jawline and hoping for a personality later.
 
-#onlinedating #datingapp #disabilitydating #able2love
+Honest question: would you rather match on a face, or a conversation?
+
+Free on Google Play, link in bio.
+
+#Able2Love #onlinedating #datingapp #disabilitydating #disabilitycommunity #datingwithadisability
 ```
 **X:**
 ```
-See Me First: their other photos come into focus the more you actually talk. Get to know a person, not a jawline. Able2Love, free on Google Play.
+See Me First: their other photos come into focus the more you actually talk. Get to know a person, not a jawline.
 
-#onlinedating
+Would you rather match on a face, or a conversation?
+
+#onlinedating #Able2Love
 ```

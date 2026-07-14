@@ -1,0 +1,49 @@
+name: Outreach brief (daily)
+
+on:
+  schedule:
+    - cron: '30 6 * * *' # every day 06:30 UTC, brief ready before the morning routine
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Hunt and draft today's outreach
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node automation/generate-outreach.mjs
+
+      - name: Commit the brief
+        id: commit
+        run: |
+          git config user.name "able2love-outreach-scout"
+          git config user.email "actions@github.com"
+          git add content-queue/outreach/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Daily outreach brief [skip ci]"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open the day's brief as an issue
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE=$(date +%F)
+          gh issue create \
+            --title "Outreach brief: conversations to join today ($DATE)" \
+            --body-file "content-queue/outreach/brief-$DATE.md"

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Able2Love Mission Control</title>
+<style>
+  :root{
+    --bg:#16101B; --panel:#211826; --panel2:#2A1F31; --line:#3A2C44;
+    --text:#F4EEF6; --muted:#B9A8C4; --pink:#F5798F; --red:#E23349;
+    --green:#5CE08A; --amber:#F5C86A;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+  a{color:var(--pink)}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 80px}
+  header{display:flex;align-items:center;gap:14px;margin:8px 0 4px}
+  header svg{width:46px;height:46px;flex:none}
+  header h1{font-size:24px;margin:0;letter-spacing:-.5px}
+  header .sub{color:var(--muted);font-size:14px;margin-top:2px}
+  .quick{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 6px}
+  .quick a{display:inline-block;background:var(--panel2);border:1px solid var(--line);
+    color:var(--text);text-decoration:none;padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px}
+  .quick a:hover{border-color:var(--pink)}
+  .quick a b{color:var(--pink)}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:18px 20px;margin-top:18px}
+  section h2{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:10px}
+  section h2 .dot{width:10px;height:10px;border-radius:50%;background:var(--pink);flex:none}
+  section .hint{color:var(--muted);font-size:13.5px;margin:0 0 12px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-top:10px}
+  .card h3{margin:0;font-size:15px}
+  .card .meta{color:var(--muted);font-size:12.5px;margin-top:2px}
+  .card .actions{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
+  .btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;
+    padding:7px 14px;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+  .btn.ghost:hover{border-color:var(--pink)}
+  .pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700}
+  .pill.ok{background:rgba(92,224,138,.15);color:var(--green)}
+  .pill.bad{background:rgba(226,51,73,.2);color:#FF8B9C}
+  .pill.wait{background:rgba(245,200,106,.15);color:var(--amber)}
+  .md{font-size:14.5px;overflow-wrap:anywhere}
+  .md h2{font-size:16px;margin:14px 0 6px}
+  .md h3{font-size:14.5px;margin:12px 0 4px;color:var(--pink)}
+  .md pre{background:#140E19;border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;white-space:pre-wrap;font-family:inherit;font-size:14px}
+  .md img{max-width:220px;border-radius:10px;display:block;margin:6px 0}
+  .md table{border-collapse:collapse;width:100%;font-size:13.5px}
+  .md td,.md th{border:1px solid var(--line);padding:5px 8px;text-align:left}
+  .md ul{padding-left:20px;margin:6px 0}
+  details{margin-top:8px}
+  details summary{cursor:pointer;font-weight:600;color:var(--pink)}
+  .check{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line)}
+  .check:last-child{border-bottom:none}
+  .check input{width:20px;height:20px;margin-top:2px;accent-color:var(--red);flex:none}
+  .check.done label{opacity:.45;text-decoration:line-through}
+  .check label{font-size:14.5px}
+  .loading{color:var(--muted);font-size:13.5px;padding:8px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr}}
+  footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:26px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <svg viewBox="0 0 1024 1024" aria-hidden="true">
+    <defs><clipPath id="lh"><rect x="0" y="0" width="512" height="1024"/></clipPath><clipPath id="rh"><rect x="512" y="0" width="512" height="1024"/></clipPath></defs>
+    <path clip-path="url(#lh)" fill="#E23349" d="M512,865 C415,770 195,600 195,425 C195,305 285,230 375,230 C428,230 470,262 512,330 C554,262 596,230 649,230 C739,230 829,305 829,425 C829,600 609,770 512,865 Z"/>
+    <path clip-path="url(#rh)" fill="#F5798F" d="M512,865 C415,770 195,600 195,425 C195,305 285,230 375,230 C428,230 470,262 512,330 C554,262 596,230 649,230 C739,230 829,305 829,425 C829,600 609,770 512,865 Z"/>
+    <path fill="#16101B" d="M350,390 C430,435 594,435 675,390 C645,565 552,680 512,745 C472,680 379,565 350,390 Z"/>
+    <circle cx="402" cy="285" r="118" fill="#16101B"/><circle cx="622" cy="285" r="118" fill="#16101B"/>
+    <circle cx="402" cy="285" r="102" fill="#E23349"/><circle cx="622" cy="285" r="102" fill="#F5798F"/>
+    <path fill="#F9C9D6" d="M512,610 C500,598 458,570 458,540 C458,521 472,510 488,510 C499,510 508,517 512,527 C516,517 525,510 536,510 C552,510 566,521 566,540 C566,570 524,598 512,610 Z"/>
+  </svg>
+  <div>
+    <h1>Able2Love Mission Control</h1>
+    <div class="sub" id="todayline">Loading…</div>
+  </div>
+</header>
+
+<div class="quick">
+  <a href="https://publish.buffer.com" target="_blank"><b>Buffer</b> queue (approve/edit posts)</a>
+  <a href="https://x.com/Able2LoveApp" target="_blank"><b>X</b> @Able2LoveApp</a>
+  <a href="https://www.instagram.com/able2loveapp/" target="_blank"><b>Instagram</b> @able2loveapp</a>
+  <a href="https://play.google.com/store/apps/details?id=com.abletolove.app" target="_blank"><b>Play Store</b> listing</a>
+  <a href="https://github.com/btf123/abletolove" target="_blank"><b>GitHub</b> repo</a>
+</div>
+
+<section>
+  <h2><span class="dot"></span>Needs your eyes (approve before it goes out)</h2>
+  <p class="hint">Everything waiting for a decision. Weekly post batches and daily outreach briefs land here as review issues: read, edit or bin, then send the keepers via Buffer or the Claude extension. Nothing posts without you.</p>
+  <div id="issues" class="loading">Loading review queue…</div>
+</section>
+
+<section>
+  <h2><span class="dot"></span>This week's posts (what's going out)</h2>
+  <p class="hint">The current tandem schedule: same theme, same image, both platforms each day. The actual scheduled queue lives in <a href="https://publish.buffer.com" target="_blank">Buffer</a>; edit or reorder there.</p>
+  <div id="week" class="loading">Loading schedule…</div>
+</section>
+
+<section>
+  <h2><span class="dot"></span>The robots</h2>
+  <p class="hint">Your two automated workers. Green means the last run worked. "Run now" takes you to the button on GitHub (press "Run workflow" there).</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>Content brain, weekly</h3>
+      <div class="meta">Writes next week's aligned Instagram + X posts every Monday 9am.</div>
+      <div id="wf-content" class="meta">Checking…</div>
+      <div class="actions">
+        <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/content-brain.yml">History / Run now</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Outreach scout, daily</h3>
+      <div class="meta">Hunts fresh conversations, funding and press leads every morning 6:30.</div>
+      <div id="wf-outreach" class="meta">Checking…</div>
+      <div class="actions">
+        <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/outreach-brief.yml">History / Run now</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="dot"></span>Your daily 15 minutes</h2>
+  <p class="hint">Ticks reset each morning. This is where growth actually comes from: <a href="https://github.com/btf123/abletolove/blob/main/marketing/10-reach-and-engagement.md" target="_blank">the playbook</a>.</p>
+  <div id="routine"></div>
+</section>
+
+<section>
+  <h2><span class="dot"></span>Money and opportunities</h2>
+  <p class="hint">Fresh leads appear in each morning's outreach brief above. These are the evergreen ones:</p>
+  <div class="card"><h3>UnLtd awards, £500 to £15,000</h3><div class="meta">Early-stage social entrepreneurs; rolling applications. Best immediate fit.</div><div class="actions"><a class="btn ghost" target="_blank" href="https://www.unltd.org.uk">Open</a></div></div>
+  <div class="card"><h3>Access to Work (gov.uk)</h3><div class="meta">Funds support costs for disabled people running a business. Applies to you personally.</div><div class="actions"><a class="btn ghost" target="_blank" href="https://www.gov.uk/access-to-work">Open</a></div></div>
+  <div class="card"><h3>Stelios Awards for Disabled Entrepreneurs</h3><div class="meta">Up to £150k; applications around March to April; needs about £200k turnover, the grow-into-it target.</div><div class="actions"><a class="btn ghost" target="_blank" href="https://www.leonardcheshire.org/get-support/employment-support/stelios-awards-disabled-entrepreneurs">Open</a></div></div>
+  <div class="card"><h3>Grant directories the scout also watches</h3><div class="actions"><a class="btn ghost" target="_blank" href="https://www.disability-grants.org/business-grants-for-the-disabled.html">disability-grants.org</a><a class="btn ghost" target="_blank" href="https://disabledentrepreneurs.co.uk/blog/grants-and-support-for-disabled-entrepreneurs">disabledentrepreneurs.co.uk</a></div></div>
+</section>
+
+<footer>Able2Love Mission Control · everything routes back to <a href="https://github.com/btf123/abletolove">the repo</a> · nothing posts without your say-so</footer>
+</div>
+
+<script>
+const OWNER='btf123', REPO='abletolove';
+const API=`https://api.github.com/repos/${OWNER}/${REPO}`;
+const RAW=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main`;
+
+const today=new Date();
+document.getElementById('todayline').textContent=today.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+// ---------- tiny markdown renderer ----------
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function inline(s){
+  return s
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g,(m,a,u)=>`<img alt="${esc(a)}" src="${u.startsWith('http')?u:RAW+'/'+u}">`)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a target="_blank" href="$2">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+function md(src){
+  const lines=src.split('\n');let out=[],inCode=false,inList=false;
+  for(const raw of lines){
+    const l=raw;
+    if(l.trim().startsWith('```')){out.push(inCode?'</pre>':'<pre>');inCode=!inCode;continue}
+    if(inCode){out.push(esc(l));continue}
+    if(inList&&!l.trim().startsWith('- ')){out.push('</ul>');inList=false}
+    if(l.startsWith('### ')){out.push('<h3>'+inline(esc(l.slice(4)))+'</h3>')}
+    else if(l.startsWith('## ')){out.push('<h2>'+inline(esc(l.slice(3)))+'</h2>')}
+    else if(l.startsWith('# ')){out.push('<h2>'+inline(esc(l.slice(2)))+'</h2>')}
+    else if(l.trim().startsWith('- ')){if(!inList){out.push('<ul>');inList=true}out.push('<li>'+inline(esc(l.trim().slice(2)))+'</li>')}
+    else if(l.trim()==='---'){out.push('<hr>')}
+    else if(l.trim()===''){out.push('')}
+    else{out.push('<p>'+inline(esc(l))+'</p>')}
+  }
+  if(inList)out.push('</ul>');if(inCode)out.push('</pre>');
+  return out.join('\n');
+}
+
+// ---------- review queue (open issues) ----------
+fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
+  const box=document.getElementById('issues');
+  const issues=(Array.isArray(list)?list:[]).filter(i=>!i.pull_request);
+  if(!issues.length){box.innerHTML='<div class="card"><h3>All clear ✅</h3><div class="meta">Nothing waiting for review. New batches and briefs will appear here automatically.</div></div>';return}
+  box.innerHTML='';
+  for(const i of issues){
+    const el=document.createElement('div');el.className='card';
+    const when=new Date(i.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    el.innerHTML=`<h3>${esc(i.title)}</h3><div class="meta">Filed ${when}</div>
+      <details><summary>Read it here</summary><div class="md">${md(i.body||'(empty)')}</div></details>
+      <div class="actions"><a class="btn" target="_blank" href="${i.html_url}">Open on GitHub to edit / tick off</a></div>`;
+    box.appendChild(el);
+  }
+}).catch(()=>{document.getElementById('issues').textContent='Could not load (GitHub rate limit?). Try again in a minute.'});
+
+// ---------- this week's schedule ----------
+fetch(`${API}/contents/content-queue`).then(r=>r.json()).then(items=>{
+  const weeks=(Array.isArray(items)?items:[]).filter(x=>x.type==='dir'&&x.name.startsWith('week-')).map(x=>x.name).sort();
+  if(!weeks.length)throw new Error('none');
+  const latest=weeks[weeks.length-1];
+  return fetch(`${RAW}/content-queue/${latest}/schedule.md`).then(r=>r.text()).then(text=>({latest,text}));
+}).then(({latest,text})=>{
+  const box=document.getElementById('week');
+  const fixed=text.replace(/`(day[^`]+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`)
+                  .replace(/`(card-\d+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`);
+  box.innerHTML=`<div class="card"><h3>${latest}</h3>
+    <details open><summary>Show the week</summary><div class="md">${md(fixed)}</div></details>
+    <div class="actions"><a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/tree/main/content-queue/${latest}">Open folder on GitHub</a></div></div>`;
+}).catch(()=>{document.getElementById('week').textContent='Could not load the schedule. Open content-queue/ on GitHub instead.'});
+
+// ---------- robot status ----------
+function wfStatus(file,elId){
+  fetch(`${API}/actions/workflows/${file}/runs?per_page=1`).then(r=>r.json()).then(d=>{
+    const el=document.getElementById(elId);const run=d.workflow_runs&&d.workflow_runs[0];
+    if(!run){el.innerHTML='<span class="pill wait">No runs yet</span> It activates on its schedule, or press Run now.';return}
+    const when=new Date(run.created_at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const ok=run.conclusion==='success';
+    const running=run.status!=='completed';
+    const pill=running?'<span class="pill wait">Running…</span>':ok?'<span class="pill ok">Last run OK</span>':'<span class="pill bad">Last run failed</span>';
+    el.innerHTML=`${pill} ${when} · <a target="_blank" href="${run.html_url}">details</a>`;
+  }).catch(()=>{document.getElementById(elId).textContent='Status unavailable right now.'});
+}
+wfStatus('content-brain.yml','wf-content');
+wfStatus('outreach-brief.yml','wf-outreach');
+
+// ---------- daily routine ----------
+const TASKS=[
+  'Open today\'s outreach brief above and send the replies you like (15 min cap)',
+  'Reply to everyone who commented on our posts (both platforms)',
+  'Search one hashtag (rotate: #disabilitydating #spoonie #actuallyautistic #accessibility) and leave 3 genuine replies',
+  'One quote-share of a community post with your own line',
+  'Check Buffer: is tomorrow\'s post correct on both channels?'
+];
+const key='a2l-routine-'+today.toISOString().slice(0,10);
+const saved=JSON.parse(localStorage.getItem(key)||'[]');
+const box=document.getElementById('routine');
+TASKS.forEach((t,i)=>{
+  const row=document.createElement('div');row.className='check'+(saved[i]?' done':'');
+  row.innerHTML=`<input type="checkbox" id="t${i}" ${saved[i]?'checked':''}><label for="t${i}">${t}</label>`;
+  row.querySelector('input').addEventListener('change',e=>{
+    saved[i]=e.target.checked;localStorage.setItem(key,JSON.stringify(saved));
+    row.classList.toggle('done',e.target.checked);
+  });
+  box.appendChild(row);
+});
+</script>
+</body>
+</html>

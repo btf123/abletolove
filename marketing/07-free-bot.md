@@ -21,14 +21,16 @@ Nothing to host, nothing to keep running, no servers, no database. The repo is t
 3. **Paste the keepers into Buffer** — or hand the batch to your Claude browser extension and let it load the queue for you.
 4. Buffer posts them through the week. Done.
 
-## One-time setup (one free key, two clicks)
+## One-time setup (one free key, no card)
 
-The brain needs a free Google Gemini key to write with:
+The brain needs a free AI key to write with. **Use Groq**, which is free in the UK with no payment details (Google's Gemini API is not free in the UK, so we avoid it):
 
-1. Go to **aistudio.google.com/apikey** (sign in with your Google account) → **Create API key** → copy it.
+1. Go to **console.groq.com/keys** (sign in, no card asked) → **Create API Key** → copy it.
 2. In GitHub: your repo → **Settings → Secrets and variables → Actions → New repository secret**
-   - Name: `GEMINI_API_KEY`
+   - Name: `GROQ_API_KEY`
    - Value: paste the key → save.
+
+That is the whole cost of the writing brain: nothing. (If you ever set a `GEMINI_API_KEY` instead, the robots will use that; but Groq is the free, no-card default.)
 
 That's the entire setup. (Your Claude browser extension can do both steps — see the briefing below.)
 

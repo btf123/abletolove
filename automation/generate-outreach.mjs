@@ -20,6 +20,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
+import { hasTavily, gatherLiveItems } from './lib/search.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
@@ -64,7 +65,7 @@ function findViolation(text, banned) {
   return null;
 }
 
-function buildPrompt(niche, target, dateStr, live) {
+function buildPrompt(niche, target, dateStr, mode, items = []) {
   const tone = niche.content_tone || 'direct, human and dryly funny';
   const banned = (niche.campaign_guardrails?.banned_language || DEFAULT_BANNED).join('; ');
   const intro = `You are the outreach scout for Able2Love, a live dating app (free on Google Play) for disabled and non-disabled people open to dating one another. You write in the founder's voice: a Greater Manchester comedy writer, performer and full-time wheelchair user. Performer first. Dry humour, UK English, no em or en dashes ever, no pity framing, no invented facts. The only product claims allowed: the app exists, it is free on Google Play, and what it stands for (access needs up front, disclosure on your terms, accessible venue planning, See Me First profiles).
@@ -73,7 +74,31 @@ Today is ${dateStr}.`;
 
   const rules = `Rules for every drafted word: never use these phrases: ${banned}. Never praise non-disabled people merely for dating a disabled person. Never make disabled bodies, care needs or trauma the punchline. Tone: ${tone}. Direct beats padded.`;
 
-  if (live) {
+  if (mode === 'items') {
+    const list = items.map((it, i) => `[${i + 1}] ${it.title}\n    ${it.url}\n    ${it.content}`).join('\n');
+    return `${intro} Below are REAL items found by a live web search in the last few days. Use ONLY these; do not invent any other post, person, deadline or link. Some may be off topic; ignore those.
+
+REAL ITEMS FOUND TODAY:
+${list}
+
+Produce a markdown brief with exactly these sections:
+
+## Conversations to join today
+Pick the 6 to 10 most relevant items above (disability and dating, dating app frustration, accessibility, chronic illness, interabled couples, disability pride, or anything the founder could genuinely comment on). For each, give: the headline and its link (copy the URL from the item), then a drafted reply IN THE FOUNDER'S VOICE. A genuine reaction first (agree, add an experience, make the dry joke, answer the point). Mention the app only if it truly belongs, never as "check out my app". Many should not mention it at all. 1 to 3 sentences.
+
+## Outreach target of the day: ${target}
+If any item above is about them, draft a reply to it (with the link). Otherwise draft a short warm DM referencing their known work (no invented specifics).
+
+## Funding and opportunity watch
+If any item above is a grant, award, press callout or podcast guest call, list it with its link. Otherwise say "Nothing new in today's results" and list the evergreen leads: UnLtd (£500 to £15,000, rolling, unltd.org.uk); Access to Work (gov.uk); Stelios Awards (annual, around March).
+
+## Moment watch
+Any awareness day or moment near ${dateStr} the brand can join honestly (for example July is Disability Pride Month). Only ones you are sure of.
+
+${rules}`;
+  }
+
+  if (mode === 'grounding') {
     return `${intro} USE YOUR SEARCH TOOL for every section. Search the live web for CURRENT items from the last 1 to 3 days. UK first, but global always. Do not invent posts, people, deadlines or links; if search gives you nothing for a section, say so plainly.
 
 Produce a markdown brief with exactly these sections:
@@ -136,11 +161,29 @@ async function main() {
   const target = ROTA[dayOfYear(now) % ROTA.length];
   console.log(`Outreach target today: ${target}`);
 
-  const live = hasLiveSearch();
-  if (!dryRun) console.log(live ? 'Mode: live web search (Gemini)' : 'Mode: no live search (free provider); drafting reusable replies');
+  // Pick the best available search mode:
+  //  - Tavily present: free live web search, draft with Groq (mode "items")
+  //  - else Gemini present: paid grounding search (mode "grounding")
+  //  - else: no search, reusable in-voice replies (mode "none")
+  let mode = 'none';
+  let items = [];
+  if (!dryRun) {
+    if (hasTavily()) {
+      mode = 'items';
+      items = await gatherLiveItems(target);
+      console.log(`Mode: Tavily live search (free), ${items.length} items found`);
+      if (!items.length) { mode = 'none'; console.log('No items returned; falling back to reusable replies'); }
+    } else if (hasLiveSearch()) {
+      mode = 'grounding';
+      console.log('Mode: Gemini grounding search');
+    } else {
+      console.log('Mode: no live search; drafting reusable in-voice replies');
+    }
+  }
+
   let brief = dryRun
     ? SAMPLE_BRIEF
-    : await generateText(buildPrompt(niche, target, dateStr, live), { temperature: 0.7, search: live });
+    : await generateText(buildPrompt(niche, target, dateStr, mode, items), { temperature: 0.7, search: mode === 'grounding' });
 
   // Guardrail sweep: flag (not silently drop) anything off-brand so the human sees it.
   const warnings = [];

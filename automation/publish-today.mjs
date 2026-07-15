@@ -111,27 +111,56 @@ async function main() {
     return;
   }
 
+  // Only touch a platform whose keys are actually set. This lets you switch
+  // on X alone (or Instagram alone) without the other going red.
+  const hasX = process.env.X_API_KEY && process.env.X_API_SECRET
+    && process.env.X_ACCESS_TOKEN && process.env.X_ACCESS_SECRET;
+  const hasIG = process.env.IG_USER_ID && process.env.IG_ACCESS_TOKEN;
+  if (!hasX && !hasIG) {
+    console.log('No platform keys set (X or Instagram); nothing to post. Add the secrets to go live.');
+    return;
+  }
+
+  // Anti-bot-pattern: never post on the exact same second every day. Wait a
+  // random slice of time first, so posts look human, not machine-timed.
+  // (GitHub cron is already loosely timed; this adds more natural scatter.)
+  if (process.env.NO_JITTER !== '1') {
+    const jitterMs = Math.floor(Math.random() * 22 * 60 * 1000); // 0 to 22 minutes
+    console.log(`Human-like delay: waiting ${Math.round(jitterMs / 60000)} min before posting.`);
+    await new Promise((r) => setTimeout(r, jitterMs));
+  }
+
   const results = { key, date: today, x: null, instagram: null };
 
-  // X first (image uploaded as bytes).
-  try {
-    const imgRes = await fetch(cardUrl);
-    if (!imgRes.ok) throw new Error(`card fetch ${imgRes.status}`);
-    const bytes = Buffer.from(await imgRes.arrayBuffer());
-    results.x = await postToX({ text: day.x, imageBytes: bytes, altText: day.alt });
-    console.log(`X posted: ${results.x}`);
-  } catch (e) {
-    results.x = `FAILED: ${e.message}`;
-    console.error(`X failed: ${e.message}`);
+  // X (image uploaded as bytes).
+  if (hasX) {
+    try {
+      const imgRes = await fetch(cardUrl);
+      if (!imgRes.ok) throw new Error(`card fetch ${imgRes.status}`);
+      const bytes = Buffer.from(await imgRes.arrayBuffer());
+      results.x = await postToX({ text: day.x, imageBytes: bytes, altText: day.alt });
+      console.log(`X posted: ${results.x}`);
+    } catch (e) {
+      results.x = `FAILED: ${e.message}`;
+      console.error(`X failed: ${e.message}`);
+    }
+  } else {
+    results.x = 'skipped (no X keys)';
+    console.log('X keys not set; skipping X.');
   }
 
   // Instagram (image by public URL).
-  try {
-    results.instagram = await postToInstagram({ imageUrl: cardUrl, caption: day.instagram });
-    console.log(`Instagram posted: ${results.instagram}`);
-  } catch (e) {
-    results.instagram = `FAILED: ${e.message}`;
-    console.error(`Instagram failed: ${e.message}`);
+  if (hasIG) {
+    try {
+      results.instagram = await postToInstagram({ imageUrl: cardUrl, caption: day.instagram });
+      console.log(`Instagram posted: ${results.instagram}`);
+    } catch (e) {
+      results.instagram = `FAILED: ${e.message}`;
+      console.error(`Instagram failed: ${e.message}`);
+    }
+  } else {
+    results.instagram = 'skipped (no Instagram keys)';
+    console.log('Instagram keys not set; skipping Instagram.');
   }
 
   ledger.push(results);
@@ -140,7 +169,7 @@ async function main() {
   const failed = [results.x, results.instagram].some((r) => String(r).startsWith('FAILED'));
   if (failed) {
     // Non-zero exit makes the workflow red and triggers the alert issue.
-    fail(`One or more platforms failed for ${key}. Ledger updated; see logs.`);
+    fail(`A configured platform failed for ${key}. Ledger updated; see logs.`);
   }
 }
 

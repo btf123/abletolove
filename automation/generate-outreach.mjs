@@ -19,15 +19,11 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateText, hasLiveSearch } from './lib/llm.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
 const OUT_DIR = path.join(ROOT, 'content-queue/outreach');
-// Try in order until one has free-tier quota; Google retires models from the
-// free tier over time, so a chain beats a hardcoded name.
-const MODELS = process.env.GEMINI_MODEL
-  ? [process.env.GEMINI_MODEL]
-  : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
 
 const DEFAULT_BANNED = [
   'suffers from', 'afflicted', 'confined to a wheelchair', 'wheelchair-bound',
@@ -68,72 +64,54 @@ function findViolation(text, banned) {
   return null;
 }
 
-function buildPrompt(niche, target, dateStr) {
+function buildPrompt(niche, target, dateStr, live) {
   const tone = niche.content_tone || 'direct, human and dryly funny';
   const banned = (niche.campaign_guardrails?.banned_language || DEFAULT_BANNED).join('; ');
-  return `You are the outreach scout for Able2Love, a live dating app (free on Google Play) for disabled and non-disabled people open to dating one another. You write in the founder's voice: a Greater Manchester comedy writer, performer and full-time wheelchair user. Performer first. Dry humour, UK English, no em or en dashes ever, no pity framing, no invented facts. The only product claims allowed: the app exists, it is free on Google Play, and what it stands for (access needs up front, disclosure on your terms, accessible venue planning, See Me First profiles).
+  const intro = `You are the outreach scout for Able2Love, a live dating app (free on Google Play) for disabled and non-disabled people open to dating one another. You write in the founder's voice: a Greater Manchester comedy writer, performer and full-time wheelchair user. Performer first. Dry humour, UK English, no em or en dashes ever, no pity framing, no invented facts. The only product claims allowed: the app exists, it is free on Google Play, and what it stands for (access needs up front, disclosure on your terms, accessible venue planning, See Me First profiles).
 
-Today is ${dateStr}. USE YOUR SEARCH TOOL for every section. Search the live web for CURRENT items from the last 1 to 3 days. UK first, but global always. Do not invent posts, people, deadlines or links; if search gives you nothing for a section, say so plainly.
+Today is ${dateStr}.`;
+
+  const rules = `Rules for every drafted word: never use these phrases: ${banned}. Never praise non-disabled people merely for dating a disabled person. Never make disabled bodies, care needs or trauma the punchline. Tone: ${tone}. Direct beats padded.`;
+
+  if (live) {
+    return `${intro} USE YOUR SEARCH TOOL for every section. Search the live web for CURRENT items from the last 1 to 3 days. UK first, but global always. Do not invent posts, people, deadlines or links; if search gives you nothing for a section, say so plainly.
 
 Produce a markdown brief with exactly these sections:
 
 ## Conversations to join today
-Find 8 to 12 FRESH items (last 72 hours): news stories, viral threads, X posts, Instagram posts or Reddit threads about any of: disability and dating, dating app frustrations, accessibility fails or wins, chronic illness dating, deaf dating, interabled couples, disability pride. For each item give:
-- What and where it is (platform, who posted, link if the search result gives one)
-- A drafted reply IN THE FOUNDER'S VOICE. It must be a genuine reaction first (agree, add an experience, make the dry joke, answer the question). Mention the app ONLY if it truly belongs, and never as "check out my app" or a link drop. Many replies should not mention the app at all. 1 to 3 sentences each.
+Find 8 to 12 FRESH items (last 72 hours): news stories, viral threads, X posts, Instagram posts or Reddit threads about any of: disability and dating, dating app frustrations, accessibility fails or wins, chronic illness dating, deaf dating, interabled couples, disability pride. For each item give what and where it is (platform, who posted, link if the search gives one), plus a drafted reply IN THE FOUNDER'S VOICE: a genuine reaction first (agree, add an experience, make the dry joke, answer the question). Mention the app only if it truly belongs, never as "check out my app" or a link drop. Many replies should not mention the app. 1 to 3 sentences each.
 
 ## Outreach target of the day: ${target}
-Search what this person or organisation posted or was in the news for THIS WEEK. Then draft ONE engagement move: a reply to something specific and recent of theirs (preferred), or if they posted nothing recent, a short warm DM that references their actual work. Genuine first, no ask unless the relationship warrants a soft one.
+Search what they posted or were in the news for THIS WEEK, then draft ONE engagement move: a reply to something specific and recent (preferred), or a short warm DM referencing their actual work.
 
 ## Funding and opportunity watch
-Search for currently open or newly announced: grants for disabled entrepreneurs UK, social enterprise funding, accessible tech awards, startup competitions, press callouts for disabled founders (#JournoRequest), podcast guest callouts. List anything OPEN now with its deadline. If nothing new today, say "Nothing new today" and list the evergreen leads (UnLtd rolling awards; Access to Work; Stelios Awards next window around March).
+Search for currently open grants for disabled entrepreneurs UK, social enterprise funding, accessible tech awards, press callouts (#JournoRequest), podcast guest calls. List anything OPEN now with its deadline, else "Nothing new today" plus the evergreen leads (UnLtd rolling; Access to Work; Stelios around March).
 
 ## Moment watch
-Any awareness day, trending hashtag or big cultural moment TODAY or in the next 7 days the brand can join honestly. One line each on how.
+Any awareness day or trending moment today or in the next 7 days the brand can join honestly.
 
-Rules for every drafted word: never use these phrases: ${banned}. Never praise non-disabled people merely for dating a disabled person. Never make disabled bodies, care needs or trauma the punchline. Tone: ${tone}. Direct beats padded.`;
-}
+${rules}`;
+  }
 
-async function callGeminiWithSearch(prompt) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    console.error('GEMINI_API_KEY is not set (see marketing/07-free-bot.md).');
-    process.exit(1);
-  }
-  let lastError;
-  for (const model of MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            tools: [{ google_search: {} }],
-            generationConfig: { temperature: 0.7 },
-          }),
-        });
-        if (res.status === 429 || res.status === 404) {
-          // Out of quota or model gone: no point retrying this model, move on.
-          throw Object.assign(new Error(`Gemini ${model} HTTP ${res.status}: ${await res.text()}`), { skipModel: true });
-        }
-        if (!res.ok) throw new Error(`Gemini ${model} HTTP ${res.status}: ${await res.text()}`);
-        const data = await res.json();
-        const parts = data.candidates?.[0]?.content?.parts || [];
-        const text = parts.map((p) => p.text || '').join('');
-        if (!text) throw new Error(`Gemini ${model} returned no text`);
-        console.log(`Model used: ${model}`);
-        return text;
-      } catch (error) {
-        lastError = error;
-        console.warn(`${model} attempt ${attempt} failed: ${error.message.slice(0, 200)}`);
-        if (error.skipModel) break; // next model in the chain
-        await new Promise((r) => setTimeout(r, attempt * 15000));
-      }
-    }
-  }
-  throw lastError;
+  // No live search (free Groq): must NOT invent specific fresh posts. Draft
+  // reusable, genuine material instead, and tell the human to find live posts.
+  return `${intro} You do NOT have live web search today, so you must NOT invent or cite any specific recent post, person's tweet, news story, deadline or link. Only use the evergreen facts given below. Anything time-sensitive must be phrased as guidance for the human to act on, not as a real found item.
+
+Produce a markdown brief with exactly these sections:
+
+## Search these, then reply in my voice
+List 6 hashtag or search terms to open today (rotate across: disabilitydating, spoonie, actuallyautistic, chronicillness, wheelchairlife, accessibility, deafcommunity, interabledcouple, datingwithadisability). For EACH, write one ready-to-use reply in the founder's voice that would fit a typical post under that tag: a genuine reaction, dry humour, app mentioned only if it belongs. The human will paste these under real recent posts they find.
+
+## Outreach target of the day: ${target}
+Draft one short, warm opener in the founder's voice for reaching out to them, referencing the kind of work they are known for (no invented specifics). The human checks their recent posts and adapts it.
+
+## Funding and opportunity watch
+List only these evergreen, real leads with a one-line next step each: UnLtd awards (£500 to £15,000, rolling, unltd.org.uk); Access to Work (gov.uk, funds a disabled founder's support costs); Stelios Awards for Disabled Entrepreneurs (annual, around March, grow-into-it). Remind the human to also skim #JournoRequest for press callouts.
+
+## Moment watch
+Name any awareness day you are certain of near this date (for example July is Disability Pride Month) and one honest way to join it. If unsure of a date, say so rather than guessing.
+
+${rules}`;
 }
 
 const SAMPLE_BRIEF = `## Conversations to join today
@@ -158,7 +136,11 @@ async function main() {
   const target = ROTA[dayOfYear(now) % ROTA.length];
   console.log(`Outreach target today: ${target}`);
 
-  let brief = dryRun ? SAMPLE_BRIEF : await callGeminiWithSearch(buildPrompt(niche, target, dateStr));
+  const live = hasLiveSearch();
+  if (!dryRun) console.log(live ? 'Mode: live web search (Gemini)' : 'Mode: no live search (free provider); drafting reusable replies');
+  let brief = dryRun
+    ? SAMPLE_BRIEF
+    : await generateText(buildPrompt(niche, target, dateStr, live), { temperature: 0.7, search: live });
 
   // Guardrail sweep: flag (not silently drop) anything off-brand so the human sees it.
   const warnings = [];

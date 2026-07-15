@@ -23,6 +23,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderCards } from './lib/render-cards.mjs';
+import { generateText } from './lib/llm.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
@@ -31,11 +32,6 @@ const OUT_DIR = path.join(ROOT, 'content-queue');
 const PLAY_LINK = 'https://play.google.com/store/apps/details?id=com.abletolove.app';
 const DAYS_PER_WEEK = 7;
 const MIN_DAYS = 5; // if fewer survive the guardrails, fail and re-run
-// Try in order until one has free-tier quota; Google retires models from the
-// free tier over time, so a chain beats a hardcoded name.
-const MODELS = process.env.GEMINI_MODEL
-  ? [process.env.GEMINI_MODEL]
-  : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
 
 // One theme per week, rotating forever. Both platforms share it.
 const THEMES = [
@@ -111,46 +107,6 @@ Before including a day, test it: Is it true? Is it specific? Does it sound like 
 Return ONLY a JSON array of ${DAYS_PER_WEEK} day objects with keys angle, x, headline, caption, hashtags. No markdown, no commentary.`;
 }
 
-async function callGemini(prompt) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) {
-    console.error('GEMINI_API_KEY is not set. Add it as a repository secret (see marketing/07-free-bot.md).');
-    process.exit(1);
-  }
-  let lastError;
-  for (const model of MODELS) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.9 },
-          }),
-        });
-        if (res.status === 429 || res.status === 404) {
-          // Out of quota or model gone: no point retrying this model, move on.
-          throw Object.assign(new Error(`Gemini ${model} HTTP ${res.status}: ${await res.text()}`), { skipModel: true });
-        }
-        if (!res.ok) throw new Error(`Gemini ${model} HTTP ${res.status}: ${await res.text()}`);
-        const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!text) throw new Error(`Gemini ${model} returned no text`);
-        console.log(`Model used: ${model}`);
-        return text;
-      } catch (error) {
-        lastError = error;
-        console.warn(`${model} attempt ${attempt} failed: ${error.message.slice(0, 200)}`);
-        if (error.skipModel) break; // next model in the chain
-        await new Promise((r) => setTimeout(r, attempt * 15000));
-      }
-    }
-  }
-  throw lastError;
-}
-
 function parseDays(raw) {
   const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
   const start = cleaned.indexOf('[');
@@ -176,7 +132,7 @@ async function main() {
   const theme = THEMES[isoWeek(now) % THEMES.length];
   console.log(`Theme this week (both platforms): ${theme}`);
 
-  let days = dryRun ? SAMPLE_WEEK : parseDays(await callGemini(buildPrompt(niche, theme)));
+  let days = dryRun ? SAMPLE_WEEK : parseDays(await generateText(buildPrompt(niche, theme), { temperature: 0.9 }));
 
   const approved = [];
   for (const d of days) {

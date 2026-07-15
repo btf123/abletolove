@@ -223,6 +223,22 @@ async function main() {
 
   await mkdir(weekDir, { recursive: true });
   await writeFile(path.join(weekDir, 'schedule.md'), lines.join('\n'));
+
+  // Machine-readable copy for the auto-publisher (automation/publish-today.mjs).
+  const weekJson = {
+    start: stamp, // day 1 posts on this date
+    theme,
+    days: approved.map((d, i) => ({
+      day: i + 1,
+      angle: d.angle,
+      card: path.basename(cardFiles[i]),
+      x: d.x,
+      instagram: `${d.caption}\n\n${d.hashtags.map((h) => '#' + h).join(' ')}`,
+      alt: `Text on a dark Able2Love card that reads: "${d.headline}"`,
+      hold: false, // set true on a day to keep the publisher's hands off it
+    })),
+  };
+  await writeFile(path.join(weekDir, 'week.json'), JSON.stringify(weekJson, null, 2));
   console.log(`Wrote ${approved.length} aligned days (IG + X) with cards to ${path.relative(ROOT, weekDir)}`);
 }
 

@@ -1,0 +1,51 @@
+name: Auto publisher (daily post)
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # every day 09:00 UTC, the peak slot
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Publish today's post to X and Instagram (official APIs)
+        env:
+          AUTOPOST: ${{ vars.AUTOPOST }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: node automation/publish-today.mjs
+
+      - name: Commit the posting ledger
+        if: always()
+        run: |
+          git config user.name "able2love-publisher"
+          git config user.email "actions@github.com"
+          git add content-queue/posted-log.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Posting ledger update [skip ci]"
+            git push
+          fi
+
+      - name: Raise the alarm if publishing failed
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "⚠️ Auto-publisher failed ($(date +%F))" \
+            --body "Today's post did not go out cleanly. Check the run log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}. The ledger in content-queue/posted-log.json shows what succeeded. Nothing will double-post on re-run."

@@ -1,0 +1,147 @@
+#!/usr/bin/env node
+/**
+ * Able2Love auto-publisher.
+ *
+ * Once a day, posts today's planned content to X and Instagram through the
+ * platforms' OFFICIAL APIs (the sanctioned way; this is what keeps the
+ * accounts safe). Reads the newest content-queue/week-YYYY-MM-DD/week.json,
+ * works out which day today is, and publishes that day's pair.
+ *
+ * SAFETY DESIGN (in order of importance):
+ *  - Official APIs only. No scraping, no session cookies, no browser puppets.
+ *  - Kill switch: exits unless the AUTOPOST env/repo variable is exactly "on".
+ *  - Hard cap: one post per platform per run; the workflow runs once a day.
+ *  - Ledger: content-queue/posted-log.json records every publish; a day that
+ *    is already in the ledger can never post twice.
+ *  - Guardrails re-checked at post time (banned words, dashes, length), not
+ *    just at generation time.
+ *  - Per-day "hold": set "hold": true on a day in week.json and the
+ *    publisher skips it and says so (used e.g. for See Me First until fixed).
+ *  - Any failure opens a loud GitHub issue rather than failing silently.
+ *
+ * Usage:  node automation/publish-today.mjs            (real run)
+ *         node automation/publish-today.mjs --dry-run  (say what it would do)
+ */
+
+import { readFile, writeFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { postToX } from './lib/x-post.mjs';
+import { postToInstagram } from './lib/ig-post.mjs';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const QUEUE = path.join(ROOT, 'content-queue');
+const LEDGER = path.join(QUEUE, 'posted-log.json');
+const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
+const RAW_BASE = 'https://raw.githubusercontent.com/btf123/abletolove/main';
+
+const DEFAULT_BANNED = [
+  'suffers from', 'afflicted', 'confined to a wheelchair', 'wheelchair-bound',
+  'special needs', 'differently abled', 'handicapable', 'overcame',
+  'despite her disability', 'despite his disability', 'despite their disability',
+  'inspiring us all', 'brave', 'passionate', 'empowering', 'transformative',
+  'inspirational', 'journey to love',
+];
+const BANNED_CHARACTERS = ['—', '–'];
+
+function fail(msg) { console.error(`PUBLISHER: ${msg}`); process.exit(1); }
+
+function guardrail(text, banned) {
+  const hay = text.toLowerCase();
+  for (const p of banned) if (hay.includes(p.toLowerCase())) return `banned phrase "${p}"`;
+  for (const ch of BANNED_CHARACTERS) if (text.includes(ch)) return 'em/en dash';
+  return null;
+}
+
+async function main() {
+  const dryRun = process.argv.includes('--dry-run');
+
+  // Kill switch: nothing happens unless explicitly switched on.
+  if (!dryRun && process.env.AUTOPOST !== 'on') {
+    console.log('AUTOPOST is not "on"; doing nothing. (This is the kill switch working.)');
+    return;
+  }
+
+  const niche = JSON.parse(await readFile(NICHE_FILE, 'utf8'));
+  const banned = niche.campaign_guardrails?.banned_language || DEFAULT_BANNED;
+
+  // Newest dated week folder.
+  const dirs = (await readdir(QUEUE, { withFileTypes: true }))
+    .filter((d) => d.isDirectory() && /^week-\d{4}-\d{2}-\d{2}$/.test(d.name))
+    .map((d) => d.name).sort();
+  if (!dirs.length) { console.log('No dated week folders yet; nothing to publish.'); return; }
+  const weekDir = dirs[dirs.length - 1];
+
+  let week;
+  try {
+    week = JSON.parse(await readFile(path.join(QUEUE, weekDir, 'week.json'), 'utf8'));
+  } catch {
+    console.log(`${weekDir} has no week.json; nothing to publish.`);
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const dayIndex = Math.round((Date.parse(today) - Date.parse(week.start)) / 86400000);
+  if (dayIndex < 0) { console.log(`Week ${week.start} has not started yet.`); return; }
+  if (dayIndex >= week.days.length) { console.log('This week is finished; waiting for the next batch.'); return; }
+  const day = week.days[dayIndex];
+
+  // Ledger: never post the same day twice.
+  let ledger = [];
+  try { ledger = JSON.parse(await readFile(LEDGER, 'utf8')); } catch { /* first run */ }
+  const key = `${weekDir}/day-${day.day}`;
+  if (ledger.some((e) => e.key === key)) { console.log(`${key} already posted; refusing to double-post.`); return; }
+
+  if (day.hold) { console.log(`${key} is marked "hold": skipping on purpose.`); return; }
+
+  // Guardrails at the moment of truth.
+  for (const [label, text] of [['X', day.x], ['Instagram', day.instagram]]) {
+    const v = guardrail(text, banned);
+    if (v) fail(`${label} text for ${key} tripped a guardrail (${v}); not posting. Fix week.json and re-run.`);
+  }
+  if (day.x.length > 280) fail(`X text for ${key} is ${day.x.length} chars (max 280); not posting.`);
+
+  const cardUrl = `${RAW_BASE}/content-queue/${weekDir}/${day.card}`;
+
+  if (dryRun) {
+    console.log(`DRY RUN. Would post ${key}:`);
+    console.log(`  X (${day.x.length} chars): ${day.x.slice(0, 80)}...`);
+    console.log(`  IG: ${day.instagram.slice(0, 80)}...`);
+    console.log(`  image: ${cardUrl}`);
+    return;
+  }
+
+  const results = { key, date: today, x: null, instagram: null };
+
+  // X first (image uploaded as bytes).
+  try {
+    const imgRes = await fetch(cardUrl);
+    if (!imgRes.ok) throw new Error(`card fetch ${imgRes.status}`);
+    const bytes = Buffer.from(await imgRes.arrayBuffer());
+    results.x = await postToX({ text: day.x, imageBytes: bytes, altText: day.alt });
+    console.log(`X posted: ${results.x}`);
+  } catch (e) {
+    results.x = `FAILED: ${e.message}`;
+    console.error(`X failed: ${e.message}`);
+  }
+
+  // Instagram (image by public URL).
+  try {
+    results.instagram = await postToInstagram({ imageUrl: cardUrl, caption: day.instagram });
+    console.log(`Instagram posted: ${results.instagram}`);
+  } catch (e) {
+    results.instagram = `FAILED: ${e.message}`;
+    console.error(`Instagram failed: ${e.message}`);
+  }
+
+  ledger.push(results);
+  await writeFile(LEDGER, JSON.stringify(ledger, null, 2));
+
+  const failed = [results.x, results.instagram].some((r) => String(r).startsWith('FAILED'));
+  if (failed) {
+    // Non-zero exit makes the workflow red and triggers the alert issue.
+    fail(`One or more platforms failed for ${key}. Ledger updated; see logs.`);
+  }
+}
+
+main().catch((e) => fail(e.message));

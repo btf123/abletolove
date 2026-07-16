@@ -1,10 +1,12 @@
 name: Outreach brief (daily)
 
 on:
-  # Daily schedule disabled: the founder chose hands-off. This cold-outreach
-  # brief no longer fires on its own. It can still be run by hand from the
-  # Actions tab if ever wanted. (Automating cold outreach = ban risk, so it
-  # stays a manual, human-sent tool by design.)
+  # Runs every morning so a batch of drafted replies is ready. The bot only
+  # DRAFTS; the founder's Claude browser extension posts the approved ones from
+  # the real browser session (human-in-the-loop). That keeps it low-effort AND
+  # off the headless-auto-poster path that gets accounts banned.
+  schedule:
+    - cron: '30 6 * * *' # every day 06:30 UTC
   workflow_dispatch: {}
 
 permissions:

@@ -220,7 +220,27 @@ function parseJson(raw) {
   const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
   const s = cleaned.indexOf('{'); const e = cleaned.lastIndexOf('}');
   if (s === -1 || e === -1) throw new Error('No JSON object in model output');
-  return JSON.parse(cleaned.slice(s, e + 1));
+  const body = cleaned.slice(s, e + 1);
+  try {
+    return JSON.parse(body);
+  } catch (err) {
+    // Cheap first aid for the usual model slip: trailing commas before } or ].
+    return JSON.parse(body.replace(/,(\s*[}\]])/g, '$1'));
+  }
+}
+
+// Generate text and parse it as JSON, self-healing one malformed response.
+// A model occasionally drops a comma or leaves a stray quote; rather than lose
+// the whole brief, hand the broken text back and ask it to return valid JSON.
+async function generateJson(prompt, opts = {}) {
+  const raw = await generateText(prompt, opts);
+  try {
+    return parseJson(raw);
+  } catch (err) {
+    console.warn(`JSON parse failed (${err.message.slice(0, 80)}); asking the model to repair it.`);
+    const repairPrompt = `The text below was meant to be one strict JSON object but does not parse (${err.message}). Return ONLY the corrected JSON object: no code fences, no commentary, and escape any double quotes that appear inside string values.\n\n${raw}`;
+    return parseJson(await generateText(repairPrompt, opts));
+  }
 }
 
 function scrub(text) {
@@ -273,17 +293,15 @@ async function main() {
     console.log(`Tavily live search: ${items.length} items`);
     if (!items.length) { console.log('No items found; skipping brief today.'); return; }
     const lessonsBlock = await lessonsPromptBlock();
-    const raw = await generateText(buildItemsPrompt(target, dateStr, items, banned, lessonsBlock), { temperature: 0.85 });
-    data = parseJson(raw);
+    data = await generateJson(buildItemsPrompt(target, dateStr, items, banned, lessonsBlock), { temperature: 0.85 });
     data.target = target;
 
     // Editor pass: rewrite the drafts harder into the entity voice. Best-effort;
     // if it fails or returns junk, keep the first draft rather than lose the brief.
     try {
-      const sharpRaw = await generateText(
+      const sharp = await generateJson(
         buildSharpenPrompt(target, data, banned, lessonsBlock), { temperature: 0.7 },
       );
-      const sharp = parseJson(sharpRaw);
       const byUrl = new Map((sharp.conversations || []).map((c) => [c.url, c.reply]));
       let rewritten = 0;
       data.conversations = (data.conversations || []).map((c) => {

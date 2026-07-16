@@ -136,21 +136,25 @@ function buildSharpenPrompt(target, drafts, banned, lessonsBlock = '') {
 ${VOICE}${lessonsBlock}
 
 HARD RULES for the rewrite:
-1. OPEN BLUNT. The first sentence must be a short, flat, concrete claim, 12 words or fewer. Never open with "The impact of...", "It's a stark reminder...", "It's time to...", "The way society...". Open with the thing itself.
-2. KEEP IT SHORT. Whole reply is 1 to 2 sentences, 35 words maximum. Length is where the essay-voice hides. If you cannot make the point in 35 words, the point is too vague.
+1. OPEN WITH THE THING ITSELF. First sentence is a plain, concrete claim, not a windup. Never open with "The impact of...", "It's a stark reminder...", "It's time to...", "The way society...".
+2. AIM FOR THE MIDDLE. Two or three sentences, roughly 25 to 45 words. NOT a one-line slogan or a headline ("Dating apps fail accessibility." is dead), and NOT an essay. A short, sharp argument with a concrete image, the length of a good tweet reply. If it is under 20 words it has no argument yet; give it one.
 3. NO advocacy clichés: no "stark reminder", "deserve to be seen", "unique experiences", "more inclusive world", "challenge the stigma", "raising awareness", "it's time to", "we must", "lip service". If one appears, you have failed.
 4. Concrete over abstract. Name the actual behaviour (they say the right words then vanish; the venue has three steps and no ramp), not the abstract value ("inclusion", "acceptance").
-5. No first person as a human, no flattery. The target reply is the entity to a peer: a sharp shared position, never "Hi [name], your work is a powerful reminder".
-6. Mention the app only where it genuinely fits, worded differently each time, at most twice across the whole brief.
-7. Keep each item's title and url EXACTLY as given. UK English, no em dashes, no invented facts, studies, numbers or venue claims.
+5. Some dry anger or wit where it fits. This account has a position and is not neutral. Warm only when someone genuinely gets access right.
+6. No first person as a human, no flattery. The target reply is the entity to a peer: a sharp shared position, never "Hi [name], your work is a powerful reminder".
+7. Mention the app only where it genuinely fits, worded differently each time, at most twice across the whole brief.
+8. Keep each item's title and url EXACTLY as given. UK English, no em dashes, no invented facts, studies, numbers or venue claims.
 
-TRANSFORM EXAMPLES (this is the exact move to make):
-- BEFORE: "The impact of Parkinson's on sex lives is a stark reminder that people with visible disabilities are often reduced to their condition, not seen as individuals with desires and needs."
-  AFTER: "Disabled people have sex lives. The only surprise here is that anyone's surprised. That silence is exactly the gap this app was built for."
-- BEFORE: "An inclusive Pride event should be accessible to all, but it's time to stop paying lip service to inclusion and make a genuine effort to include disabled people."
-  AFTER: "A Pride that half the community can't get into isn't Pride, it's a party with steps. Manchester's Village still runs like this and barely anyone says it out loud."
-- BEFORE: "Molly Burke's advocacy is a powerful reminder that people with disabilities have so much to offer."
-  AFTER: "The blunt stuff about being passed over on dating apps needs saying more, not less. Built an app around exactly that."
+TRANSFORM EXAMPLES (match this length and bite, not shorter):
+- TOO BEIGE: "The impact of Parkinson's on sex lives is a stark reminder that people with visible disabilities are often reduced to their condition, not seen as individuals with desires and needs."
+  TOO TERSE: "Disabled people have sex lives."
+  RIGHT: "Disabled people have sex lives, and the only shock in this story is that anyone finds it a shock. That silence, the awkward looking-away, is exactly the gap this app was built to close."
+- TOO BEIGE: "An inclusive Pride event should be accessible to all, but it's time to stop paying lip service to inclusion."
+  TOO TERSE: "Pride with steps isn't Pride."
+  RIGHT: "A Pride half the community can't physically get into isn't a Pride, it's a party with a door policy nobody will put in writing. Whole scenes still run this way and it barely gets a mention."
+- TOO BEIGE: "Molly Burke's advocacy is a powerful reminder that people with disabilities have so much to offer."
+  TOO TERSE: "Advocacy is not enough."
+  RIGHT: "The blunt truth about being seen and quietly passed over on the mainstream apps needs saying louder, not softer. That gap is the whole reason this one exists."
 
 DRAFTS TO REWRITE (JSON):
 ${JSON.stringify({ conversations: drafts.conversations, target, target_reply: drafts.target_reply }, null, 2)}
@@ -167,10 +171,10 @@ Never use these banned words or phrases anywhere: ${banned}.`;
 // Last-resort salvage. Any single reply that still reads essay-soft after the
 // editor pass gets one more blunt, length-capped rewrite of just that line.
 function buildSalvagePrompt(title, reply, banned) {
-  return `This reply for Able2Love's account is still too soft and essay-like. Rewrite it as ONE or TWO blunt sentences, 30 words maximum, opening with a short concrete claim (12 words or fewer). No "stark reminder", "deserve to be seen", "it's time to", "raising awareness", "we must", "unique experiences", no advocacy clichés, no first-person flattery. Name the actual behaviour, not the abstract value. Speak as the entity Able2Love (no "I/me/my"), with dry, controlled conviction. UK English, no em dashes, no invented facts.
+  return `This reply for Able2Love's account missed: it is either soft and essay-like, or a dead one-line stub with no argument. Rewrite it as two or three sentences, roughly 25 to 45 words: a short, sharp argument with a concrete image, the length of a good tweet reply. Not a slogan ("Dating apps fail accessibility." is dead), not an essay. Open with a plain concrete claim, not a windup. No "stark reminder", "deserve to be seen", "it's time to", "raising awareness", "we must", "unique experiences", no advocacy clichés, no first-person flattery. Name the actual behaviour, not the abstract value, with dry, controlled conviction. Speak as the entity Able2Love (no "I/me/my"). UK English, no em dashes, no invented facts.
 
 STORY: ${title}
-TOO-SOFT REPLY: ${reply}
+REPLY THAT MISSED: ${reply}
 
 Return ONLY the rewritten reply text, nothing else. Never use: ${banned}.`;
 }
@@ -227,6 +231,18 @@ function isMush(text) {
   const hay = String(text || '').toLowerCase();
   return BANNED_MUSH.some((p) => hay.includes(p));
 }
+function wordCount(text) {
+  return String(text || '').trim().split(/\s+/).filter(Boolean).length;
+}
+// A dead, telegraphic stub ("Dating apps fail accessibility.") has no argument
+// and no voice. Too short is as wrong as too beige.
+function isStub(text) {
+  return wordCount(text) < 12;
+}
+// A reply needs rework if it is beige OR a lifeless stub.
+function needsWork(text) {
+  return isMush(text) || isStub(text);
+}
 
 const SAMPLE = {
   conversations: [
@@ -280,25 +296,31 @@ async function main() {
       console.warn(`Editor pass skipped (${e.message.slice(0, 120)}); using first drafts.`);
     }
 
-    // Salvage loop: any reply STILL essay-soft gets one more blunt, capped
-    // rewrite of just that line. Keep the salvage only if it clears the filter.
+    // Salvage loop: any reply that still missed (essay-soft OR a dead stub)
+    // gets one more rewrite aimed at the middle band. Keep it only if the
+    // rewrite is actually better (clears the filter and has some substance).
     let salvaged = 0;
+    const rescue = async (title, text) => {
+      const fixed = scrub(await generateText(buildSalvagePrompt(title, text, banned), { temperature: 0.6 }));
+      return fixed && !needsWork(fixed) ? fixed : null;
+    };
     for (const c of data.conversations || []) {
-      if (!isMush(c.reply)) continue;
+      if (!needsWork(c.reply)) continue;
       try {
-        const fixed = scrub(await generateText(buildSalvagePrompt(c.title, c.reply, banned), { temperature: 0.6 }));
-        if (fixed && !isMush(fixed)) { c.reply = fixed; salvaged += 1; }
+        const fixed = await rescue(c.title, c.reply);
+        if (fixed) { c.reply = fixed; salvaged += 1; }
       } catch (e) {
         console.warn(`Salvage skipped for "${(c.title || '').slice(0, 30)}": ${e.message.slice(0, 80)}`);
       }
     }
-    if (isMush(data.target_reply)) {
-      try {
-        const fixed = scrub(await generateText(buildSalvagePrompt(`outreach to ${target}`, data.target_reply, banned), { temperature: 0.6 }));
-        if (fixed && !isMush(fixed)) { data.target_reply = fixed; salvaged += 1; }
-      } catch { /* keep prior */ }
+    if (needsWork(data.target_reply)) {
+      try { const f = await rescue(`outreach to ${target}`, data.target_reply); if (f) { data.target_reply = f; salvaged += 1; } } catch { /* keep prior */ }
     }
-    if (salvaged) console.log(`Salvage loop rescued ${salvaged} still-soft repl${salvaged === 1 ? 'y' : 'ies'}.`);
+    // The moment line skips the editor pass, so it drifts beige. Discipline it too.
+    if (isMush(data.moment)) {
+      try { const f = await rescue(`Disability Pride Month angle`, data.moment); if (f) { data.moment = f; salvaged += 1; } } catch { /* keep prior */ }
+    }
+    if (salvaged) console.log(`Salvage loop rescued ${salvaged} repl${salvaged === 1 ? 'y' : 'ies'}.`);
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;
@@ -308,8 +330,8 @@ async function main() {
   const warnings = [];
   data.conversations = (data.conversations || []).map((c) => {
     const reply = scrub(c.reply);
-    const mush = isMush(reply);
-    if (mush) warnings.push(`"${(c.title || '').slice(0, 40)}" reply sounds flat; sharpen it.`);
+    const mush = needsWork(reply);
+    if (mush) warnings.push(`"${(c.title || '').slice(0, 40)}" reply ${isStub(reply) ? 'is too clipped, give it an argument' : 'sounds flat, sharpen it'}.`);
     return { title: scrub(c.title), url: c.url || '', reply, mush };
   });
   data.target_reply = scrub(data.target_reply);

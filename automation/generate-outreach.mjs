@@ -72,7 +72,7 @@ function buildPrompt(niche, target, dateStr, mode, items = []) {
 
 Today is ${dateStr}.`;
 
-  const rules = `Rules for every drafted word: never use these phrases: ${banned}. Never praise non-disabled people merely for dating a disabled person. Never make disabled bodies, care needs or trauma the punchline. Tone: ${tone}. Direct beats padded.`;
+  const rules = `Rules for every drafted word: never use these phrases: ${banned}. Never praise non-disabled people merely for dating a disabled person. Never make disabled bodies, care needs or trauma the punchline. SKIP any item about death, grief, bereavement, serious illness, medical or sexual intimacy, or personal tragedy: a dating app replying to those reads as opportunistic, so do not draft a reply for them at all. Only draft replies where Able2Love can join naturally and appropriately (dating, accessibility, community, honesty, humour). Tone: ${tone}. Direct beats padded.`;
 
   if (mode === 'items') {
     const list = items.map((it, i) => `[${i + 1}] ${it.title}\n    ${it.url}\n    ${it.content}`).join('\n');

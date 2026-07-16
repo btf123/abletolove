@@ -52,7 +52,7 @@ async function callAnthropic(prompt, temperature) {
         },
         body: JSON.stringify({
           model: ANTHROPIC_MODEL,
-          max_tokens: 1500,
+          max_tokens: 4096,
           messages: [{ role: 'user', content: prompt }],
         }),
       });

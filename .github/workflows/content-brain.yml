@@ -2,7 +2,7 @@ name: Content brain (weekly posts)
 
 on:
   schedule:
-    - cron: '0 9 * * 1' # every Monday 09:00 UTC
+    - cron: '0 6 * * 1' # every Monday 06:00 UTC, well before the 09:00 publisher
   workflow_dispatch: {}
 
 permissions:

@@ -196,11 +196,11 @@ async function main() {
   const lines = [];
   lines.push(`# Able2Love outreach brief: ${dateStr}`);
   lines.push('');
-  lines.push('**One-tap posting.** Hand this whole brief to your Claude browser extension with the instruction below. It opens each linked post and adds the drafted reply from @Able2LoveApp, showing you each one so you approve or skip. You do the yes/no; it does the clicking. Keeps it human-approved (safe) and low-effort.');
+  lines.push('**No copying.** This brief lives on GitHub, so your Claude browser extension can read it straight from here. You never paste it. Your only job is to approve the ones you like.');
   lines.push('');
-  lines.push('> **Paste to the extension:** "Work through today\'s Able2Love outreach brief. For each item under \'Conversations to join today\', open its link, and post the drafted reply as a comment/reply from my @Able2LoveApp account, tweaking a word or two so it reads naturally. Show me each before posting and only post the ones I approve. Post AT MOST 5 today, space them a few minutes apart, and skip anything I say skip. Do not touch DMs."');
+  lines.push('> **Standing instruction (say to the extension once, or each morning):** "Open my latest Able2Love outreach brief issue at github.com/btf123/abletolove/issues. For each item under \'Conversations to join today\', open its link and post the drafted reply as a comment from my @Able2LoveApp account, tweaking a word or two so it reads naturally. Show me each before posting and only post the ones I approve. Post AT MOST 5, space them a few minutes apart, skip anything I skip, and do not touch DMs."');
   lines.push('');
-  lines.push('_The bot only drafts. Nothing posts until you approve it in the browser. Rules of the road: marketing/11-outreach-program.md_');
+  lines.push('_The bot only drafts. Nothing posts until you approve it in your own browser. That approval is the safety. Rules: marketing/11-outreach-program.md_');
   lines.push('');
   if (warnings.length) {
     lines.push('> **Guardrail warnings:**');

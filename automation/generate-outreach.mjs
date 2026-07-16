@@ -139,11 +139,12 @@ HARD RULES for the rewrite:
 1. OPEN WITH THE THING ITSELF. First sentence is a plain, concrete claim, not a windup. Never open with "The impact of...", "It's a stark reminder...", "It's time to...", "The way society...".
 2. AIM FOR THE MIDDLE. Two or three sentences, roughly 25 to 45 words. NOT a one-line slogan or a headline ("Dating apps fail accessibility." is dead), and NOT an essay. A short, sharp argument with a concrete image, the length of a good tweet reply. If it is under 20 words it has no argument yet; give it one.
 3. NO advocacy clichés: no "stark reminder", "deserve to be seen", "unique experiences", "more inclusive world", "challenge the stigma", "raising awareness", "it's time to", "we must", "lip service". If one appears, you have failed.
-4. Concrete over abstract. Name the actual behaviour (they say the right words then vanish; the venue has three steps and no ramp), not the abstract value ("inclusion", "acceptance").
-5. Some dry anger or wit where it fits. This account has a position and is not neutral. Warm only when someone genuinely gets access right.
-6. No first person as a human, no flattery. The target reply is the entity to a peer: a sharp shared position, never "Hi [name], your work is a powerful reminder".
-7. Mention the app only where it genuinely fits, worded differently each time, at most twice across the whole brief.
-8. Keep each item's title and url EXACTLY as given. UK English, no em dashes, no invented facts, studies, numbers or venue claims.
+4. Concrete but TRUE. Name the general pattern in the testimony (they say the right words then vanish; venues with steps and no ramp), NOT invented specifics. This is the line you must not cross: do NOT invent a fact about the named company, app, person, study or venue in the story. You do NOT know Overtone's features, whether a named app lacks screen readers, what a specific person experiences, or any dollar figure's breakdown. If the item does not state it, you may not assert it. Speak about the general pattern instead ("the mainstream apps have a long record of this"), never a made-up specific.
+5. Do NOT invent features of Able2Love. It is real. Describe it only in general positioning terms: built as the answer the mainstream apps refused to provide, built around honesty, made for disabled and non-disabled people to date each other. Do NOT claim specific features (it "blocks ableist language", it "has screen reader support") unless the story itself is about that. When unsure, say why it exists, not what buttons it has.
+6. Some dry anger or wit where it fits. This account has a position and is not neutral. Warm only when someone genuinely gets access right. Real sentences, not comma-spliced grievance lists.
+7. No first person as a human, no flattery. The target reply is the entity to a peer: a sharp shared position, never "Hi [name], your work is a powerful reminder".
+8. Mention the app only where it genuinely fits, worded differently each time, at most twice across the whole brief.
+9. Keep each item's title and url EXACTLY as given. UK English, no em dashes, no invented facts, studies, numbers or venue claims.
 
 TRANSFORM EXAMPLES (match this length and bite, not shorter):
 - TOO BEIGE: "The impact of Parkinson's on sex lives is a stark reminder that people with visible disabilities are often reduced to their condition, not seen as individuals with desires and needs."
@@ -161,8 +162,8 @@ ${JSON.stringify({ conversations: drafts.conversations, target, target_reply: dr
 
 Return STRICT JSON only (no markdown, no code fences), exactly this shape:
 {
-  "conversations": [ { "title": "<unchanged>", "url": "<unchanged>", "reply": "<rewritten, blunt, max 35 words>" } ],
-  "target_reply": "<rewritten, entity to peer, blunt, no flattery, no first person>"
+  "conversations": [ { "title": "<unchanged>", "url": "<unchanged>", "reply": "<rewritten, 25 to 45 words, sharp, true, no invented specifics>" } ],
+  "target_reply": "<rewritten, entity to peer, sharp, no flattery, no first person, no invented specifics>"
 }
 
 Never use these banned words or phrases anywhere: ${banned}.`;
@@ -171,7 +172,7 @@ Never use these banned words or phrases anywhere: ${banned}.`;
 // Last-resort salvage. Any single reply that still reads essay-soft after the
 // editor pass gets one more blunt, length-capped rewrite of just that line.
 function buildSalvagePrompt(title, reply, banned) {
-  return `This reply for Able2Love's account missed: it is either soft and essay-like, or a dead one-line stub with no argument. Rewrite it as two or three sentences, roughly 25 to 45 words: a short, sharp argument with a concrete image, the length of a good tweet reply. Not a slogan ("Dating apps fail accessibility." is dead), not an essay. Open with a plain concrete claim, not a windup. No "stark reminder", "deserve to be seen", "it's time to", "raising awareness", "we must", "unique experiences", no advocacy clichés, no first-person flattery. Name the actual behaviour, not the abstract value, with dry, controlled conviction. Speak as the entity Able2Love (no "I/me/my"). UK English, no em dashes, no invented facts.
+  return `This reply for Able2Love's account missed: it is either soft and essay-like, or a dead one-line stub with no argument. Rewrite it as two or three sentences, roughly 25 to 45 words: a short, sharp argument with a concrete image, the length of a good tweet reply. Not a slogan ("Dating apps fail accessibility." is dead), not an essay. Open with a plain concrete claim, not a windup. No "stark reminder", "deserve to be seen", "it's time to", "raising awareness", "we must", "unique experiences", no advocacy clichés, no first-person flattery. Name the GENERAL pattern in the testimony, with dry, controlled conviction, in real sentences (not a comma-spliced list). Do NOT invent a fact about the named company, app, person or venue, and do NOT invent specific Able2Love features: if the story does not state it, do not assert it, speak about why the app exists instead. Speak as the entity Able2Love (no "I/me/my"). UK English, no em dashes.
 
 STORY: ${title}
 REPLY THAT MISSED: ${reply}

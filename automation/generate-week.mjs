@@ -24,6 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderCards } from './lib/render-cards.mjs';
 import { generateText } from './lib/llm.mjs';
+import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
@@ -132,7 +133,7 @@ async function main() {
   const theme = THEMES[isoWeek(now) % THEMES.length];
   console.log(`Theme this week (both platforms): ${theme}`);
 
-  let days = dryRun ? SAMPLE_WEEK : parseDays(await generateText(buildPrompt(niche, theme), { temperature: 0.9 }));
+  let days = dryRun ? SAMPLE_WEEK : parseDays(await generateText(buildPrompt(niche, theme) + await lessonsPromptBlock(), { temperature: 0.9 }));
 
   const approved = [];
   for (const d of days) {

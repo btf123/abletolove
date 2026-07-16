@@ -17,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
 import { hasTavily, gatherLiveItems } from './lib/search.mjs';
+import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
@@ -85,11 +86,11 @@ Register examples (position first, humour optional):
 
 Keep it 1 to 3 sentences. UK English, no em dashes, no invented facts. Mention the app only when it truly fits, though it often fits here because it was built as the answer to exactly this.`;
 
-function buildItemsPrompt(target, dateStr, items, banned) {
+function buildItemsPrompt(target, dateStr, items, banned, lessonsBlock = '') {
   const list = items.map((it, i) => `[${i + 1}] ${it.title}\n    ${it.url}\n    ${it.content}`).join('\n');
   return `You are the voice of Able2Love, a live dating app (free on Google Play) for disabled and non-disabled people open to dating one another.
 
-${VOICE}
+${VOICE}${lessonsBlock}
 
 Below are REAL items found by a live web search in the last few days. Use ONLY these. Do not invent any post, person, deadline, or link.
 
@@ -191,7 +192,7 @@ async function main() {
     const items = await gatherLiveItems(target);
     console.log(`Tavily live search: ${items.length} items`);
     if (!items.length) { console.log('No items found; skipping brief today.'); return; }
-    const raw = await generateText(buildItemsPrompt(target, dateStr, items, banned), { temperature: 0.85 });
+    const raw = await generateText(buildItemsPrompt(target, dateStr, items, banned, await lessonsPromptBlock()), { temperature: 0.85 });
     data = parseJson(raw);
     data.target = target;
   } else {

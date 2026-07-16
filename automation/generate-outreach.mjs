@@ -24,12 +24,18 @@ const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.jso
 const OUT_DIR = path.join(ROOT, 'content-queue/outreach');
 const BANNED_CHARACTERS = ['—', '–'];
 
-// Phrases that mean the reply has gone beige. Flagged so a human spots them.
+// Phrases that mean the reply has gone beige. A reply that trips this gets sent
+// back through a harsher rewrite; if it still trips after that, it's flagged.
 const BANNED_MUSH = [
   "i think it's great", 'it is amazing how', "it's amazing how", 'i hope they', 'i hope he', 'i hope she',
   'hopefully', 'so important', 'not talked about enough', 'not discussed enough', 'being open and honest',
   'maybe we can all learn', 'sending love', 'we love to see it', 'couldn\'t agree more', 'well said',
   'raising awareness', 'warms my heart', 'this hits home', 'at the end of the day', 'kudos', 'props to',
+  // The exact tells from the beige drafts the founder rejected:
+  'here to change', 'here to provide', 'safe space', 'connect and thrive', 'deserve better',
+  'deserve to be', 'proud to', 'amplify the voices', 'not a niche', 'not just a nicety', 'an afterthought',
+  'tokenistic', 'inspiration to', 'love your work', 'powerful example', 'drive change', 'matter of life and death',
+  'is here to', 'thrive', 'a reminder that', 'basic requirement', 'a necessity', 'shine a light',
 ];
 
 const ROTA = [
@@ -112,6 +118,35 @@ For "conversations": include the 5 to 8 BEST items where you can genuinely and s
 Never use these banned words or phrases anywhere: ${banned}. Never make disabled bodies or care needs the punchline. Never praise non-disabled people just for dating a disabled person.`;
 }
 
+// Second pass. The first draft tends to drift beige (booster phrases, "here to
+// provide a safe space", first-person warmth to the target). This editor rewrites
+// every reply harder into the entity voice. It only rewrites, never invents: same
+// items, same links, same target, just sharper words.
+function buildSharpenPrompt(target, drafts, banned, lessonsBlock = '') {
+  return `You are the ruthless editor for Able2Love's account. The junior drafter below wrote replies that are TOO SOFT: neutral, people-pleasing, full of booster phrases ("here to provide a safe space", "deserve better", "amplify voices", "a reminder that", "inspiration"). That voice gets ignored. Your job is to rewrite EVERY reply so it lands.
+
+${VOICE}${lessonsBlock}
+
+WHAT TO FIX in each draft:
+- Kill every booster/HR phrase. No "safe space", "thrive", "here to provide", "deserve better", "amplify", "a reminder that", "raising awareness", "inspiration".
+- Lead with the POSITION, not a summary of the article. Say what is actually true and slightly uncomfortable, with the controlled anger of someone who has read the testimony for years.
+- No first person as a human. No "Hi [name], love your work". The target reply is the entity speaking to a peer: respect through a sharp shared position, not flattery.
+- Only mention the app when it genuinely fits, and never twice the same way. Vary it.
+- Keep the item's title and url EXACTLY as given. 1 to 3 sentences. UK English. No em dashes. No invented facts, studies, numbers or venue claims.
+- If a draft has nothing sharp to say, cut it: return fewer conversations rather than filler.
+
+DRAFTS TO REWRITE (JSON):
+${JSON.stringify({ conversations: drafts.conversations, target, target_reply: drafts.target_reply }, null, 2)}
+
+Return STRICT JSON only (no markdown, no code fences), exactly this shape:
+{
+  "conversations": [ { "title": "<unchanged>", "url": "<unchanged>", "reply": "<rewritten, sharper>" } ],
+  "target_reply": "<rewritten, entity to peer, no flattery, no first person>"
+}
+
+Never use these banned words or phrases anywhere: ${banned}.`;
+}
+
 function renderMarkdown(dateStr, data, warnings) {
   const lines = [];
   lines.push(`# Able2Love outreach brief: ${dateStr}`);
@@ -192,9 +227,30 @@ async function main() {
     const items = await gatherLiveItems(target);
     console.log(`Tavily live search: ${items.length} items`);
     if (!items.length) { console.log('No items found; skipping brief today.'); return; }
-    const raw = await generateText(buildItemsPrompt(target, dateStr, items, banned, await lessonsPromptBlock()), { temperature: 0.85 });
+    const lessonsBlock = await lessonsPromptBlock();
+    const raw = await generateText(buildItemsPrompt(target, dateStr, items, banned, lessonsBlock), { temperature: 0.85 });
     data = parseJson(raw);
     data.target = target;
+
+    // Editor pass: rewrite the drafts harder into the entity voice. Best-effort;
+    // if it fails or returns junk, keep the first draft rather than lose the brief.
+    try {
+      const sharpRaw = await generateText(
+        buildSharpenPrompt(target, data, banned, lessonsBlock), { temperature: 0.7 },
+      );
+      const sharp = parseJson(sharpRaw);
+      const byUrl = new Map((sharp.conversations || []).map((c) => [c.url, c.reply]));
+      let rewritten = 0;
+      data.conversations = (data.conversations || []).map((c) => {
+        const better = byUrl.get(c.url);
+        if (better && String(better).trim()) { rewritten += 1; return { ...c, reply: better }; }
+        return c;
+      });
+      if (sharp.target_reply && String(sharp.target_reply).trim()) data.target_reply = sharp.target_reply;
+      console.log(`Editor pass sharpened ${rewritten}/${data.conversations.length} replies.`);
+    } catch (e) {
+      console.warn(`Editor pass skipped (${e.message.slice(0, 120)}); using first drafts.`);
+    }
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;

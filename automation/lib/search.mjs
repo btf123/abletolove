@@ -32,6 +32,8 @@ export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'n
 }
 
 // Queries the scout sweeps each morning. UK-weighted, global-aware.
+// The nightlife/venue-exclusion theme is deliberately prominent: it is the
+// founder's core argument and his home turf (Manchester, Canal Street).
 const QUERIES = [
   'disability and dating',
   'dating app accessibility disabled people',
@@ -39,6 +41,10 @@ const QUERIES = [
   'chronic illness dating',
   'disabled dating UK',
   'disability pride relationships',
+  'nightclub wheelchair accessibility UK',
+  'Manchester Canal Street Gay Village events',
+  'music venue accessibility disabled UK',
+  'listed building disabled access refused UK',
 ];
 
 // Gather fresh, REAL items (deduped). Failures on one query never sink the run.

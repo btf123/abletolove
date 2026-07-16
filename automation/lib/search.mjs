@@ -47,7 +47,29 @@ const QUERIES = [
   'listed building disabled access refused UK',
 ];
 
-// Gather fresh, REAL items (deduped). Failures on one query never sink the run.
+// Hard tragedy filter. Replying to a death, disaster or grief story to plug a
+// dating app reads as opportunistic, so these items never even reach the model.
+// The word-boundary match keeps it from tripping on innocent substrings.
+const TRAGEDY = new RegExp(
+  '\\b(' + [
+    'dead', 'death', 'dies', 'died', 'dying', 'killed', 'killing', 'kills',
+    'fatal', 'fatalities', 'deadly', 'murder', 'murdered', 'homicide', 'stabbed',
+    'shooting', 'shot dead', 'gunman', 'massacre', 'terror', 'terrorist',
+    'suicide', 'self-harm', 'overdose', 'fire', 'blaze', 'wildfire', 'explosion',
+    'crash', 'crashed', 'collision', 'derailed', 'drowned', 'earthquake',
+    'flood', 'hurricane', 'disaster', 'tragedy', 'tragic', 'grief', 'grieving',
+    'bereaved', 'bereavement', 'funeral', 'mourning', 'obituary', 'condolences',
+    'coroner', 'inquest', 'manslaughter', 'assault', 'abuse', 'raped', 'rape',
+  ].join('|') + ')\\b',
+  'i',
+);
+
+function isTragedy(item) {
+  return TRAGEDY.test(`${item.title || ''} ${item.content || ''}`);
+}
+
+// Gather fresh, REAL items (deduped, tragedy stripped). One query failing never
+// sinks the run.
 export async function gatherLiveItems(target) {
   const items = [];
   for (const q of QUERIES) {
@@ -65,5 +87,9 @@ export async function gatherLiveItems(target) {
     console.warn(`target search failed: ${e.message.slice(0, 120)}`);
   }
   const seen = new Set();
-  return items.filter((i) => i.url && !seen.has(i.url) && seen.add(i.url));
+  const deduped = items.filter((i) => i.url && !seen.has(i.url) && seen.add(i.url));
+  const safe = deduped.filter((i) => !isTragedy(i));
+  const dropped = deduped.length - safe.length;
+  if (dropped) console.log(`Tragedy filter dropped ${dropped} item(s) before drafting.`);
+  return safe;
 }

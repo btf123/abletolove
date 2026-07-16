@@ -133,6 +133,21 @@
     .card h3{font-size:20px;margin-bottom:8px}
     .card p{color:var(--muted);font-size:15.5px}
 
+    /* feature shots */
+    .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:20px}
+    .shots figure{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+    .shots img{width:100%;height:auto;display:block;background:#16101B}
+    .shots figcaption{padding:14px 16px;font-size:14.5px;color:var(--muted)}
+
+    /* faq */
+    .faq{display:grid;gap:12px;max-width:760px}
+    .faq details{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:2px 20px;box-shadow:var(--shadow)}
+    .faq summary{cursor:pointer;font-weight:600;padding:16px 0;font-size:17px;list-style:none}
+    .faq summary::-webkit-details-marker{display:none}
+    .faq summary::after{content:"+";float:right;color:var(--pink);font-weight:700}
+    .faq details[open] summary::after{content:"–"}
+    .faq details p{margin:0 0 16px;color:var(--muted);font-size:15.5px}
+
     /* quote band */
     .band{background:var(--surface-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
     .band .wrap{padding:72px 24px;text-align:center}
@@ -250,11 +265,55 @@
       </div>
     </section>
 
-    <section class="band" aria-label="What members say">
+    <section aria-labelledby="feat-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="label">Inside the app</span>
+          <h2 id="feat-h">The bits that make dating actually work.</h2>
+        </div>
+        <div class="shots">
+          <figure>
+            <img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/feature-disclosure-1080x1350.png" alt="An Able2Love profile showing tap-to-reveal disability disclosure cards under an Accessibility heading.">
+            <figcaption>Your access needs on a card, not a confession. Tap to reveal, on your terms.</figcaption>
+          </figure>
+          <figure>
+            <img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/feature-nearby-1080x1350.png" alt="The Able2Love Nearby map showing people and step-free accessible venues.">
+            <figcaption>A map of people near you and places you can actually get into.</figcaption>
+          </figure>
+          <figure>
+            <img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/feature-plandate-1080x1350.png" alt="The Able2Love Plan our date screen showing step-free accessible venues.">
+            <figcaption>Plan a date somewhere step-free and send it straight to your match.</figcaption>
+          </figure>
+          <figure>
+            <img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/feature-seemefirst-1080x1350.png" alt="See Me First: photos going from blurred to clear as a conversation grows.">
+            <figcaption>See Me First: photos come into focus the more you actually talk.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" aria-label="From the founder">
       <div class="wrap">
         <span class="qmark" aria-hidden="true">&ldquo;</span>
-        <p class="quote">For the first time I didn't have to decide <b>when</b> to bring it up. It was just there, and so was everyone else's.</p>
-        <p class="attr">A beta member, on the disclosure field</p>
+        <p class="quote">I got tired of dating apps treating a disability like a plot twist you break gently in the DMs. So I built <b>the one I actually wanted.</b></p>
+        <p class="attr">Brogan Fox, founder of Able2Love</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="faq-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="label">Questions</span>
+          <h2 id="faq-h">The honest FAQ.</h2>
+        </div>
+        <div class="faq">
+          <details><summary>Is it free?</summary><p>Yes. Free to download on Google Play.</p></details>
+          <details><summary>Is it only for disabled people?</summary><p>No. It's for disabled and non-disabled people who are open to dating one another. Everyone's welcome, no medals for turning up.</p></details>
+          <details><summary>Do I have to share my disability?</summary><p>Only if you want to. Disclosure is optional and opt-in. You choose what goes on your profile, and you can change or remove it any time.</p></details>
+          <details><summary>What phones does it work on?</summary><p>It's on Android via Google Play right now.</p></details>
+          <details><summary>Is my location private?</summary><p>Yes. On the Nearby map, locations are deliberately fuzzed to roughly 100m, so nobody sees an exact address, and only people active right now appear.</p></details>
+          <details><summary>How do I get in touch?</summary><p>See the contact link in the footer. Press enquiries welcome too.</p></details>
+        </div>
       </div>
     </section>
 
@@ -288,6 +347,8 @@
         <a href="#main">Home</a>
         <a href="mailto:broganfox1@gmail.com">Contact</a>
         <a href="mailto:broganfox1@gmail.com?subject=Press%20enquiry%3A%20Able2Love">Press</a>
+        <a href="./privacy.html">Privacy</a>
+        <a href="./terms.html">Terms</a>
         <a href="#get">Download</a>
       </nav>
       <p class="note">Able2Love is free to download on Google Play. Dating built with the disability community.</p>

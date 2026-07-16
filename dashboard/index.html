@@ -110,6 +110,11 @@
   <div id="outreach-actions" style="margin-top:14px;display:none">
     <button class="btn" id="copyApproved">Copy approved replies for the extension</button>
     <span id="approvedCount" class="meta" style="margin-left:10px"></span>
+    <div style="margin-top:12px">
+      <input id="teachNotes" placeholder="Optional note for the bot, e.g. 'number 3 too soft, more anger on venue stories'" style="width:100%;max-width:560px;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 12px;font-size:14px">
+      <button class="btn ghost" id="teachBot" style="margin-top:8px">Teach the bot (save my choices)</button>
+      <div class="meta" style="margin-top:6px">Files your ticks and note as feedback. Tomorrow's drafts learn from it automatically.</div>
+    </div>
   </div>
 </section>
 
@@ -306,6 +311,19 @@ TASKS.forEach((t,i)=>{
       const txt='Post these replies from my @Able2LoveApp account, one at a time, tweaking a word or two so each reads natural. Open each link and add the reply as a comment. Space them a few minutes apart. Do not touch DMs.\n\n'+
         approved.map((c,i)=>`${i+1}. ${c.url}\nReply: ${c.reply}`).join('\n\n');
       navigator.clipboard.writeText(txt).then(()=>{const b=document.getElementById('copyApproved');b.textContent='Copied. Paste it to your extension.';setTimeout(()=>{b.textContent='Copy approved replies for the extension';},2600);});
+    };
+    document.getElementById('teachBot').onclick=()=>{
+      const yes=convs.filter((c,i)=>state[i]==='yes');
+      const no=convs.filter((c,i)=>state[i]==='no');
+      const notes=(document.getElementById('teachNotes').value||'').trim();
+      if(!yes.length&&!no.length&&!notes){alert('Tick some replies (or write a note) first, so there is something to learn from.');return;}
+      const fmt=c=>`- "${(c.reply||'').slice(0,260)}"`;
+      let body='Feedback from the dashboard for '+data.date+'.\n\n';
+      body+='APPROVED (these sounded right):\n'+(yes.map(fmt).join('\n')||'- none')+'\n\n';
+      body+='SKIPPED (these missed the voice):\n'+(no.map(fmt).join('\n')||'- none')+'\n\n';
+      body+='NOTES FROM THE FOUNDER:\n'+(notes||'(none)')+'\n';
+      const url=`https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent('Voice feedback '+data.date)}&body=${encodeURIComponent(body)}`;
+      window.open(url,'_blank');
     };
   }
   function apply(el,s){el.classList.remove('is-yes','is-no');if(s)el.classList.add('is-'+s);}

@@ -36,6 +36,14 @@ const BANNED_MUSH = [
   'deserve to be', 'proud to', 'amplify the voices', 'not a niche', 'not just a nicety', 'an afterthought',
   'tokenistic', 'inspiration to', 'love your work', 'powerful example', 'drive change', 'matter of life and death',
   'is here to', 'thrive', 'a reminder that', 'basic requirement', 'a necessity', 'shine a light',
+  // The NGO/essay register tells from the second beige run (the real problem is
+  // this voice, not single words). Tripping any of these forces a blunt rewrite.
+  'stark reminder', 'a reminder', 'it is time to', "it's time to", 'time to confront', 'time to challenge',
+  'seen and respected', 'unique experiences', 'unique perspectives', 'more inclusive world', 'more inclusive society',
+  'more inclusive and accepting', 'marginalize', 'marginalise', 'lip service', 'so much to offer', 'testament to',
+  'powerful reminder', 'tireless advocacy', 'challenge the stigma', 'acceptance and understanding', 'work that still needs',
+  'reflection of our own', 'confront this bias', 'individuals with', 'not defined by their', 'the importance of creating',
+  'work towards', 'strive to', 'let us', "let's use", "let's work", 'we must', 'we need to challenge',
 ];
 
 const ROTA = [
@@ -123,28 +131,48 @@ Never use these banned words or phrases anywhere: ${banned}. Never make disabled
 // every reply harder into the entity voice. It only rewrites, never invents: same
 // items, same links, same target, just sharper words.
 function buildSharpenPrompt(target, drafts, banned, lessonsBlock = '') {
-  return `You are the ruthless editor for Able2Love's account. The junior drafter below wrote replies that are TOO SOFT: neutral, people-pleasing, full of booster phrases ("here to provide a safe space", "deserve better", "amplify voices", "a reminder that", "inspiration"). That voice gets ignored. Your job is to rewrite EVERY reply so it lands.
+  return `You are the ruthless editor for Able2Love's account. The junior drafter writes in a soft NGO/essay register that gets scrolled past: "The impact of X is a stark reminder that...", "it's time to confront this bias", "people deserve to be seen and respected as individuals with their own unique experiences". Your ONE job: rewrite every reply so it sounds like a real person with a position, not a charity press office.
 
 ${VOICE}${lessonsBlock}
 
-WHAT TO FIX in each draft:
-- Kill every booster/HR phrase. No "safe space", "thrive", "here to provide", "deserve better", "amplify", "a reminder that", "raising awareness", "inspiration".
-- Lead with the POSITION, not a summary of the article. Say what is actually true and slightly uncomfortable, with the controlled anger of someone who has read the testimony for years.
-- No first person as a human. No "Hi [name], love your work". The target reply is the entity speaking to a peer: respect through a sharp shared position, not flattery.
-- Only mention the app when it genuinely fits, and never twice the same way. Vary it.
-- Keep the item's title and url EXACTLY as given. 1 to 3 sentences. UK English. No em dashes. No invented facts, studies, numbers or venue claims.
-- If a draft has nothing sharp to say, cut it: return fewer conversations rather than filler.
+HARD RULES for the rewrite:
+1. OPEN BLUNT. The first sentence must be a short, flat, concrete claim, 12 words or fewer. Never open with "The impact of...", "It's a stark reminder...", "It's time to...", "The way society...". Open with the thing itself.
+2. KEEP IT SHORT. Whole reply is 1 to 2 sentences, 35 words maximum. Length is where the essay-voice hides. If you cannot make the point in 35 words, the point is too vague.
+3. NO advocacy clichés: no "stark reminder", "deserve to be seen", "unique experiences", "more inclusive world", "challenge the stigma", "raising awareness", "it's time to", "we must", "lip service". If one appears, you have failed.
+4. Concrete over abstract. Name the actual behaviour (they say the right words then vanish; the venue has three steps and no ramp), not the abstract value ("inclusion", "acceptance").
+5. No first person as a human, no flattery. The target reply is the entity to a peer: a sharp shared position, never "Hi [name], your work is a powerful reminder".
+6. Mention the app only where it genuinely fits, worded differently each time, at most twice across the whole brief.
+7. Keep each item's title and url EXACTLY as given. UK English, no em dashes, no invented facts, studies, numbers or venue claims.
+
+TRANSFORM EXAMPLES (this is the exact move to make):
+- BEFORE: "The impact of Parkinson's on sex lives is a stark reminder that people with visible disabilities are often reduced to their condition, not seen as individuals with desires and needs."
+  AFTER: "Disabled people have sex lives. The only surprise here is that anyone's surprised. That silence is exactly the gap this app was built for."
+- BEFORE: "An inclusive Pride event should be accessible to all, but it's time to stop paying lip service to inclusion and make a genuine effort to include disabled people."
+  AFTER: "A Pride that half the community can't get into isn't Pride, it's a party with steps. Manchester's Village still runs like this and barely anyone says it out loud."
+- BEFORE: "Molly Burke's advocacy is a powerful reminder that people with disabilities have so much to offer."
+  AFTER: "The blunt stuff about being passed over on dating apps needs saying more, not less. Built an app around exactly that."
 
 DRAFTS TO REWRITE (JSON):
 ${JSON.stringify({ conversations: drafts.conversations, target, target_reply: drafts.target_reply }, null, 2)}
 
 Return STRICT JSON only (no markdown, no code fences), exactly this shape:
 {
-  "conversations": [ { "title": "<unchanged>", "url": "<unchanged>", "reply": "<rewritten, sharper>" } ],
-  "target_reply": "<rewritten, entity to peer, no flattery, no first person>"
+  "conversations": [ { "title": "<unchanged>", "url": "<unchanged>", "reply": "<rewritten, blunt, max 35 words>" } ],
+  "target_reply": "<rewritten, entity to peer, blunt, no flattery, no first person>"
 }
 
 Never use these banned words or phrases anywhere: ${banned}.`;
+}
+
+// Last-resort salvage. Any single reply that still reads essay-soft after the
+// editor pass gets one more blunt, length-capped rewrite of just that line.
+function buildSalvagePrompt(title, reply, banned) {
+  return `This reply for Able2Love's account is still too soft and essay-like. Rewrite it as ONE or TWO blunt sentences, 30 words maximum, opening with a short concrete claim (12 words or fewer). No "stark reminder", "deserve to be seen", "it's time to", "raising awareness", "we must", "unique experiences", no advocacy clichés, no first-person flattery. Name the actual behaviour, not the abstract value. Speak as the entity Able2Love (no "I/me/my"), with dry, controlled conviction. UK English, no em dashes, no invented facts.
+
+STORY: ${title}
+TOO-SOFT REPLY: ${reply}
+
+Return ONLY the rewritten reply text, nothing else. Never use: ${banned}.`;
 }
 
 function renderMarkdown(dateStr, data, warnings) {
@@ -251,6 +279,26 @@ async function main() {
     } catch (e) {
       console.warn(`Editor pass skipped (${e.message.slice(0, 120)}); using first drafts.`);
     }
+
+    // Salvage loop: any reply STILL essay-soft gets one more blunt, capped
+    // rewrite of just that line. Keep the salvage only if it clears the filter.
+    let salvaged = 0;
+    for (const c of data.conversations || []) {
+      if (!isMush(c.reply)) continue;
+      try {
+        const fixed = scrub(await generateText(buildSalvagePrompt(c.title, c.reply, banned), { temperature: 0.6 }));
+        if (fixed && !isMush(fixed)) { c.reply = fixed; salvaged += 1; }
+      } catch (e) {
+        console.warn(`Salvage skipped for "${(c.title || '').slice(0, 30)}": ${e.message.slice(0, 80)}`);
+      }
+    }
+    if (isMush(data.target_reply)) {
+      try {
+        const fixed = scrub(await generateText(buildSalvagePrompt(`outreach to ${target}`, data.target_reply, banned), { temperature: 0.6 }));
+        if (fixed && !isMush(fixed)) { data.target_reply = fixed; salvaged += 1; }
+      } catch { /* keep prior */ }
+    }
+    if (salvaged) console.log(`Salvage loop rescued ${salvaged} still-soft repl${salvaged === 1 ? 'y' : 'ies'}.`);
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;

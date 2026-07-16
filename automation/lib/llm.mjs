@@ -27,7 +27,13 @@ export function llmProvider() {
 }
 
 async function callAnthropic(prompt, temperature) {
-  const key = process.env.ANTHROPIC_API_KEY;
+  const key = (process.env.ANTHROPIC_API_KEY || '').trim();
+  // A key with a non-ASCII character never authenticates and makes fetch throw
+  // a cryptic ByteString error. This happens when smart-paste turns a hyphen in
+  // the key into a dash. Reject it early with a message that says what to do.
+  if (/[^\x00-\x7F]/.test(key)) {
+    throw new Error('ANTHROPIC_API_KEY has a non-standard character (a hyphen was probably auto-corrected to a dash on paste). Delete the secret and re-add it, pasting the key as plain text.');
+  }
   const url = 'https://api.anthropic.com/v1/messages';
   const temp = Math.max(0, Math.min(1, temperature));
   let lastError;
@@ -138,7 +144,19 @@ async function callGemini(prompt, temperature, search) {
 
 export async function generateText(prompt, { temperature = 0.8, search = false } = {}) {
   const provider = llmProvider();
-  if (provider === 'anthropic') return callAnthropic(prompt, temperature);
+  if (provider === 'anthropic') {
+    try {
+      return await callAnthropic(prompt, temperature);
+    } catch (error) {
+      // Never let an Anthropic problem (bad key, outage, no credit) red-fail the
+      // whole brief. Drop to free Groq for this call if it is available, loudly.
+      if (process.env.GROQ_API_KEY) {
+        console.warn(`Anthropic unavailable, using free Groq for this call. Reason: ${error.message.slice(0, 200)}`);
+        return callGroq(prompt, temperature);
+      }
+      throw error;
+    }
+  }
   if (provider === 'groq') return callGroq(prompt, temperature);
   if (provider === 'gemini') return callGemini(prompt, temperature, search);
   throw new Error('No LLM API key set. Add ANTHROPIC_API_KEY (best voice) or GROQ_API_KEY (free) as a repo secret.');

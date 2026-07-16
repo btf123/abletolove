@@ -1,21 +1,68 @@
-// Free-first text generation for the Able2Love robots.
+// Text generation for the Able2Love robots.
 //
-// Prefers Groq (free API, no card, works in the UK) when GROQ_API_KEY is set.
-// Falls back to Google Gemini only if GEMINI_API_KEY is set instead. This
-// keeps the whole machine running at zero cost with no payment details.
+// Provider preference, best-voice first:
+//   1. Anthropic Claude  (ANTHROPIC_API_KEY) - best voice, tiny cost, chosen
+//      for the drafting because the free models could not hold the founder's
+//      voice without going beige or inventing facts.
+//   2. Groq              (GROQ_API_KEY)       - free fallback, keeps the whole
+//      machine running at zero cost if the Anthropic key is ever missing.
+//   3. Google Gemini     (GEMINI_API_KEY)     - last-ditch fallback.
 //
-// Get a free Groq key at https://console.groq.com/keys (sign in, create key,
-// no card) and save it as the GROQ_API_KEY repo secret.
+// Anthropic key: https://console.anthropic.com (create key, add a little
+// prepaid credit) saved as the ANTHROPIC_API_KEY repo secret. Model defaults
+// to Claude Sonnet; override with ANTHROPIC_MODEL if wanted.
+// Free Groq key: https://console.groq.com/keys (no card) as GROQ_API_KEY.
 
+const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
 const GEMINI_MODELS = process.env.GEMINI_MODEL
   ? [process.env.GEMINI_MODEL]
   : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
 
 export function llmProvider() {
+  if (process.env.ANTHROPIC_API_KEY) return 'anthropic';
   if (process.env.GROQ_API_KEY) return 'groq';
   if (process.env.GEMINI_API_KEY) return 'gemini';
   return null;
+}
+
+async function callAnthropic(prompt, temperature) {
+  const key = process.env.ANTHROPIC_API_KEY;
+  const url = 'https://api.anthropic.com/v1/messages';
+  const temp = Math.max(0, Math.min(1, temperature));
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: ANTHROPIC_MODEL,
+          max_tokens: 1500,
+          temperature: temp,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+      if (res.status === 429 || res.status >= 500) {
+        throw new Error(`Anthropic HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+      }
+      if (!res.ok) throw new Error(`Anthropic HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`);
+      const data = await res.json();
+      const text = (data.content || []).map((b) => b.text || '').join('');
+      if (!text) throw new Error('Anthropic returned no text');
+      console.log(`Model used: anthropic/${ANTHROPIC_MODEL}`);
+      return text;
+    } catch (error) {
+      lastError = error;
+      console.warn(`anthropic attempt ${attempt} failed: ${error.message.slice(0, 200)}`);
+      await new Promise((r) => setTimeout(r, attempt * 4000));
+    }
+  }
+  throw lastError;
 }
 
 // Does the active provider have live web search? Only paid Gemini grounding
@@ -91,7 +138,8 @@ async function callGemini(prompt, temperature, search) {
 
 export async function generateText(prompt, { temperature = 0.8, search = false } = {}) {
   const provider = llmProvider();
+  if (provider === 'anthropic') return callAnthropic(prompt, temperature);
   if (provider === 'groq') return callGroq(prompt, temperature);
   if (provider === 'gemini') return callGemini(prompt, temperature, search);
-  throw new Error('No LLM API key set. Add GROQ_API_KEY (free, no card) or GEMINI_API_KEY as a repo secret.');
+  throw new Error('No LLM API key set. Add ANTHROPIC_API_KEY (best voice) or GROQ_API_KEY (free) as a repo secret.');
 }

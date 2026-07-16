@@ -59,6 +59,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           DATE=$(date +%F)
+          # Close any older open brief issues first, so only today's stays open
+          # and the dashboard's review list never piles up.
+          for n in $(gh issue list --state open --limit 100 --json number,title \
+              --jq '.[] | select(.title | startswith("Outreach brief:")) | .number'); do
+            gh issue close "$n" --reason "not planned" || true
+          done
           gh issue create \
             --title "Outreach brief: conversations to join today ($DATE)" \
             --body-file "content-queue/outreach/brief-$DATE.md"

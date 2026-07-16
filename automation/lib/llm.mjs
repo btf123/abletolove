@@ -35,7 +35,11 @@ async function callAnthropic(prompt, temperature) {
     throw new Error('ANTHROPIC_API_KEY has a non-standard character (a hyphen was probably auto-corrected to a dash on paste). Delete the secret and re-add it, pasting the key as plain text.');
   }
   const url = 'https://api.anthropic.com/v1/messages';
-  const temp = Math.max(0, Math.min(1, temperature));
+  // The newer Claude models (e.g. claude-sonnet-5) reject a `temperature`
+  // parameter outright ("temperature is deprecated for this model"), so we do
+  // not send one. The `temperature` argument is kept for interface parity with
+  // the other providers but is intentionally unused here.
+  void temperature;
   let lastError;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -49,7 +53,6 @@ async function callAnthropic(prompt, temperature) {
         body: JSON.stringify({
           model: ANTHROPIC_MODEL,
           max_tokens: 1500,
-          temperature: temp,
           messages: [{ role: 'user', content: prompt }],
         }),
       });

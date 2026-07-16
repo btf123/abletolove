@@ -41,7 +41,11 @@ async function callAnthropic(prompt, temperature) {
   // the other providers but is intentionally unused here.
   void temperature;
   let lastError;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  // Anthropic returns 429 (rate) and 529 (overloaded) during busy spikes. Those
+  // pass in seconds, so ride them out with real exponential backoff before
+  // yielding to the free fallback, rather than bailing after a few seconds.
+  const MAX_ATTEMPTS = 5;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -68,7 +72,10 @@ async function callAnthropic(prompt, temperature) {
     } catch (error) {
       lastError = error;
       console.warn(`anthropic attempt ${attempt} failed: ${error.message.slice(0, 200)}`);
-      await new Promise((r) => setTimeout(r, attempt * 4000));
+      if (attempt < MAX_ATTEMPTS) {
+        // 3s, 6s, 12s, 24s: ~45s of patience for a transient overload spike.
+        await new Promise((r) => setTimeout(r, 3000 * 2 ** (attempt - 1)));
+      }
     }
   }
   throw lastError;

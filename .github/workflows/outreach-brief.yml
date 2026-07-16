@@ -1,8 +1,10 @@
 name: Outreach brief (daily)
 
 on:
-  schedule:
-    - cron: '30 6 * * *' # every day 06:30 UTC, brief ready before the morning routine
+  # Daily schedule disabled: the founder chose hands-off. This cold-outreach
+  # brief no longer fires on its own. It can still be run by hand from the
+  # Actions tab if ever wanted. (Automating cold outreach = ban risk, so it
+  # stays a manual, human-sent tool by design.)
   workflow_dispatch: {}
 
 permissions:

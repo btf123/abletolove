@@ -166,7 +166,7 @@ function isMush(text) {
 
 const SAMPLE = {
   conversations: [
-    { title: 'Dating app bios are all identical', url: 'https://example.com', reply: 'The sameness isn\'t the problem, it\'s that none of these apps were built for anyone outside a narrow default. I spent years on them being treated as an afterthought, which is exactly why I stopped waiting and built my own.' },
+    { title: 'Dating app bios are all identical', url: 'https://example.com', reply: 'The sameness isn\'t the story. The story is that none of these apps were built for anyone outside a narrow default, and years of testimony from disabled daters proves it. That gap is the whole reason this app exists.' },
   ],
   target: '(dry-run) Molly Burke',
   target_reply: 'Your no-nonsense stuff is the good kind of viral. Built an app in a similar spirit, might be up your street.',

@@ -180,6 +180,27 @@ REPLY THAT MISSED: ${reply}
 Return ONLY the rewritten reply text, nothing else. Never use: ${banned}.`;
 }
 
+// The assisted Instagram hit-list: WHO to engage and a drafted comment, so the
+// founder (who does not know Instagram well) never has to figure out where to
+// look. Manual and human-paced by design; the bot researches and drafts, the
+// hand stays human. It suggests known creators and hashtags to browse, and does
+// NOT invent handles or claim what a specific post says.
+const IG_HASHTAGS = ['#disabilitydating', '#spoonie', '#actuallyautistic', '#accessibility', '#wheelchairlife', '#disabilitycommunity', '#chronicillness', '#invisibledisability'];
+
+function buildHitlistPrompt(lessonsBlock = '') {
+  return `You plan a daily Instagram engagement list for Able2Love, a dating app for disabled and non-disabled people, built by Brogan (a Manchester wheelchair user). He does not know Instagram well and needs telling exactly WHO to engage with and roughly what to say.
+
+${VOICE}${lessonsBlock}
+
+Produce 6 suggestions. Mix these two kinds:
+- Creators/communities to check: pick from disability, dating, accessibility and Manchester-scene creators and community accounts (for example the kinds of people who post about interabled relationships, disabled dating, access wins and fails). Describe WHO to look for by kind, do not invent a specific @handle or claim what their latest post says.
+- Hashtags to browse: from ${IG_HASHTAGS.join(', ')}. Say what kind of recent post to look for under it (someone venting about mainstream apps, an access-fail story, an access win to celebrate).
+
+For each, write a short genuine COMMENT in the voice above that Brogan can adapt to the actual post: warm when someone gets access right, dry when something is absurd, backing them up with the shared position. Never make disability the punchline. Never invent facts.
+
+Return STRICT JSON only: {"instagram_hitlist":[{"who":"<who to check / which hashtag and what to look for>","why":"<one short line on why it fits>","comment":"<a drafted comment, 1 to 2 sentences, in voice>"}]}.`;
+}
+
 function renderMarkdown(dateStr, data, warnings) {
   const lines = [];
   lines.push(`# Able2Love outreach brief: ${dateStr}`);
@@ -213,6 +234,18 @@ function renderMarkdown(dateStr, data, warnings) {
   lines.push('');
   lines.push(data.moment || '');
   lines.push('');
+  if ((data.instagram_hitlist || []).length) {
+    lines.push('## Instagram hit-list (open these, leave a genuine comment)');
+    lines.push('');
+    lines.push('Spaced out through the day, a few at a time, not all at once. The comment is a starting point, tweak it to fit the actual post.');
+    lines.push('');
+    data.instagram_hitlist.forEach((h, i) => {
+      lines.push(`**${i + 1}. ${h.who}**`);
+      if (h.why) lines.push(`_${h.why}_`);
+      lines.push(`> ${h.comment}`);
+      lines.push('');
+    });
+  }
   return lines.join('\n');
 }
 
@@ -340,6 +373,17 @@ async function main() {
       try { const f = await rescue(`Disability Pride Month angle`, data.moment); if (f) { data.moment = f; salvaged += 1; } } catch { /* keep prior */ }
     }
     if (salvaged) console.log(`Salvage loop rescued ${salvaged} repl${salvaged === 1 ? 'y' : 'ies'}.`);
+
+    // Assisted Instagram hit-list. Best-effort; a failure never sinks the brief.
+    try {
+      const hl = await generateJson(buildHitlistPrompt(lessonsBlock), { temperature: 0.8 });
+      data.instagram_hitlist = (hl.instagram_hitlist || []).slice(0, 8).map((h) => ({
+        who: scrub(h.who), why: scrub(h.why), comment: scrub(h.comment),
+      })).filter((h) => h.who && h.comment);
+      console.log(`Instagram hit-list: ${data.instagram_hitlist.length} suggestions.`);
+    } catch (e) {
+      console.warn(`Hit-list skipped (${e.message.slice(0, 100)}).`);
+    }
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;

@@ -1,14 +1,19 @@
-// Post to Instagram through the OFFICIAL Meta Graph API (Content Publishing).
+// Post to Instagram through the OFFICIAL Instagram API (Content Publishing).
 // Free for Business/Creator accounts, and the sanctioned, ban-safe way to
 // automate posting to your own account.
 //
-// Required environment: IG_USER_ID (the Instagram Business account's numeric
-// ID), IG_ACCESS_TOKEN (a long-lived token with instagram_content_publish).
+// Uses the "Instagram API with Instagram Login" method (graph.instagram.com),
+// which connects a Business/Creator account directly, with no Facebook Page
+// required. Override the host with IG_GRAPH_BASE if ever needed.
+//
+// Required environment: IG_USER_ID (the Instagram-scoped account ID shown next
+// to the account in the app's token page), IG_ACCESS_TOKEN (the long-lived
+// token from that same page, with content-publishing permission).
 //
 // The image must be a PUBLIC URL; we use raw.githubusercontent.com links to
 // the card PNGs in this public repo, so no separate image host is needed.
 
-const GRAPH = 'https://graph.facebook.com/v21.0';
+const GRAPH = process.env.IG_GRAPH_BASE || 'https://graph.instagram.com/v21.0';
 
 export async function postToInstagram({ imageUrl, caption }) {
   const userId = process.env.IG_USER_ID;

@@ -1,0 +1,40 @@
+name: Refresh Instagram token
+
+# Keeps the ~60-day Instagram token from ever lapsing. Runs monthly (well inside
+# the window), refreshes the token, and writes it back into the IG_ACCESS_TOKEN
+# secret. Needs a GH_PAT secret: a fine-grained token for THIS repo with
+# "Secrets: Read and write" permission. Without GH_PAT it refreshes but cannot
+# store the result (and says so).
+
+on:
+  schedule:
+    - cron: '0 4 1 * *' # 04:00 UTC on the 1st of each month
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Get a fresh token
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: node automation/refresh-ig-token.mjs
+
+      - name: Store it back into the secret
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "No GH_PAT set; refreshed the token but cannot save it. Add a GH_PAT secret to enable auto-save."
+            rm -f ig_new_token.txt
+            exit 0
+          fi
+          gh secret set IG_ACCESS_TOKEN --repo btf123/abletolove < ig_new_token.txt
+          rm -f ig_new_token.txt
+          echo "IG_ACCESS_TOKEN updated."

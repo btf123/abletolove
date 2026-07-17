@@ -194,8 +194,12 @@ async function main() {
   await writeFile(path.join(weekDir, 'schedule.md'), lines.join('\n'));
 
   // Machine-readable copy for the auto-publisher (automation/publish-today.mjs).
+  // approved:false is the weekly veto: nothing from this batch posts until the
+  // founder reviews it and runs the "Approve this week" workflow (or edits this
+  // flag). Older batches with no `approved` field keep posting, for safety.
   const weekJson = {
     start: stamp, // day 1 posts on this date
+    approved: false,
     theme,
     days: approved.map((d, i) => ({
       day: i + 1,

@@ -80,6 +80,13 @@ async function main() {
     return;
   }
 
+  // Weekly veto: a batch with approved:false waits until the founder releases it.
+  // A batch with no `approved` field (older ones) is treated as approved.
+  if (week.approved === false) {
+    console.log(`${weekDir} is not approved yet; the weekly veto is holding it. Run "Approve this week" to release it.`);
+    return;
+  }
+
   const today = new Date().toISOString().slice(0, 10);
   const dayIndex = Math.round((Date.parse(today) - Date.parse(week.start)) / 86400000);
   if (dayIndex < 0) { console.log(`Week ${week.start} has not started yet.`); return; }

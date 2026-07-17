@@ -1,0 +1,37 @@
+name: Approve this week's posts
+
+# The weekly veto's "release" button. New post batches start unapproved so
+# nothing posts until you have read them and binned or edited anything. Run this
+# to release the newest batch. To veto a single day instead, set "hold": true on
+# it (or delete it) in that week's week.json before approving.
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Mark the newest batch approved
+        run: node automation/approve-week.mjs
+
+      - name: Commit the approval
+        run: |
+          git config user.name "able2love-content-brain"
+          git config user.email "actions@github.com"
+          git add content-queue/
+          if git diff --cached --quiet; then
+            echo "nothing to approve"
+          else
+            git commit -m "Approve this week's posts [skip ci]"
+            git push
+          fi

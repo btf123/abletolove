@@ -1,0 +1,23 @@
+name: Verify Instagram credentials
+
+# On-demand, non-destructive check that the Instagram token and account ID work.
+# It reads the account (no posting), so it's safe to run any time.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check the Instagram token can reach the account
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+        run: node automation/verify-ig.mjs

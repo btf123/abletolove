@@ -1,0 +1,53 @@
+name: Instagram DM replies
+
+# Support-bot replies to Instagram DMs (inbound only), using the dm-bot persona
+# and knowledge base, escalating anything sensitive to Brogan. Does nothing
+# unless the DM_REPLIES repo variable is "on". NOTE: Instagram messaging via API
+# needs App Review + Live mode; until then the messaging calls are refused and
+# this no-ops cleanly. Run with dry_run=true to preview once messaging is live.
+
+on:
+  schedule:
+    - cron: '43 9,15,20 * * *' # three spaced check-ins a day
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview only, send nothing'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  dm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Reply to new DMs
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          DM_REPLIES: ${{ vars.DM_REPLIES }}
+        run: node automation/dm-ig.mjs ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '--dry-run' || '' }}
+
+      - name: Commit the DM ledger
+        run: |
+          git config user.name "able2love-dm"
+          git config user.email "actions@github.com"
+          git add content-queue/dm-log.json
+          if git diff --cached --quiet; then
+            echo "no ledger change"
+          else
+            git commit -m "Instagram DM ledger [skip ci]"
+            git push
+          fi

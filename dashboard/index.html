@@ -228,13 +228,15 @@ fetch(`${API}/contents/content-queue`).then(r=>r.json()).then(items=>{
   const weeks=(Array.isArray(items)?items:[]).filter(x=>x.type==='dir'&&x.name.startsWith('week-')).map(x=>x.name).sort();
   if(!weeks.length)throw new Error('none');
   const latest=weeks[weeks.length-1];
-  return fetch(`${RAW}/content-queue/${latest}/schedule.md`).then(r=>r.text()).then(text=>({latest,text}));
+  // Only use the schedule file if it actually exists; a missing one used to
+  // render the literal "404: Not Found" body. Now it falls back gracefully.
+  return fetch(`${RAW}/content-queue/${latest}/schedule.md`).then(r=>r.ok?r.text():null).then(text=>({latest,text}));
 }).then(({latest,text})=>{
   const box=document.getElementById('week');
-  const fixed=text.replace(/`(day[^`]+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`)
-                  .replace(/`(card-\d+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`);
-  box.innerHTML=`<div class="card"><h3>${latest}</h3>
-    <details open><summary>Show the week</summary><div class="md">${md(fixed)}</div></details>
+  const inner = text
+    ? `<details open><summary>Show the week</summary><div class="md">${md(text.replace(/`(day[^`]+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`).replace(/`(card-\d+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`))}</div></details>`
+    : `<div class="meta">This week's batch is in the repo. Open the folder to see the posts and cards.</div>`;
+  box.innerHTML=`<div class="card"><h3>${latest}</h3>${inner}
     <div class="actions"><a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/tree/main/content-queue/${latest}">Open folder on GitHub</a></div></div>`;
 }).catch(()=>{document.getElementById('week').textContent='Could not load the schedule. Open content-queue/ on GitHub instead.'});
 
@@ -273,6 +275,15 @@ TASKS.forEach((t,i)=>{
   });
   box.appendChild(row);
 });
+// Reset control: these ticks are just a private to-do saved on this device.
+// They auto-clear each new day, but this lets you clear them by hand any time.
+const reset=document.createElement('button');
+reset.className='btn ghost';reset.style.marginTop='10px';reset.textContent='Reset today’s ticks';
+reset.addEventListener('click',()=>{
+  localStorage.removeItem(key);
+  box.querySelectorAll('.check').forEach((r,i)=>{saved[i]=false;r.classList.remove('done');const cb=r.querySelector('input');if(cb)cb.checked=false;});
+});
+box.appendChild(reset);
 
 // ---------- today's outreach: tap Yes/No ----------
 (function(){

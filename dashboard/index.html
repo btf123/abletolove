@@ -104,14 +104,18 @@
   .conv.is-no .nobtn{background:rgba(226,51,73,.2);color:#FF8B9C;border-color:#FF8B9C}
 </style>
 <section>
-  <h2><span class="dot"></span>Today's outreach — one paste, done</h2>
-  <p class="hint">Copy the mission and paste it into your Claude extension, in the browser where you are logged into X and Instagram. It finds real posts on the platforms, shows you each one with a drafted reply in your voice, waits for your yes, posts the approved ones, and finds a replacement for anything you skip. Nothing posts without your yes per item.</p>
-  <div id="outreach" class="loading">Loading today's mission…</div>
+  <h2><span class="dot"></span>Today's outreach on X — tap Yes or No</h2>
+  <p class="hint">Real X posts the scout found, each with a reply drafted in your voice. Tap ✓ to approve or ✗ to swap in a fresh one. Then press "Post approved" and they go out from @Able2LoveApp automatically. No copying, nothing posts until you approve it.</p>
+  <div id="xgate" style="display:none"></div>
+  <div id="outreach" class="loading">Loading today's replies…</div>
   <div id="outreach-actions" style="margin-top:14px;display:none">
-    <div style="margin-top:12px">
-      <input id="teachNotes" placeholder="Note for the bot after today's round, e.g. 'more anger on venue stories, shorter IG comments'" style="width:100%;max-width:560px;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 12px;font-size:14px">
+    <button class="btn" id="postApproved">Post approved replies</button>
+    <span id="approvedCount" class="meta" style="margin-left:10px"></span>
+    <div id="postStatus" class="meta" style="margin-top:8px"></div>
+    <div style="margin-top:14px">
+      <input id="teachNotes" placeholder="Note for the bot, e.g. 'more anger on venue stories'" style="width:100%;max-width:560px;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 12px;font-size:14px">
       <button class="btn ghost" id="teachBot" style="margin-top:8px">Teach the bot (send this note)</button>
-      <div class="meta" style="margin-top:6px">Files your note as feedback. Tomorrow's mission learns from it automatically.</div>
+      <div class="meta" style="margin-top:6px">Files your note as feedback. Tomorrow's replies learn from it automatically.</div>
     </div>
   </div>
 </section>
@@ -326,10 +330,29 @@ reset.addEventListener('click',()=>{
 });
 box.appendChild(reset);
 
-// ---------- today's outreach: tap Yes/No ----------
+// ---------- today's outreach on X: tap Yes/No, then post by API ----------
 (function(){
   const box=document.getElementById('outreach');
+  const TARGET=10, TOKEN_KEY='a2l-gh-token';
   const RAWBASE=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/content-queue/outreach`;
+  const token=()=>localStorage.getItem(TOKEN_KEY)||'';
+  const gh=(p,init={})=>fetch(`${API}${p}`,{...init,headers:{Authorization:`token ${token()}`,Accept:'application/vnd.github+json','Content-Type':'application/json',...(init.headers||{})}});
+  const b64=(s)=>btoa(unescape(encodeURIComponent(s)));
+
+  // One-time connect: a fine-grained token (Contents + Actions write) lets the
+  // buttons write approvals and fire the sender. Stored only in this browser.
+  function gate(){
+    const g=document.getElementById('xgate');
+    if(token()){g.style.display='none';return true;}
+    g.style.display='block';
+    g.innerHTML=`<div class="card"><h3>One-time connect</h3>
+      <div class="meta">To let these buttons post for you, paste a GitHub token once. It is saved only in this browser, never uploaded. Make it at github.com/settings/personal-access-tokens/new for this repo with "Contents: read and write" and "Actions: read and write".</div>
+      <div style="margin-top:10px"><input id="ghtok" placeholder="github_pat_..." style="width:100%;max-width:520px;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 12px;font-size:14px">
+      <button class="btn" id="savetok" style="margin-top:8px">Save token</button></div></div>`;
+    g.querySelector('#savetok').onclick=()=>{const v=g.querySelector('#ghtok').value.trim();if(!v){alert('Paste the token first.');return;}localStorage.setItem(TOKEN_KEY,v);location.reload();};
+    return false;
+  }
+
   fetch(`${API}/contents/content-queue/outreach`).then(r=>r.json()).then(list=>{
     const files=(Array.isArray(list)?list:[]).filter(f=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f=>f.name).sort();
     if(!files.length) throw new Error('none');
@@ -337,31 +360,68 @@ box.appendChild(reset);
   }).then(render).catch(()=>{box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';});
 
   function render(data){
-    box.innerHTML='';
-    const el=document.createElement('div');el.className='card';
-    if(data.mission){
-      el.innerHTML=`<h3>Engagement mission for ${esc(data.date||'today')}</h3>
-        <div class="meta">${(data.conversations||[]).length} ammo angles · ${(data.instagram_hitlist||[]).length} Instagram leads · target of the day: ${esc(data.target||'')}</div>
-        <div class="actions" style="margin-top:10px"><button class="btn" id="copyMission">Copy the mission for the extension</button></div>
-        <details style="margin-top:10px"><summary>Preview the mission</summary><pre style="white-space:pre-wrap;font-size:13px;color:var(--muted)">${esc(data.mission)}</pre></details>`;
-      box.appendChild(el);
-      el.querySelector('#copyMission').onclick=()=>{
-        navigator.clipboard.writeText(data.mission).then(()=>{
-          const b=el.querySelector('#copyMission');b.textContent='Copied. Paste it into the extension.';
-          setTimeout(()=>{b.textContent='Copy the mission for the extension';},2600);
-        });
-      };
-    } else {
-      el.innerHTML='<div class="meta">This brief predates the one-paste mission. Press Run now on the Outreach scout (in The robots below) to generate today\'s mission.</div>';
-      box.appendChild(el);
-    }
+    gate();
     document.getElementById('outreach-actions').style.display='block';
-    document.getElementById('teachBot').onclick=()=>{
+    setupTeach(data);
+    const cands=(data.x_candidates||[]).slice();
+    box.innerHTML='';
+    if(!cands.length){
+      box.innerHTML='<div class="card"><div class="meta">No X posts found to reply to today (the search index for X is thin some days). The scout tries again tomorrow, or press Run now on the Outreach scout below.</div></div>';
+      return;
+    }
+    let cursor=0; const slots=[]; const approved=new Map();
+    while(slots.length<TARGET && cursor<cands.length) slots.push(cands[cursor++]);
+
+    function count(){document.getElementById('approvedCount').textContent=approved.size+' approved';}
+    function slotCard(c){
+      const el=document.createElement('div');el.className='card conv';
+      if(!c){el.innerHTML='<div class="meta">No more candidates in the queue.</div>';return el;}
+      el.innerHTML=`<div class="meta">Replying to <a target="_blank" href="${esc(c.url)}">@${esc(c.author)}</a> on X</div>
+        <div class="meta" style="margin:6px 0;color:var(--muted)">Their post: ${esc(c.post||'')}</div>
+        <div class="reply">${esc(c.reply||'')}</div>
+        <div class="yn"><button class="yesbtn">✓ Approve</button><button class="nobtn">✗ Swap</button></div>`;
+      return el;
+    }
+    function draw(){
+      box.innerHTML='';
+      slots.forEach((c,i)=>{
+        const el=slotCard(c);box.appendChild(el);
+        if(!c) return;
+        if(approved.has(c.id)) el.classList.add('is-yes');
+        const yes=el.querySelector('.yesbtn'), no=el.querySelector('.nobtn');
+        if(yes) yes.onclick=()=>{ if(approved.has(c.id)){approved.delete(c.id);} else {approved.set(c.id,c.reply);} count(); draw(); };
+        if(no) no.onclick=()=>{ approved.delete(c.id); slots[i]= cursor<cands.length ? cands[cursor++] : null; draw(); };
+      });
+      count();
+    }
+    draw();
+
+    document.getElementById('postApproved').onclick=async()=>{
+      if(!token()){gate();alert('Connect your token once (box above), then post.');return;}
+      if(!approved.size){alert('Approve at least one reply first (tap the green ✓).');return;}
+      const s=document.getElementById('postStatus'); const btn=document.getElementById('postApproved');
+      btn.disabled=true; s.textContent='Saving your approvals...';
+      const payload={date:data.date, approvals:[...approved].map(([id,reply])=>({id,reply}))};
+      const p=`/contents/content-queue/outreach/approved-${data.date}.json`;
+      try{
+        let sha; const cur=await gh(p); if(cur.ok){sha=(await cur.json()).sha;}
+        const put=await gh(p,{method:'PUT',body:JSON.stringify({message:`Approved outreach replies ${data.date} [skip ci]`,content:b64(JSON.stringify(payload,null,2)),...(sha?{sha}:{})})});
+        if(!put.ok) throw new Error('save '+put.status+': '+(await put.text()).slice(0,120));
+        s.textContent='Firing the sender...';
+        const disp=await gh(`/actions/workflows/post-approved.yml/dispatches`,{method:'POST',body:JSON.stringify({ref:'main',inputs:{date:data.date}})});
+        if(!disp.ok) throw new Error('dispatch '+disp.status+': '+(await disp.text()).slice(0,120));
+        s.innerHTML=`Sent ${approved.size} reply(ies) to be posted. <a target="_blank" href="https://github.com/${OWNER}/${REPO}/actions/workflows/post-approved.yml">Watch it post</a>. They go out spaced a minute or two apart.`;
+      }catch(e){ s.textContent='Problem: '+e.message+' (if it says 401/403, your token needs Contents + Actions write, or has expired).'; btn.disabled=false; }
+    };
+  }
+
+  function setupTeach(data){
+    const t=document.getElementById('teachBot'); if(!t) return;
+    t.onclick=()=>{
       const notes=(document.getElementById('teachNotes').value||'').trim();
       if(!notes){alert('Write a note first, so there is something to learn from.');return;}
-      const body='Feedback from the dashboard for '+(data.date||'today')+'.\n\nNOTES FROM THE FOUNDER (about today\'s engagement round):\n'+notes+'\n';
-      const url=`https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent('Voice feedback '+(data.date||''))}&body=${encodeURIComponent(body)}`;
-      window.open(url,'_blank');
+      const body='Feedback from the dashboard for '+(data.date||'today')+'.\n\nNOTES FROM THE FOUNDER:\n'+notes+'\n';
+      window.open(`https://github.com/${OWNER}/${REPO}/issues/new?title=${encodeURIComponent('Voice feedback '+(data.date||''))}&body=${encodeURIComponent(body)}`,'_blank');
     };
   }
 })();

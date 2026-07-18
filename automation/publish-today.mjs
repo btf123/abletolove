@@ -65,32 +65,27 @@ async function main() {
   const niche = JSON.parse(await readFile(NICHE_FILE, 'utf8'));
   const banned = niche.campaign_guardrails?.banned_language || DEFAULT_BANNED;
 
-  // Newest dated week folder.
+  // Pick the batch that actually covers TODAY. Newest first, but a batch that
+  // is unreleased (approved:false) or starts in the future must never block an
+  // older, released batch from finishing its remaining days.
   const dirs = (await readdir(QUEUE, { withFileTypes: true }))
     .filter((d) => d.isDirectory() && /^week-\d{4}-\d{2}-\d{2}$/.test(d.name))
     .map((d) => d.name).sort();
   if (!dirs.length) { console.log('No dated week folders yet; nothing to publish.'); return; }
-  const weekDir = dirs[dirs.length - 1];
-
-  let week;
-  try {
-    week = JSON.parse(await readFile(path.join(QUEUE, weekDir, 'week.json'), 'utf8'));
-  } catch {
-    console.log(`${weekDir} has no week.json; nothing to publish.`);
-    return;
-  }
-
-  // Weekly veto: a batch with approved:false waits until the founder releases it.
-  // A batch with no `approved` field (older ones) is treated as approved.
-  if (week.approved === false) {
-    console.log(`${weekDir} is not approved yet; the weekly veto is holding it. Run "Approve this week" to release it.`);
-    return;
-  }
 
   const today = new Date().toISOString().slice(0, 10);
-  const dayIndex = Math.round((Date.parse(today) - Date.parse(week.start)) / 86400000);
-  if (dayIndex < 0) { console.log(`Week ${week.start} has not started yet.`); return; }
-  if (dayIndex >= week.days.length) { console.log('This week is finished; waiting for the next batch.'); return; }
+  let weekDir = null; let week = null; let dayIndex = -1;
+  for (const dir of dirs.slice().reverse()) {
+    let w;
+    try { w = JSON.parse(await readFile(path.join(QUEUE, dir, 'week.json'), 'utf8')); }
+    catch { console.log(`${dir} has no week.json; skipping it.`); continue; }
+    if (w.approved === false) { console.log(`${dir} is waiting for your Release; looking past it.`); continue; }
+    const idx = Math.round((Date.parse(today) - Date.parse(w.start)) / 86400000);
+    if (idx < 0) { console.log(`${dir} starts ${w.start}, not yet; looking past it.`); continue; }
+    if (idx >= (w.days || []).length) { continue; } // that week is finished
+    weekDir = dir; week = w; dayIndex = idx; break;
+  }
+  if (!week) { console.log('No released batch covers today; nothing to publish. (Release a batch to resume.)'); return; }
   const day = week.days[dayIndex];
 
   // Ledger: never post the same day twice.

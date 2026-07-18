@@ -7,8 +7,8 @@ name: Instagram DM replies
 # this no-ops cleanly. Run with dry_run=true to preview once messaging is live.
 
 on:
-  schedule:
-    - cron: '43 9,15,20 * * *' # three spaced check-ins a day
+  # No schedule yet: DM automation needs Instagram App Review + Live mode, so a
+  # scheduled run would only ever no-op. Add the schedule back once DMs are live.
   workflow_dispatch:
     inputs:
       dry_run:
@@ -44,7 +44,8 @@ jobs:
         run: |
           git config user.name "able2love-dm"
           git config user.email "actions@github.com"
-          git add content-queue/dm-log.json
+          # The ledger only exists once there has been activity; don't fail when it's absent.
+          git add content-queue/dm-log.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no ledger change"
           else

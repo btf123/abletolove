@@ -245,21 +245,40 @@ fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
   }
 }).catch(()=>{document.getElementById('issues').textContent='Could not load (GitHub rate limit?). Try again in a minute.'});
 
-// ---------- this week's schedule ----------
+// ---------- this week's schedule: every post, in full, with its status ----------
 fetch(`${API}/contents/content-queue`).then(r=>r.json()).then(items=>{
   const weeks=(Array.isArray(items)?items:[]).filter(x=>x.type==='dir'&&x.name.startsWith('week-')).map(x=>x.name).sort();
   if(!weeks.length)throw new Error('none');
   const latest=weeks[weeks.length-1];
-  // Only use the schedule file if it actually exists; a missing one used to
-  // render the literal "404: Not Found" body. Now it falls back gracefully.
-  return fetch(`${RAW}/content-queue/${latest}/schedule.md`).then(r=>r.ok?r.text():null).then(text=>({latest,text}));
-}).then(({latest,text})=>{
+  return Promise.all([
+    fetch(`${RAW}/content-queue/${latest}/week.json`).then(r=>r.ok?r.json():null),
+    fetch(`${RAW}/content-queue/posted-log.json`).then(r=>r.ok?r.json():[]).catch(()=>[])
+  ]).then(([week,log])=>({latest,week,log}));
+}).then(({latest,week,log})=>{
   const box=document.getElementById('week');
-  const inner = text
-    ? `<details open><summary>Show the week</summary><div class="md">${md(text.replace(/`(day[^`]+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`).replace(/`(card-\d+\.png)`/g,(m,f)=>`![card](content-queue/${latest}/${f})`))}</div></details>`
-    : `<div class="meta">This week's batch is in the repo. Open the folder to see the posts and cards.</div>`;
-  box.innerHTML=`<div class="card"><h3>${latest}</h3>${inner}
-    <div class="actions"><a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/tree/main/content-queue/${latest}">Open folder on GitHub</a></div></div>`;
+  if(!week){
+    box.innerHTML=`<div class="card"><h3>${latest}</h3><div class="meta">This batch has no week.json yet.</div>
+      <div class="actions"><a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/tree/main/content-queue/${latest}">Open folder on GitHub</a></div></div>`;
+    return;
+  }
+  const posted=new Set((Array.isArray(log)?log:[]).map(e=>e.key));
+  const released=week.approved!==false;
+  const state=released?'<span class="pill ok">Released: these post one a day</span>':'<span class="pill wait">Waiting for your Release, nothing posts yet</span>';
+  let html=`<div class="card"><h3>${latest}</h3><div class="meta">${state}${week.theme?' · theme: '+esc(week.theme):''}</div>`;
+  (week.days||[]).forEach((d,i)=>{
+    const date=new Date(Date.parse(week.start)+i*86400000).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    const key=`${latest}/day-${d.day}`;
+    const status=posted.has(key)?'<span class="pill ok">Posted ✓</span>':d.hold?'<span class="pill bad">Held (will not post)</span>':released?'<span class="pill wait">Queued</span>':'<span class="pill wait">Awaiting release</span>';
+    html+=`<details style="margin-top:10px"${posted.has(key)?'':' open'}><summary><b>Day ${d.day}</b> · ${date} · ${esc(d.angle||'')} ${status}</summary>
+      <img src="${RAW}/content-queue/${latest}/${d.card}" alt="post card" style="max-width:260px;border-radius:10px;margin:8px 0;display:block">
+      <div class="meta" style="white-space:pre-wrap"><b>X:</b> ${esc(d.x||'')}</div>
+      <div class="meta" style="white-space:pre-wrap;margin-top:6px"><b>Instagram:</b> ${esc(d.instagram||'')}</div>
+    </details>`;
+  });
+  html+=`<div class="actions" style="margin-top:12px">
+    <a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/edit/main/content-queue/${latest}/week.json">Edit a post / hold a day (week.json)</a>
+  </div></div>`;
+  box.innerHTML=html;
 }).catch(()=>{document.getElementById('week').textContent='Could not load the schedule. Open content-queue/ on GitHub instead.'});
 
 // ---------- robot status ----------

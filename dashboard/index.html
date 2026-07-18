@@ -85,7 +85,7 @@
 </header>
 
 <div class="quick">
-  <a href="https://publish.buffer.com" target="_blank"><b>Buffer</b> queue (approve/edit posts)</a>
+  <a href="https://github.com/btf123/abletolove/actions/workflows/approve-week.yml" target="_blank"><b>Release</b> this week's posts</a>
   <a href="https://x.com/Able2LoveApp" target="_blank"><b>X</b> @Able2LoveApp</a>
   <a href="https://www.instagram.com/able2loveapp/" target="_blank"><b>Instagram</b> @able2loveapp</a>
   <a href="https://play.google.com/store/apps/details?id=com.abletolove.app" target="_blank"><b>Play Store</b> listing</a>
@@ -120,34 +120,53 @@
 
 <section>
   <h2><span class="dot"></span>Needs your eyes (approve before it goes out)</h2>
-  <p class="hint">Everything waiting for a decision. Weekly post batches and daily outreach briefs land here as review issues: read, edit or bin, then send the keepers via Buffer or the Claude extension. Nothing posts without you.</p>
+  <p class="hint">Today's outreach is approved with the ✓/✗ buttons at the top of this page, not here. This box is only for weekly post batches and anything else waiting on a decision. If it says "All clear", you have nothing outstanding here.</p>
   <div id="issues" class="loading">Loading review queue…</div>
 </section>
 
 <section>
   <h2><span class="dot"></span>This week's posts (what's going out)</h2>
-  <p class="hint">The current tandem schedule: same theme, same image, both platforms each day. The actual scheduled queue lives in <a href="https://publish.buffer.com" target="_blank">Buffer</a>; edit or reorder there.</p>
+  <p class="hint">These post THEMSELVES: one a day to X and Instagram, same theme and image on both, no clicks needed. Each new week's batch waits for your say-so first: read it below, and if a day is wrong edit or hold it on GitHub, then press Release. Nothing from a new batch posts until you release it.</p>
   <div id="week" class="loading">Loading schedule…</div>
+  <div class="actions" style="margin-top:10px">
+    <a class="btn" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/approve-week.yml">Release this week's batch (Run workflow there)</a>
+  </div>
 </section>
 
 <section>
   <h2><span class="dot"></span>The robots</h2>
-  <p class="hint">Your two automated workers. Green means the last run worked. "Run now" takes you to the button on GitHub (press "Run workflow" there).</p>
+  <p class="hint">Your automated workers. Green means the last run worked. "Run now" takes you to the button on GitHub (press "Run workflow" there).</p>
   <div class="grid2">
     <div class="card">
+      <h3>Daily publisher</h3>
+      <div class="meta">Posts the day's card to X and Instagram every morning, from the released batch.</div>
+      <div id="wf-publish" class="meta">Checking…</div>
+      <div class="actions">
+        <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/auto-publisher.yml">History / Run now</a>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Outreach scout, daily</h3>
+      <div class="meta">Every morning 6:30: finds conversations, drafts your replies, builds the Instagram hit-list. You approve up top.</div>
+      <div id="wf-outreach" class="meta">Checking…</div>
+      <div class="actions">
+        <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/outreach-brief.yml">History / Run now</a>
+      </div>
+    </div>
+    <div class="card">
       <h3>Content brain, weekly</h3>
-      <div class="meta">Writes next week's aligned Instagram + X posts every Monday 9am.</div>
+      <div class="meta">Writes next week's aligned Instagram + X posts every Monday morning. New batches wait for your Release.</div>
       <div id="wf-content" class="meta">Checking…</div>
       <div class="actions">
         <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/content-brain.yml">History / Run now</a>
       </div>
     </div>
     <div class="card">
-      <h3>Outreach scout, daily</h3>
-      <div class="meta">Hunts fresh conversations, funding and press leads every morning 6:30.</div>
-      <div id="wf-outreach" class="meta">Checking…</div>
+      <h3>Comment replier, Instagram</h3>
+      <div class="meta">Replies in your voice to comments on OUR OWN posts, three times a day. Anything sensitive gets flagged to you instead.</div>
+      <div id="wf-engage" class="meta">Checking…</div>
       <div class="actions">
-        <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/outreach-brief.yml">History / Run now</a>
+        <a class="btn ghost" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/engage-ig.yml">History / Run now</a>
       </div>
     </div>
   </div>
@@ -210,8 +229,11 @@ function md(src){
 // ---------- review queue (open issues) ----------
 fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
   const box=document.getElementById('issues');
-  const issues=(Array.isArray(list)?list:[]).filter(i=>!i.pull_request);
-  if(!issues.length){box.innerHTML='<div class="card"><h3>All clear ✅</h3><div class="meta">Nothing waiting for review. New batches and briefs will appear here automatically.</div></div>';return}
+  // Outreach briefs are approved with the buttons at the top of the page, and
+  // Voice feedback is internal, so neither belongs in this review box.
+  const issues=(Array.isArray(list)?list:[]).filter(i=>!i.pull_request
+    && !/^outreach brief/i.test(i.title||'') && !/^voice feedback/i.test(i.title||''));
+  if(!issues.length){box.innerHTML='<div class="card"><h3>All clear ✅</h3><div class="meta">Nothing outstanding here. Today\'s outreach is approved with the buttons at the top of the page.</div></div>';return}
   box.innerHTML='';
   for(const i of issues){
     const el=document.createElement('div');el.className='card';
@@ -254,14 +276,16 @@ function wfStatus(file,elId){
 }
 wfStatus('content-brain.yml','wf-content');
 wfStatus('outreach-brief.yml','wf-outreach');
+wfStatus('auto-publisher.yml','wf-publish');
+wfStatus('engage-ig.yml','wf-engage');
 
 // ---------- daily routine ----------
 const TASKS=[
-  'Open today\'s outreach brief above and send the replies you like (15 min cap)',
-  'Reply to everyone who commented on our posts (both platforms)',
-  'Search one hashtag (rotate: #disabilitydating #spoonie #actuallyautistic #accessibility) and leave 3 genuine replies',
+  'Tap the green ticks on today\'s outreach at the top, press "Copy approved", paste into the extension and post the replies',
+  'Do 3 to 5 comments from the Instagram hit-list in today\'s brief (spread through the day, never in one burst)',
+  'Check the repo issues for anything the bots flagged for you (sensitive comments or DMs) and answer those yourself',
   'One quote-share of a community post with your own line',
-  'Check Buffer: is tomorrow\'s post correct on both channels?'
+  'Glance at X and Instagram: did today\'s post land on both?'
 ];
 const key='a2l-routine-'+today.toISOString().slice(0,10);
 const saved=JSON.parse(localStorage.getItem(key)||'[]');

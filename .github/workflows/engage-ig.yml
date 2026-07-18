@@ -42,7 +42,8 @@ jobs:
         run: |
           git config user.name "able2love-engage"
           git config user.email "actions@github.com"
-          git add content-queue/engaged-log.json
+          # The ledger only exists once there has been activity; don't fail when it's absent.
+          git add content-queue/engaged-log.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "no ledger change"
           else

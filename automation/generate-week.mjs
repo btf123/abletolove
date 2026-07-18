@@ -105,6 +105,8 @@ Rules for ALL text:
 
 Before including a day, test it: Is it true? Is it specific? Does it sound like a real person? Does it centre agency rather than pity? Could the founder plausibly say it out loud? If any answer is no, rewrite it.
 
+VARIETY, NON-NEGOTIABLE: a real person does not repeat catchphrases week after week. No two days may open the same way or share a signature phrase. These phrases are worn out from earlier posts and banned outright: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Find fresh images and fresh angles; the beliefs stay, the wording never repeats.
+
 Return ONLY a JSON array of ${DAYS_PER_WEEK} day objects with keys angle, x, headline, caption, hashtags. No markdown, no commentary.`;
 }
 
@@ -133,7 +135,22 @@ async function main() {
   const theme = THEMES[isoWeek(now) % THEMES.length];
   console.log(`Theme this week (both platforms): ${theme}`);
 
-  let days = dryRun ? SAMPLE_WEEK : parseDays(await generateText(buildPrompt(niche, theme) + await lessonsPromptBlock(), { temperature: 0.9 }));
+  let days;
+  if (dryRun) {
+    days = SAMPLE_WEEK;
+  } else {
+    // Self-healing parse: a dropped comma or stray commentary from the model
+    // must not sink the whole weekly batch. On failure, hand the broken text
+    // back once and ask for corrected JSON.
+    const raw = await generateText(buildPrompt(niche, theme) + await lessonsPromptBlock(), { temperature: 0.9 });
+    try {
+      days = parseDays(raw);
+    } catch (err) {
+      console.warn(`Week JSON parse failed (${err.message}); asking the model to repair it.`);
+      const repaired = await generateText(`The text below was meant to be one strict JSON array of day objects but does not parse (${err.message}). Return ONLY the corrected JSON array: no markdown, no commentary, and escape any double quotes inside string values.\n\n${raw}`, { temperature: 0.3 });
+      days = parseDays(repaired);
+    }
+  }
 
   const approved = [];
   for (const d of days) {

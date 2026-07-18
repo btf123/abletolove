@@ -98,7 +98,9 @@ Register examples (position first, humour optional):
 - Story: historic building refuses access citing heritage.
   Reply: "The 'can't modify a listed building' myth somehow survives every ramp ever fitted to one. They can. Refusing reasonable access is against the law; it just goes unchallenged."
 
-Keep it 1 to 3 sentences. UK English, no em dashes, no invented facts. Mention the app only when it truly fits, though it often fits here because it was built as the answer to exactly this.`;
+Keep it 1 to 3 sentences. UK English, no em dashes, no invented facts. Mention the app only when it truly fits, and never twice in the same words.
+
+VARIETY, NON-NEGOTIABLE: the register examples above show the TONE only; their exact wording is worn out from overuse and must never be reused. Real people do not have catchphrases they stamp on every reply. Hold the positions, but find fresh words every single time. These phrases are RETIRED and banned outright: "testimony", "the evidence", "evidence is", "ask anyone who", "all the right words", "vanishing act", "quietly passed over", "it's not you, it's me", "built as the answer", "that gap is why", "the gap this app", "door policy", "slow news day", "same ism", "says otherwise", "the pattern is". No two replies in one brief may open the same way, lean on the same image, or run the same argument shape. Let each reply's angle come from the specific story in front of you, not from a stock script.`;
 
 function buildItemsPrompt(target, dateStr, items, banned, lessonsBlock = '') {
   const list = items.map((it, i) => `[${i + 1}] ${it.title}\n    ${it.url}\n    ${it.content}`).join('\n');
@@ -298,6 +300,42 @@ function needsWork(text) {
   return isMush(text) || isStub(text);
 }
 
+// Catchphrases the account has already leaned on so often they read as a bot
+// watermark ("testimony from disabled daters..." on half the replies). Retired
+// outright: any occurrence forces a rewrite.
+const BURNED = [
+  'testimony', 'the evidence', 'evidence is', 'ask anyone who', 'all the right words',
+  'vanishing act', 'quietly passed over', "it's not you, it's me", 'built as the answer',
+  'that gap is why', 'the gap this app', 'door policy', 'slow news day', 'same ism',
+  'says otherwise', 'the pattern is',
+];
+function burnedIn(text) {
+  const hay = String(text || '').toLowerCase();
+  return BURNED.filter((p) => hay.includes(p));
+}
+// Any 5-word run shared between two replies means the bot is coining a NEW
+// catchphrase; the later reply gets rewritten.
+function sharedRun(a, b, n = 5) {
+  const words = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9'\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const wa = words(a); const grams = new Set();
+  for (let i = 0; i + n <= wa.length; i++) grams.add(wa.slice(i, i + n).join(' '));
+  const wb = words(b);
+  for (let i = 0; i + n <= wb.length; i++) {
+    const g = wb.slice(i, i + n).join(' ');
+    if (grams.has(g)) return g;
+  }
+  return null;
+}
+
+function buildFreshPrompt(title, reply, avoid, banned) {
+  return `This reply for Able2Love's account repeats wording the account has already used elsewhere, which makes it read like a bot with catchphrases. Rewrite it so it makes the same point in genuinely fresh words, as a real person would. It must NOT contain any of these phrases or anything close to them: ${avoid.map((a) => `"${a}"`).join(', ')}. Keep it 1 to 3 sentences, roughly 25 to 45 words, opinion first, dry conviction, UK English, no em dashes, no invented facts, speak as the entity Able2Love (no "I/me/my"). No advocacy clichés ("stark reminder", "raising awareness", "it's time to").
+
+STORY: ${title}
+REPLY TO REWRITE: ${reply}
+
+Return ONLY the rewritten reply text. Never use: ${banned}.`;
+}
+
 const SAMPLE = {
   conversations: [
     { title: 'Dating app bios are all identical', url: 'https://example.com', reply: 'The sameness isn\'t the story. The story is that none of these apps were built for anyone outside a narrow default, and years of testimony from disabled daters proves it. That gap is the whole reason this app exists.' },
@@ -384,6 +422,32 @@ async function main() {
     } catch (e) {
       console.warn(`Hit-list skipped (${e.message.slice(0, 100)}).`);
     }
+
+    // Variety pass: no burned catchphrases anywhere, and no 5-word run repeated
+    // across replies. Anything that trips gets one fresh rewrite; if the rewrite
+    // still trips it is kept but flagged for the human.
+    const pieces = [];
+    for (const c of data.conversations || []) pieces.push({ get: () => c.reply, set: (v) => { c.reply = v; }, title: c.title });
+    pieces.push({ get: () => data.target_reply, set: (v) => { data.target_reply = v; }, title: `outreach to ${target}` });
+    pieces.push({ get: () => data.moment, set: (v) => { data.moment = v; }, title: 'the moment-watch line' });
+    for (const h of data.instagram_hitlist || []) pieces.push({ get: () => h.comment, set: (v) => { h.comment = v; }, title: h.who });
+
+    let freshened = 0;
+    const earlier = [];
+    for (const p of pieces) {
+      const text = p.get();
+      const avoid = new Set(burnedIn(text));
+      for (const prev of earlier) { const run = sharedRun(prev, text); if (run) avoid.add(run); }
+      if (avoid.size) {
+        try {
+          const fixed = scrub(await generateText(buildFreshPrompt(p.title, text, [...avoid], banned), { temperature: 0.9 }));
+          const stillBad = burnedIn(fixed).length || earlier.some((prev) => sharedRun(prev, fixed));
+          if (fixed && !stillBad && !isStub(fixed)) { p.set(fixed); freshened += 1; }
+        } catch (e) { console.warn(`Variety rewrite skipped for "${String(p.title).slice(0, 30)}": ${e.message.slice(0, 80)}`); }
+      }
+      earlier.push(p.get());
+    }
+    if (freshened) console.log(`Variety pass rewrote ${freshened} repetitive repl${freshened === 1 ? 'y' : 'ies'}.`);
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;
@@ -393,8 +457,9 @@ async function main() {
   const warnings = [];
   data.conversations = (data.conversations || []).map((c) => {
     const reply = scrub(c.reply);
-    const mush = needsWork(reply);
-    if (mush) warnings.push(`"${(c.title || '').slice(0, 40)}" reply ${isStub(reply) ? 'is too clipped, give it an argument' : 'sounds flat, sharpen it'}.`);
+    const stale = burnedIn(reply).length > 0;
+    const mush = needsWork(reply) || stale;
+    if (mush) warnings.push(`"${(c.title || '').slice(0, 40)}" reply ${stale ? 'reuses a worn-out phrase, reword before sending' : isStub(reply) ? 'is too clipped, give it an argument' : 'sounds flat, sharpen it'}.`);
     return { title: scrub(c.title), url: c.url || '', reply, mush };
   });
   data.target_reply = scrub(data.target_reply);

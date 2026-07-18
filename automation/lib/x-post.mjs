@@ -59,7 +59,7 @@ async function setAltText(mediaId, altText) {
   if (!res.ok) console.warn(`X alt text failed ${res.status}: ${await res.text()}`);
 }
 
-export async function postToX({ text, imageBytes, altText }) {
+export async function postToX({ text, imageBytes, altText, replyToId }) {
   let mediaIds;
   if (imageBytes) {
     const id = await uploadMedia(imageBytes);
@@ -68,6 +68,8 @@ export async function postToX({ text, imageBytes, altText }) {
   }
   const url = 'https://api.x.com/2/tweets';
   const body = mediaIds ? { text, media: { media_ids: mediaIds } } : { text };
+  // Replying to a found post is the outreach path: same official API, same account.
+  if (replyToId) body.reply = { in_reply_to_tweet_id: String(replyToId) };
   const res = await fetch(url, {
     method: 'POST',
     headers: { Authorization: oauthHeader('POST', url), 'Content-Type': 'application/json' },

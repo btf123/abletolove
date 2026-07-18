@@ -203,12 +203,54 @@ For each, write a short genuine COMMENT in the voice above that Brogan can adapt
 Return STRICT JSON only: {"instagram_hitlist":[{"who":"<who to check / which hashtag and what to look for>","why":"<one short line on why it fits>","comment":"<a drafted comment, 1 to 2 sentences, in voice>"}]}.`;
 }
 
+// The daily engagement mission: ONE block the founder pastes into his Claude
+// browser extension. The extension is logged into X and Instagram, so it can do
+// what this server-side scout cannot: find REAL posts on the platforms, draft a
+// reply per post in the voice, get a per-item yes from the founder in chat, and
+// post the approved ones. Skips get replaced so the day's target is still hit.
+// The scout's news finds become adaptable ammo lines, not reply targets.
+function buildMission(data, target, dateStr) {
+  const ammo = (data.conversations || []).map((c) => `- ${c.reply}`).join('\n');
+  const hitlist = (data.instagram_hitlist || []).map((h) => `- ${h.who}\n  Seed comment: ${h.comment}`).join('\n');
+  return `Task: today's Able2Love engagement round (${dateStr}). You are working in my logged-in browser as the app's accounts: @Able2LoveApp on X, @able2loveapp on Instagram.
+
+APPROVAL RULE, NEVER BREAK IT: before posting anything, show me the post you found and your drafted reply, and wait for my yes. Never post without a yes for that specific item. If I say no or skip, find a replacement candidate so we still hit today's targets.
+
+TARGETS: 10 replies on X and 5 comments on Instagram, found and posted a few at a time (pause whenever I say pause). Skip and tell me if we run out of genuinely good candidates; never pad with weak ones.
+
+FINDING CANDIDATES:
+- X: use x.com search (Latest tab) for: disability dating, dating with a disability, accessible venue, wheelchair nightlife, #DisabilityDating, #DisabledAndDating, chronic illness dating, plus anything matching today's ammo below. Real people only: skip news outlets, brands, giveaways, and anything about death, grief, tragedy or self-harm.
+- Instagram: work through the hit-list below (hashtag pages and creator types), picking recent posts where a comment genuinely fits.
+
+VOICE, NON-NEGOTIABLE: write as Able2Love, an entity with a position; never "I/me/my" as a person. Professional with dry, controlled conviction; warm when someone gets access right. 25 to 45 words on X, shorter is fine for IG comments. UK English. NEVER use an em dash or en dash. Disability is never the punchline or the subject of a joke. Never invent facts, studies, numbers, or claims about any venue, person, company, or about the app's features. Never argue with anyone; skip hostile threads. No advocacy cliches (stark reminder, raising awareness, it's time to). These worn-out phrases are banned: testimony, the evidence, all the right words, vanishing act, door policy, slow news day, same ism, built as the answer. Every reply must be unique: never reuse a phrase across replies, never post the ammo lines verbatim.
+
+TODAY'S AMMO (adapt these angles to the actual post in front of you, reworded fresh every time):
+${ammo || '- (no ammo today; work from the voice rules alone)'}
+
+INSTAGRAM HIT-LIST:
+${hitlist || '- (no hit-list today; use the hashtags above)'}
+
+OUTREACH TARGET OF THE DAY: ${target}. If you find their account, show me their recent post and a drafted comment; same approval rule.
+
+At the end, give me a short tally: how many posted on each platform, and anything you skipped as sensitive.`;
+}
+
 function renderMarkdown(dateStr, data, warnings) {
   const lines = [];
   lines.push(`# Able2Love outreach brief: ${dateStr}`);
   lines.push('');
-  lines.push('**Approve with buttons, not copy-paste.** Open this on your dashboard (btf123.github.io/abletolove/dashboard/) to tick Yes/No on each reply, then hand the approved set to your extension. Nothing posts until you approve it. That approval is the safety.');
+  lines.push('**One paste, done.** Copy the mission below into your Claude extension (in the browser where you are logged into X and Instagram). It finds real posts, drafts each reply in your voice, waits for your yes per item, posts the approved ones, and replaces anything you skip. Nothing posts without your yes. That approval is the safety.');
   lines.push('');
+  if (data.mission) {
+    lines.push('## Today\'s engagement mission (paste this into the extension)');
+    lines.push('');
+    lines.push('```');
+    lines.push(data.mission);
+    lines.push('```');
+    lines.push('');
+    lines.push('Everything below is the raw material the mission is built from, for reference.');
+    lines.push('');
+  }
   if (warnings.length) {
     lines.push('> **Heads up:**');
     for (const w of warnings) lines.push(`> - ${w}`);
@@ -448,6 +490,9 @@ async function main() {
       earlier.push(p.get());
     }
     if (freshened) console.log(`Variety pass rewrote ${freshened} repetitive repl${freshened === 1 ? 'y' : 'ies'}.`);
+
+    // Compose the one-paste engagement mission from the freshened material.
+    data.mission = buildMission(data, target, dateStr);
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;

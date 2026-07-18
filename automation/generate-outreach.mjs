@@ -16,7 +16,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
-import { hasTavily, gatherLiveItems } from './lib/search.mjs';
+import { hasTavily, gatherLiveItems, findTweets } from './lib/search.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -493,6 +493,48 @@ async function main() {
 
     // Compose the one-paste engagement mission from the freshened material.
     data.mission = buildMission(data, target, dateStr);
+
+    // REAL X posts to reply to, with drafted replies and spares. These power
+    // the dashboard's yes/no queue: yes posts by API, no swaps in a spare.
+    try {
+      const tweets = (await findTweets()).slice(0, 18);
+      console.log(`Found ${tweets.length} real X post(s) to draft replies for.`);
+      if (tweets.length) {
+        const list = tweets.map((t, i) => `[${i}] @${t.author}: ${t.text}`).join('\n');
+        const raw = await generateJson(`You are the voice of Able2Love, a live dating app for disabled and non-disabled people.
+
+${VOICE}
+
+Below are REAL posts from X found by search. For each, write a reply that genuinely engages with THAT post: back the poster up, add the position, or dry-side the absurdity. 1 to 2 sentences, under 260 characters. If a post is hostile, sexual, about grief or tragedy, from a brand or news outlet rather than a person, or nothing sharp fits, mark it skip.
+
+POSTS:
+${list}
+
+Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<text if not skip>"}]}. One entry per index. Never use these banned words or phrases anywhere: ${banned}.`, { temperature: 0.85 });
+        const byIdx = new Map((raw.replies || []).map((r) => [r.i, r]));
+        data.x_candidates = [];
+        const priorTexts = [];
+        for (let i = 0; i < tweets.length; i++) {
+          const r = byIdx.get(i);
+          if (!r || r.skip || !scrub(r.reply)) continue;
+          let reply = scrub(r.reply);
+          const avoid = new Set(burnedIn(reply));
+          for (const prev of priorTexts) { const run = sharedRun(prev, reply); if (run) avoid.add(run); }
+          if (avoid.size) {
+            try {
+              const fixed = scrub(await generateText(buildFreshPrompt(`reply to @${tweets[i].author}`, reply, [...avoid], banned), { temperature: 0.9 }));
+              if (fixed && !burnedIn(fixed).length) reply = fixed;
+            } catch { /* keep original */ }
+          }
+          if (reply.length > 270) reply = reply.slice(0, 267) + '...';
+          priorTexts.push(reply);
+          data.x_candidates.push({ id: tweets[i].id, author: tweets[i].author, url: tweets[i].url, post: tweets[i].text.slice(0, 240), reply });
+        }
+        console.log(`X reply queue: ${data.x_candidates.length} candidate(s) incl. spares.`);
+      }
+    } catch (e) {
+      console.warn(`X candidate drafting skipped (${e.message.slice(0, 120)}).`);
+    }
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;

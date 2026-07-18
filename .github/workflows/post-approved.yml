@@ -1,0 +1,48 @@
+name: Post approved outreach replies
+
+# Fired by the dashboard after the founder has clicked yes on specific replies.
+# Reads content-queue/outreach/approved-<date>.json and posts each approved
+# reply to X by official API, with ledger, guardrails, and human pacing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Approvals date (YYYY-MM-DD), defaults to today'
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Post the approved replies
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          AUTOPOST: ${{ vars.AUTOPOST }}
+          APPROVED_DATE: ${{ inputs.date }}
+        run: node automation/post-approved.mjs
+
+      - name: Commit the reply ledger
+        run: |
+          git config user.name "able2love-outreach"
+          git config user.email "actions@github.com"
+          git pull --rebase origin main || true
+          git add content-queue/outreach/replied-log.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "no ledger change"
+          else
+            git commit -m "Outreach reply ledger [skip ci]"
+            git push
+          fi

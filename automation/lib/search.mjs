@@ -8,7 +8,7 @@ export function hasTavily() {
   return !!process.env.TAVILY_API_KEY;
 }
 
-export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'news' } = {}) {
+export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'news', includeDomains } = {}) {
   const key = process.env.TAVILY_API_KEY;
   const res = await fetch('https://api.tavily.com/search', {
     method: 'POST',
@@ -20,6 +20,7 @@ export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'n
       topic,
       days,
       max_results: maxResults,
+      ...(includeDomains ? { include_domains: includeDomains } : {}),
     }),
   });
   if (!res.ok) throw new Error(`Tavily HTTP ${res.status}: ${await res.text()}`);
@@ -66,6 +67,41 @@ const TRAGEDY = new RegExp(
 
 function isTragedy(item) {
   return TRAGEDY.test(`${item.title || ''} ${item.content || ''}`);
+}
+
+// Find REAL posts on X to reply to. Tavily searches the indexed web scoped to
+// x.com/twitter.com; a status URL carries the tweet id, which is what the X API
+// needs to post a reply. Coverage of X's index varies day to day, so callers
+// must treat this as best-effort and log the count.
+const X_QUERIES = [
+  'disability dating', 'dating with a disability', 'disabled dating apps',
+  'wheelchair accessible venue', 'accessible nightlife', 'chronic illness dating',
+  'disability pride dating', 'accessible date night',
+];
+
+export async function findTweets() {
+  const found = [];
+  for (const q of X_QUERIES) {
+    try {
+      found.push(...(await tavilySearch(q, {
+        topic: 'general', days: 7, maxResults: 5,
+        includeDomains: ['x.com', 'twitter.com'],
+      })));
+    } catch (e) {
+      console.warn(`tweet search "${q}" failed: ${e.message.slice(0, 100)}`);
+    }
+  }
+  const seen = new Set();
+  const tweets = [];
+  for (const f of found) {
+    const m = (f.url || '').match(/(?:x|twitter)\.com\/([A-Za-z0-9_]+)\/status\/(\d+)/);
+    if (!m) continue;
+    const [, author, id] = m;
+    if (seen.has(id) || author.toLowerCase() === 'able2loveapp') continue;
+    seen.add(id);
+    tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text: `${f.title || ''} ${f.content || ''}`.replace(/\s+/g, ' ').trim().slice(0, 400) });
+  }
+  return tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
 }
 
 // Gather fresh, REAL items (deduped, tragedy stripped). One query failing never

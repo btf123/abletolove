@@ -67,6 +67,17 @@ const DEFAULT_BANNED = [
 // Formatting the founder has explicitly outlawed in public copy.
 const BANNED_CHARACTERS = ['—', '–']; // em dash, en dash
 
+// Formula frames and committee-speak that make posts read like a brand, not
+// Brogan. A caption using any of these is dropped, and the retry loop generates
+// a fresh, differently-shaped one in its place.
+const WEEKLY_RETIRED = [
+  'the real story is', 'the test is not about', "it's not about", 'it is not about',
+  'part of this movement', 'more inclusive community', 'more inclusive world',
+  'game-changer', 'game changer', "let's make it happen", "let's break it",
+  'share your stories', 'what changes would you like', 'have you experienced',
+  'regardless of ability', 'let us', 'we must',
+];
+
 function isoWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const day = d.getUTCDay() || 7;
@@ -106,7 +117,7 @@ For each day return an object with:
 - "hashtags": 6 to 8 lowercase hashtags (no # symbol). Always include "able2love". Good: disabilitydating, datingwithadisability, accessibledating, disabilitycommunity, disabilitypride, chronicillness, spoonie, invisibledisability, neurodivergent, actuallyautistic, deafcommunity, accessibility, wheelchairlife, inclusion. NEVER fetish or model-bait tags (wheelchairgirl, wheelchairmodel).
 - "image_query": a short, literal stock-photo search phrase (3 to 6 words) for a REAL photo that MATCHES this day's subject, so the picture actually illustrates the post. Show the real scene or thing:
     * people connecting, dating, a couple, honesty between two people: feature disabled and non-disabled people together, e.g. "wheelchair user couple laughing cafe".
-    * a barrier or a place (inaccessible venue, nightclub with steps, bar with no ramp): show THAT, e.g. "nightclub entrance steps", "bar staircase no ramp", "crowded nightclub dancefloor".
+    * a barrier or a place (inaccessible venue, nightclub with steps, bar with no ramp): show the BARRIER itself, kept GENERIC, e.g. "steep staircase entrance", "steps at a doorway", "bar with steps no ramp", "narrow doorway". NEVER a named, famous or recognisable venue: we illustrate the problem, we never call out a real place.
     * a feeling or a person on their own (energy limits, disclosure nerves): show that, e.g. "tired woman resting on sofa", "person nervous looking at phone".
   Concrete and searchable, no abstract words, and it must obviously relate to the caption. Do NOT default to "happy couple on phone" unless the post is genuinely about that.
 
@@ -118,7 +129,7 @@ Rules for ALL text:
 - PRIVACY: never reference the founder's private life or health. Public facts only: performer, comedy writer, musician, wheelchair user, founder.
 - Never pity or inspiration framing. Never use: ${banned}.
 
-VARIETY: no two days open the same way or share a signature phrase. Retired, banned outright: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Fresh angle every day; the belief stays, the wording never repeats.
+VARIETY, NON-NEGOTIABLE: EVERY caption must OPEN differently. Do not reuse a sentence frame across the week. These frames are banned outright, do not use ANY of them even once: "The real story is...", "The test is not about...", "It is not about X, it's about Y", "part of this movement", "a more inclusive community", "a more inclusive world", "game-changer", "let's make it happen", "let's break it". Also retired: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Open each day a different way: a blunt line, a joke, a specific gripe, a flat statement of fact, a bit of anger. The belief stays; the wording and the shape never repeat.
 
 Return ONLY a JSON array of ${DAYS_PER_WEEK} day objects with keys angle, headline, x, caption, hashtags, image_query. No markdown, no commentary.`;
 }
@@ -250,7 +261,12 @@ Return STRICT JSON: {"take":"<the take, under 150 characters>"}. Never use: ${ba
 // Build a typed card item for day i. Best-effort extras; on any failure or
 // guardrail trip, fall back to a warm statement card from the day's headline.
 async function buildCard(day, i, theme, weekNo, banned, dryRun) {
-  const type = TYPE_ROTA[i % TYPE_ROTA.length];
+  let type = TYPE_ROTA[i % TYPE_ROTA.length];
+  // A post about a physical barrier or venue should SHOW that barrier, not land
+  // on a chat/stat card. If the day is barrier-shaped and we have a query for it,
+  // force a photo card so the picture illustrates the problem.
+  const barrier = /\b(venue|nightclub|night club|club|nightlife|stair|stairs|step|steps|ramp|inaccessible|entrance|doorway|building|toilet|lift|pub|bar|dancefloor|dance floor)\b/i.test(`${day.angle} ${day.imageQuery} ${day.headline}`);
+  if (barrier && day.imageQuery && day.imageQuery.length >= 4 && type !== 'photoApp') type = 'photo';
   const headline = scrubText(day.headline);
   const fallback = { type: 'statement', eyebrow: 'Able2Love', statement: headline };
   try {
@@ -326,6 +342,8 @@ function approveDays(days, banned) {
     const blob = `${x} ${headline} ${caption} ${hashtags.join(' ')}`;
     const violation = findViolation(blob, banned);
     if (violation) { console.warn(`Dropped a day (banned phrase "${violation}"): ${angle}`); continue; }
+    const formula = findViolation(`${x} ${caption}`, WEEKLY_RETIRED);
+    if (formula) { console.warn(`Dropped a day (formula/committee-speak "${formula}"): ${angle}`); continue; }
     if (BANNED_CHARACTERS.some((ch) => blob.includes(ch))) { console.warn(`Dropped a day (em/en dash): ${angle}`); continue; }
     if (x.length > 275) { console.warn(`Dropped a day (X post ${x.length} chars): ${angle}`); continue; }
     if (headline.length > 100) { console.warn(`Dropped a day (headline too long): ${angle}`); continue; }

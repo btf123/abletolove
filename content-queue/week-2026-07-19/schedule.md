@@ -4,95 +4,110 @@ Theme: **chronic illness and dating honestly**
 
 One subject a day, posted to BOTH Instagram and X at your peak time, same image both places. Instagram uses the longer caption, X uses the tight version. Review, then load into Buffer, or hand this folder to the Claude browser extension.
 
-## Day 1 — flare day plans
+## Day 1 — chronic illness disclosure
 **Image:** `card-01.png`
 
 **Instagram:**
 ```
-A flare turning up uninvited isn't the same as backing out, but plenty of people still read it that way. The daters worth keeping are the ones who say 'right, next week then' instead of disappearing. Ever had someone handle a last minute cancellation properly? Tell us what they said. Free on Google Play, link in bio.
+Disclosure can be tough, especially when it comes to chronic illness. But what if your date gets it right? Share your stories of disclosure done well. What made it easy for you? Tag someone who's supported you through the process. Free on Google Play, link in bio
 
-#able2love #chronicillness #spoonie #disabilitydating #datingwithadisability #invisibledisability
+#able2love #disabilitydating #chronicillness #spoondies #invisibledisability #accessibledating #datingwithadisability
 ```
 **X:**
 ```
-A flare doesn't ask permission and neither should you. Cancelling a date because your body had other plans isn't rejection, it's honesty. Ever rebooked instead of getting ghosted? tell us. #chronicillness #disabilitydating
+how do you disclose chronic illness on a date? tag someone who's got it right, able2love disabilitydating
 ```
-**Alt text:** A branded Able2Love card that reads: "Cancelling a date isn't rejection, it's information."
+**Alt text:** A branded Able2Love card that reads: "Disclosure"
 
-## Day 2 — you don't look sick
+## Day 2 — inaccessible venues
 **Image:** `card-02.png`
 
 **Instagram:**
 ```
-Someone says it like they've solved a mystery, when really they've just admitted they only trust illness they can see. Chronic illness doesn't come with a costume. What's the strangest thing someone's said to you when you disclosed on a date? Free on Google Play, link in bio.
+We've all been there - excited for a night out, only to find the venue is inaccessible. But what if the venue took steps to change that? Share your stories of inaccessible venues and how you handled it. What changes would you like to see? Tag a venue that's gotten it right. Free on Google Play, link in bio
 
-#able2love #invisibledisability #chronicillness #disabilitydating #spoonie #disabilitycommunity
+#able2love #accessibledating #inaccessibility #wheelchairlife #disabilitycommunity #nightlife #venuefail
 ```
 **X:**
 ```
-"But you don't look sick" on a first date isn't a compliment, it's a diagnosis of someone else's ignorance. Heard worse across a table? #chronicillness #invisibledisability
+ever been on a date and found the venue was inaccessible? what did you do? able2love accessibledating
 ```
-**Alt text:** A branded Able2Love photo card. Caption: "You don't look sick is not a compliment."
+**Alt text:** A branded Able2Love photo card. Caption: "Venue Fail"
 
-## Day 3 — bio omission
+## Day 3 — dating with energy limits
 **Image:** `card-03.png`
 
 **Instagram:**
 ```
-Some profiles read like the illness is a plot twist saved for later. It isn't suspense, it's just delay, and it usually ends in the same conversation happening anyway, badly, over dessert. Do you put it in the bio or wait for the right moment? Free on Google Play, link in bio.
+Dating can be exhausting, especially when you're living with a chronic illness. How do you balance your energy levels with the desire to meet new people? Share your tips and stories of dating with energy limits. What's worked for you? Tag someone who gets it. Free on Google Play, link in bio
 
-#able2love #chronicillness #disabilitydating #datingwithadisability #spoonie #accessibledating
+#able2love #chronicillness #spoonie #invisibledisability #datingwithadisability #energylimits #selfcare
 ```
 **X:**
 ```
-A bio that leaves out chronic illness until date three isn't strategy, it's a countdown to an awkward conversation. Say it early, skip the performance. Do you lead with it or wait? #chronicillness #dating
+how do you navigate dating with energy limits? tag someone who understands, able2love chronicillness
 ```
 **Alt text:** An Able2Love card showing two phones side by side with a friendly dating-app conversation, one profile noting an access need.
 
-## Day 4 — disclosure done well
+## Day 4 — ableism in dating
 **Image:** `card-04.png`
 
 **Instagram:**
 ```
-Disclosure going well isn't rare because it's magic, it's rare because people don't practise it. The ones who ask a follow up question instead of going quiet are showing you exactly who they are early. When has telling someone actually gone right? We want to hear the good version for once. Free on Google Play, link in bio.
+Ableism can be subtle, but it's always damaging. Have you experienced ableism on a date? How did you handle it? Share your stories and let's call out ableism when we see it. What changes would you like to see in the dating world? Tag a friend who's had your back. Free on Google Play, link in bio
 
-#able2love #chronicillness #disabilitydating #invisibledisability #spoonie #disabilitycommunity
+#able2love #disabilitydating #ableism #accessibledating #inclusion #disabilityawareness #datingwithadisability
 ```
 **X:**
 ```
-Telling someone about a diagnosis on date two and getting sensible questions back instead of silence? That's the standard, not a bonus. When has honesty about chronic illness actually gone right for you? #chronicillness #disabilitydating
+ever experienced ableism on a date? what did you do? able2love disabilitydating
 ```
-**Alt text:** An Able2Love statistic card with the founder's take. Headline: "Honesty about a diagnosis deserves questions, not silence."
+**Alt text:** An Able2Love statistic card with the founder's take. Headline: "Ableism Alert"
 
-## Day 5 — energy budgeting
+## Day 5 — diagnosis and disclosure
 **Image:** `card-05.png`
 
 **Instagram:**
 ```
-Getting ready can be half the evening's energy gone before you've left the house, and that's not a failure, it's just the maths of it. Planning around that isn't lowering your standards, it's knowing your own numbers. What's your go to low energy date that still feels like an actual date? Free on Google Play, link in bio.
+Disclosure can be nerve-wracking, but it's a crucial part of building trust. How do you disclose your diagnosis on a date? Share your stories of disclosure and how it's impacted your relationships. What advice would you give to someone who's struggling with disclosure? Tag someone who's been open with you. Free on Google Play, link in bio
 
-#able2love #spoonie #chronicillness #disabilitydating #invisibledisability #datingwithadisability
+#able2love #disabilitycommunity #diagnosis #disclosure #datingwithadisability #invisibledisability #chronicillness
 ```
 **X:**
 ```
-Every date costs something. Some people spend it on wine, some spend it just getting dressed. Chronic illness turns dating into budgeting, not weakness. Best low energy date idea? go. #chronicillness #spoonie
+how do you disclose your diagnosis on a date? tag someone who's been open with you, able2love disabilitycommunity
 ```
-**Alt text:** An Able2Love red-flag versus green-flags card about respectful dating. Headline: "Dating with chronic illness is budgeting, not weakness."
+**Alt text:** An Able2Love red-flag versus green-flags card about respectful dating. Headline: "Disclosure Matters"
 
-## Day 6 — dance floor access
+## Day 6 — inclusive nightlife
 **Image:** `card-06.png`
 
 **Instagram:**
 ```
-Access that stops at the entrance isn't really access, it's decoration. A night out only works if every part of it, bar, floor, toilets, has been thought through, not just the bit people notice first. Which venues or nights actually get this right? Free on Google Play, link in bio.
+Nightlife should be for everyone, regardless of ability. What makes a club or venue accessible and fun for you? Share your stories of inclusive nightlife and let's celebrate the venues that get it right. What changes would you like to see in your local nightlife scene? Tag a venue that's doing it well. Free on Google Play, link in bio
 
-#able2love #disabilitycommunity #accessibledating #disabilitydating #chronicillness #invisibledisability
+#able2love #accessibledating #inclusivenightlife #wheelchairlife #disabilitycommunity #nightlife #venueaccess
 ```
 **X:**
 ```
-A step-free route to the bar means nothing if the dance floor's up three steps. The real test is whether a night builds access in, not bolts it on at the door. Which nights get this right? #disabilitycommunity #accessibledating
+ever been to a club that's actually accessible? what made it great? able2love accessibledating
 ```
-**Alt text:** A branded Able2Love photo card. Caption: "Step-free to the bar means nothing if the dance floor isn't."
+**Alt text:** A branded Able2Love photo card. Caption: "Nightlife For All"
+
+## Day 7 — dating with honesty
+**Image:** `card-07.png`
+
+**Instagram:**
+```
+Honesty is key in any relationship, but it can be especially important when dating with a chronic illness. How do you prioritize honesty in your dating life? Share your stories of honesty and how it's impacted your relationships. What advice would you give to someone who's struggling to be open? Tag someone who's been real with you. Free on Google Play, link in bio
+
+#able2love #disabilitydating #honesty #datingwithadisability #chronicillness #invisibledisability #accessibledating
+```
+**X:**
+```
+how do you prioritize honesty in your dating life? tag someone who's been real with you, able2love disabilitydating
+```
+**Alt text:** A branded Able2Love photo card. Caption: "Honesty Matters"
 
 ---
 App link for bios and plugs: https://play.google.com/store/apps/details?id=com.abletolove.app

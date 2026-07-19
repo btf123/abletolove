@@ -139,15 +139,19 @@ const SAMPLE_WEEK = [
 // cards so a scroll never sees two of the same in a row.
 const TYPE_ROTA = ['statement', 'photo', 'split', 'statTake', 'flags', 'photoApp', 'photo'];
 
-// Photo search terms, deliberately 50/50 disabled and non-disabled people, warm
-// and candid. Fed to Pexels at render time.
+// Photo search terms. VISIBLE disability is the point: wheelchairs, canes, Down
+// syndrome, blind/white cane, Deaf signing, and above all disabled AND
+// non-disabled people TOGETHER (interabled), because "it works" is the message.
+// Short, high-signal queries recall better on Pexels. Fed at render time.
 const PHOTO_QUERIES = [
-  'wheelchair user smiling smartphone outdoors',
-  'happy couple laughing looking at phone',
-  'disabled woman smiling using smartphone',
-  'young man smiling texting phone',
-  'diverse friends laughing with phone',
-  'wheelchair user couple happy together',
+  'wheelchair couple love',
+  'interabled couple smiling',
+  'down syndrome friends smiling',
+  'blind person white cane',
+  'deaf couple sign language',
+  'wheelchair user friends laughing',
+  'woman walking cane smiling',
+  'disabled non disabled friends together',
 ];
 // App screenshots available for the photoApp/feature overlays.
 const APP_FEATURES = ['disclosure', 'nearby', 'plandate'];
@@ -240,7 +244,7 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
   try {
     if (type === 'photo' || type === 'photoApp') {
       const q = PHOTO_QUERIES[i % PHOTO_QUERIES.length];
-      const item = { type, caption: headline, imageQuery: q, eyebrow: null, tag: '#Able2Love' };
+      const item = { type, caption: headline, imageQuery: q, eyebrow: null, tag: '#Able2Love', photoPick: weekNo };
       if (type === 'photoApp') item.feature = APP_FEATURES[i % APP_FEATURES.length];
       return item;
     }

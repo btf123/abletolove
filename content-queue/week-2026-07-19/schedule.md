@@ -2,112 +2,119 @@
 
 Theme: **chronic illness and dating honestly**
 
-One subject a day, posted to BOTH Instagram and X at your peak time, same image both places. Instagram uses the longer caption, X uses the tight version. Review, then load into Buffer, or hand this folder to the Claude browser extension.
+One subject a day, posted to BOTH Instagram and X at your peak time, same image both places. This is your review copy: the actual card image and the full caption for each day are below. If anything is off, say so before it goes out.
 
-## Day 1 — chronic illness disclosure
-**Image:** `card-01.png`
+## Day 1 — honest disclosure
 
-**Instagram:**
-```
-Disclosure can be tough, especially when it comes to chronic illness. But what if your date gets it right? Share your stories of disclosure done well. What made it easy for you? Tag someone who's supported you through the process. Free on Google Play, link in bio
+![Day 1 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-01.png)
 
-#able2love #disabilitydating #chronicillness #spoondies #invisibledisability #accessibledating #datingwithadisability
-```
-**X:**
-```
-how do you disclose chronic illness on a date? tag someone who's got it right, able2love disabilitydating
-```
+**Instagram caption:**
+
+> The real story is not about finding someone who 'accepts' you, it's about finding someone who values honesty. Disclosure can be tough, but it's a two-way street. When it goes well, it's because both people are willing to listen and understand. Able2Love is built on this principle. Free on Google Play, link in bio
+>
+>
+
+**X post:**
+
+> tired of ghosting after disclosure. able2love is different #chronicillness #able2love
+
 **Alt text:** A branded Able2Love card that reads: "Disclosure"
 
-## Day 2 — inaccessible venues
-**Image:** `card-02.png`
+## Day 2 — energy limits
 
-**Instagram:**
-```
-We've all been there - excited for a night out, only to find the venue is inaccessible. But what if the venue took steps to change that? Share your stories of inaccessible venues and how you handled it. What changes would you like to see? Tag a venue that's gotten it right. Free on Google Play, link in bio
+![Day 2 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-02.png)
 
-#able2love #accessibledating #inaccessibility #wheelchairlife #disabilitycommunity #nightlife #venuefail
-```
-**X:**
-```
-ever been on a date and found the venue was inaccessible? what did you do? able2love accessibledating
-```
-**Alt text:** A branded Able2Love photo card. Caption: "Venue Fail"
+**Instagram caption:**
 
-## Day 3 — dating with energy limits
-**Image:** `card-03.png`
+> The test is not about pushing through, it's about respecting each other's boundaries. When you're dating with a chronic illness, energy limits are a reality. Able2Love is a space where you can be honest about your needs and find someone who gets it. Link in bio
+>
+>
 
-**Instagram:**
-```
-Dating can be exhausting, especially when you're living with a chronic illness. How do you balance your energy levels with the desire to meet new people? Share your tips and stories of dating with energy limits. What's worked for you? Tag someone who gets it. Free on Google Play, link in bio
+**X post:**
 
-#able2love #chronicillness #spoonie #invisibledisability #datingwithadisability #energylimits #selfcare
-```
-**X:**
-```
-how do you navigate dating with energy limits? tag someone who understands, able2love chronicillness
-```
+> energy limits are a thing. pacing is key #spoonie #able2love
+
+**Alt text:** A branded Able2Love photo card. Caption: "Pacing"
+
+## Day 3 — venue exclusion
+
+![Day 3 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-03.png)
+
+**Instagram caption:**
+
+> The real story is about creating spaces where everyone can dance and have fun. When venues prioritize accessibility, it's a game-changer. Able2Love is not just an app, it's a movement towards inclusive nightlife. Let's make it happen. Free on Google Play
+>
+>
+
+**X post:**
+
+> nightlife shouldn't be exclusive. step-free access matters #accessiblenightlife #able2love
+
 **Alt text:** An Able2Love card showing two phones side by side with a friendly dating-app conversation, one profile noting an access need.
 
-## Day 4 — ableism in dating
-**Image:** `card-04.png`
+## Day 4 — diagnosis disclosure
 
-**Instagram:**
-```
-Ableism can be subtle, but it's always damaging. Have you experienced ableism on a date? How did you handle it? Share your stories and let's call out ableism when we see it. What changes would you like to see in the dating world? Tag a friend who's had your back. Free on Google Play, link in bio
+![Day 4 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-04.png)
 
-#able2love #disabilitydating #ableism #accessibledating #inclusion #disabilityawareness #datingwithadisability
-```
-**X:**
-```
-ever experienced ableism on a date? what did you do? able2love disabilitydating
-```
-**Alt text:** An Able2Love statistic card with the founder's take. Headline: "Ableism Alert"
+**Instagram caption:**
 
-## Day 5 — diagnosis and disclosure
-**Image:** `card-05.png`
+> The test is not about hiding your diagnosis, it's about finding someone who values your honesty. When you disclose your diagnosis, it's a chance to build a deeper connection. Able2Love is a space where you can be yourself, without fear of judgment. Link in bio
+>
+>
 
-**Instagram:**
-```
-Disclosure can be nerve-wracking, but it's a crucial part of building trust. How do you disclose your diagnosis on a date? Share your stories of disclosure and how it's impacted your relationships. What advice would you give to someone who's struggling with disclosure? Tag someone who's been open with you. Free on Google Play, link in bio
+**X post:**
 
-#able2love #disabilitycommunity #diagnosis #disclosure #datingwithadisability #invisibledisability #chronicillness
-```
-**X:**
-```
-how do you disclose your diagnosis on a date? tag someone who's been open with you, able2love disabilitycommunity
-```
-**Alt text:** An Able2Love red-flag versus green-flags card about respectful dating. Headline: "Disclosure Matters"
+> diagnosis disclosure can be scary. but it's a chance to get real #honesty #able2love
 
-## Day 6 — inclusive nightlife
-**Image:** `card-06.png`
+**Alt text:** An Able2Love statistic card with the founder's take. Headline: "Getting Real"
 
-**Instagram:**
-```
-Nightlife should be for everyone, regardless of ability. What makes a club or venue accessible and fun for you? Share your stories of inclusive nightlife and let's celebrate the venues that get it right. What changes would you like to see in your local nightlife scene? Tag a venue that's doing it well. Free on Google Play, link in bio
+## Day 5 — navigating stigma
 
-#able2love #accessibledating #inclusivenightlife #wheelchairlife #disabilitycommunity #nightlife #venueaccess
-```
-**X:**
-```
-ever been to a club that's actually accessible? what made it great? able2love accessibledating
-```
-**Alt text:** A branded Able2Love photo card. Caption: "Nightlife For All"
+![Day 5 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-05.png)
 
-## Day 7 — dating with honesty
-**Image:** `card-07.png`
+**Instagram caption:**
 
-**Instagram:**
-```
-Honesty is key in any relationship, but it can be especially important when dating with a chronic illness. How do you prioritize honesty in your dating life? Share your stories of honesty and how it's impacted your relationships. What advice would you give to someone who's struggling to be open? Tag someone who's been real with you. Free on Google Play, link in bio
+> The real story is about breaking down the stigma surrounding chronic illness. When we create spaces where people can be honest about their experiences, we build a more inclusive community. Able2Love is part of this movement. Free on Google Play
+>
+>
 
-#able2love #disabilitydating #honesty #datingwithadisability #chronicillness #invisibledisability #accessibledating
-```
-**X:**
-```
-how do you prioritize honesty in your dating life? tag someone who's been real with you, able2love disabilitydating
-```
-**Alt text:** A branded Able2Love photo card. Caption: "Honesty Matters"
+**X post:**
+
+> stigma surrounding chronic illness is real. let's break it #chronicillnessawareness #able2love
+
+**Alt text:** An Able2Love red-flag versus green-flags card about respectful dating. Headline: "Breaking Stigma"
+
+## Day 6 — self-care in dating
+
+![Day 6 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-06.png)
+
+**Instagram caption:**
+
+> The test is not about putting others first, it's about prioritizing your own needs. When you're dating with a chronic illness, self-care is essential. Able2Love is a space where you can be honest about your needs and find someone who supports you. Link in bio
+>
+>
+
+**X post:**
+
+> self-care is not selfish. prioritize your own needs #selfcare #able2love
+
+**Alt text:** A branded Able2Love photo card. Caption: "Prioritizing Self-Care"
+
+## Day 7 — accessible dating
+
+![Day 7 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-07.png)
+
+**Instagram caption:**
+
+> The real story is about creating a world where everyone has access to love and connection. When we prioritize accessibility, we build a more inclusive community. Able2Love is part of this movement. Free on Google Play
+>
+>
+
+**X post:**
+
+> accessible dating is not a niche. it's a right #accessibledating #able2love
+
+**Alt text:** A branded Able2Love photo card. Caption: "Accessible Love"
 
 ---
 App link for bios and plugs: https://play.google.com/store/apps/details?id=com.abletolove.app

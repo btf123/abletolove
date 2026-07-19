@@ -11,8 +11,13 @@ The title is the single biggest lever. Do that one first.
 ## BOX 1 — App name  (field: "App name", max 30 chars)
 
 ```
-Able2Love: Disability Dating
+Able2Love: Inclusive Dating
 ```
+
+(This is the founder's chosen title, live on the store. "Inclusive" fits the
+disabled-and-non-disabled ethos better than a narrower keyword. Because the
+words "disability / disabled dating" are no longer in the title, they are carried
+hard in the short and full descriptions below, so search visibility is kept.)
 
 ---
 

@@ -265,35 +265,24 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
   }
 }
 
-async function main() {
-  const dryRun = process.argv.includes('--dry-run');
-  const niche = JSON.parse(await readFile(NICHE_FILE, 'utf8'));
-  const banned = niche.campaign_guardrails?.banned_language || DEFAULT_BANNED;
-
-  const now = new Date();
-  const weekNo = isoWeek(now);
-  const theme = THEMES[weekNo % THEMES.length];
-  console.log(`Theme this week (both platforms): ${theme}`);
-
-  let days;
-  if (dryRun) {
-    days = SAMPLE_WEEK;
-  } else {
-    // Self-healing parse: a dropped comma or stray commentary from the model
-    // must not sink the whole weekly batch. On failure, hand the broken text
-    // back once and ask for corrected JSON.
-    const raw = await generateText(buildPrompt(niche, theme) + await lessonsPromptBlock(), { temperature: 0.9 });
-    try {
-      days = parseDays(raw);
-    } catch (err) {
-      console.warn(`Week JSON parse failed (${err.message}); asking the model to repair it.`);
-      const repaired = await generateText(`The text below was meant to be one strict JSON array of day objects but does not parse (${err.message}). Return ONLY the corrected JSON array: no markdown, no commentary, and escape any double quotes inside string values.\n\n${raw}`, { temperature: 0.3 });
-      days = parseDays(repaired);
-    }
+// One generation attempt: draft the week and parse it, with a single repair pass
+// for the usual dropped-comma slip. Throws if it still won't parse (the caller
+// retries with a fresh draft).
+async function generateWeekDays(niche, theme, lessonsBlock) {
+  const raw = await generateText(buildPrompt(niche, theme) + lessonsBlock, { temperature: 0.9 });
+  try {
+    return parseDays(raw);
+  } catch (err) {
+    console.warn(`Week JSON parse failed (${err.message}); asking the model to repair it.`);
+    const repaired = await generateText(`The text below was meant to be one strict JSON array of day objects but does not parse (${err.message}). Return ONLY the corrected JSON array: no markdown, no commentary, and escape any double quotes inside string values.\n\n${raw}`, { temperature: 0.3 });
+    return parseDays(repaired);
   }
+}
 
+// Filter a raw day list down to the ones that pass the public-copy guardrails.
+function approveDays(days, banned) {
   const approved = [];
-  for (const d of days) {
+  for (const d of days || []) {
     const angle = String(d.angle || '').trim();
     const x = String(d.x || '').trim();
     const headline = String(d.headline || '').trim();
@@ -310,10 +299,45 @@ async function main() {
 
     approved.push({ angle, x, headline, caption, hashtags });
   }
+  return approved;
+}
 
-  if (!dryRun && approved.length < MIN_DAYS) {
-    console.error(`Only ${approved.length} aligned days survived the guardrails (need ${MIN_DAYS}). Not writing. Re-run the workflow.`);
-    process.exit(1);
+async function main() {
+  const dryRun = process.argv.includes('--dry-run');
+  const niche = JSON.parse(await readFile(NICHE_FILE, 'utf8'));
+  const banned = niche.campaign_guardrails?.banned_language || DEFAULT_BANNED;
+
+  const now = new Date();
+  const weekNo = isoWeek(now);
+  const theme = THEMES[weekNo % THEMES.length];
+  console.log(`Theme this week (both platforms): ${theme}`);
+
+  let approved;
+  if (dryRun) {
+    approved = approveDays(SAMPLE_WEEK, banned);
+  } else {
+    // The model occasionally hands back mangled JSON, and after the repair pass
+    // too few days survive the guardrails. Rather than fail the whole run (and
+    // make the founder re-trigger by hand), regenerate a few times; a fresh draft
+    // almost always parses cleanly. Only give up after several honest attempts.
+    const lessonsBlock = await lessonsPromptBlock();
+    const MAX_ATTEMPTS = 4;
+    approved = [];
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const days = await generateWeekDays(niche, theme, lessonsBlock);
+        approved = approveDays(days, banned);
+      } catch (e) {
+        console.warn(`Week generation attempt ${attempt} threw: ${e.message.slice(0, 140)}`);
+        approved = [];
+      }
+      if (approved.length >= MIN_DAYS) { console.log(`Attempt ${attempt}: ${approved.length} aligned days survived.`); break; }
+      console.warn(`Attempt ${attempt}: only ${approved.length} day(s) survived the guardrails (need ${MIN_DAYS}).${attempt < MAX_ATTEMPTS ? ' Regenerating.' : ''}`);
+    }
+    if (approved.length < MIN_DAYS) {
+      console.error(`Gave up after ${MAX_ATTEMPTS} attempts: only ${approved.length} aligned days survived (need ${MIN_DAYS}).`);
+      process.exit(1);
+    }
   }
 
   const stamp = now.toISOString().slice(0, 10);

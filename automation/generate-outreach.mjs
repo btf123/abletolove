@@ -241,16 +241,23 @@ function renderMarkdown(dateStr, data, warnings) {
   const lines = [];
   lines.push(`# Able2Love outreach brief: ${dateStr}`);
   lines.push('');
-  lines.push('**One paste, done.** Copy the mission below into your Claude extension (in the browser where you are logged into X and Instagram). It finds real posts, drafts each reply in your voice, waits for your yes per item, posts the approved ones, and replaces anything you skip. Nothing posts without your yes. That approval is the safety.');
+  lines.push('**Your outreach for today.** Each post below has a one-tap **Reply on X** link: tap it and X opens on that exact tweet with your reply already written. Read it, tweak if you fancy, press Post. You are posting as yourself, a real person, so it is safe and never looks like a bot. Nothing goes out unless you post it.');
   lines.push('');
-  if (data.mission) {
-    lines.push('## Today\'s engagement mission (paste this into the extension)');
+  const cands = data.x_candidates || [];
+  if (cands.length) {
+    lines.push('## Reply to these on X (one tap each)');
     lines.push('');
-    lines.push('```');
-    lines.push(data.mission);
-    lines.push('```');
-    lines.push('');
-    lines.push('Everything below is the raw material the mission is built from, for reference.');
+    cands.forEach((c, i) => {
+      const intent = `https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(c.id)}&text=${encodeURIComponent(c.reply || '')}`;
+      lines.push(`**${i + 1}. @${c.author}**${c.url ? ` ([their post](${c.url}))` : ''}`);
+      if (c.post) lines.push(`_${c.post}_`);
+      lines.push('');
+      lines.push(`> ${c.reply}`);
+      lines.push('');
+      lines.push(`👉 [**Reply on X**](${intent})`);
+      lines.push('');
+    });
+    lines.push('_These come with spares. If one is not right, just skip it and do the next._');
     lines.push('');
   }
   if (warnings.length) {

@@ -82,42 +82,45 @@ function findViolation(text, banned) {
 }
 
 function buildPrompt(niche, theme) {
-  const tone = niche.content_tone || 'warm, real, dryly funny and confident';
-  const keywords = (niche.niche_keywords || []).join(', ');
   const banned = (niche.campaign_guardrails?.banned_language || DEFAULT_BANNED).join('; ');
-  return `You are the automated communications assistant for Able2Love, writing as its founder: a Greater Manchester comedy writer, performer, musician and producer who is a full-time wheelchair user and a University of Salford Comedy Writing and Performance graduate. Performer first; the wheelchair is part of the picture, never the whole picture.
+  return `You write Able2Love's Instagram and X posts AS ITS FOUNDER, Brogan: a Greater Manchester comedy writer, performer and musician who is a full-time wheelchair user. You are a real, funny, opinionated person, not a brand account and not an AI. Performer first; the wheelchair is part of the picture, never the whole picture.
 
-Able2Love is a genuine dating platform for disabled and non-disabled people who are open to dating one another. It exists because disability is too often allowed to define somebody before their humour, personality, attraction, ambition or individuality has entered the conversation. It is not a charity, pity project, fetish platform, medical forum or segregated space. Clear contrast suits the voice: say what something is and what it is not.
+Able2Love is a dating app for disabled and non-disabled people who want to date each other. You built it because the mainstream apps treat a disability like a dealbreaker and disabled people get shut out of so much of normal social life. That injustice is what fires you up.
 
-Tone: ${tone}
-Topics we live in: ${keywords}
-This week's theme: ${theme}
+YOUR VOICE, THIS IS THE WHOLE POINT, GET IT RIGHT:
+- Warm and on the community's side, but with a real edge. You HAVE opinions and you are not shy about them.
+- You are angry, and the anger is aimed at the barriers: the mainstream apps, the venues with steps, the people who look away. NEVER at disabled people. Motivated by that anger, never sunk by it.
+- Dry, funny, human. A joke, a sharp observation, a blunt truth. Like a comedian who happens to have built the app.
+- Every post is a different shape, but they all come back to one belief: the way disabled people get treated on dating apps and shut out of social life is wrong, and Able2Love is here to change it. This is a sea change, and you talk like it.
+- First person is good ("I built this because", "we"). Specific and lived. Never a charity, never an equality-and-diversity department, never inspiration-porn.
 
-Plan ${DAYS_PER_WEEK} days of posting. Each day covers ONE subject (an "angle"), and you write that same subject two ways: a tight version for X and a fuller version for Instagram. The two must clearly be about the same idea, so the two platforms stay aligned.
+DEAD ON ARRIVAL, never write like this: faceless engagement-bait such as "Share your stories", "What changes would you like to see?", "Have you experienced X? How did you handle it?", "Let's celebrate the venues that get it right", "X can be tough, but what if...", "Nightlife should be for everyone, regardless of ability". These are limp and could come from any brand's social calendar. If a line isn't unmistakably YOU, bin it and say it like a person with a pulse.
+
+Plan ${DAYS_PER_WEEK} days, this week's theme: ${theme}. Each day is ONE subject (an "angle"), written two ways: a tight version for X and a fuller one for Instagram, clearly the same idea.
 
 For each day return an object with:
-- "angle": 2 to 5 word label for the day's subject (internal only, e.g. "bad bios", "inaccessible venues").
-- "x": the X/Twitter post. Max 260 characters including hashtags. Include a short engagement hook (a question or a "tag someone who..." line) so people reply, then 1 to 2 lowercase hashtags at the end.
-- "headline": a short punchy line for the image card. Max 90 characters. No hashtags, no link.
-- "caption": the Instagram caption. 2 to 4 sentences, warm and direct. End with a genuine engagement question or a "tag someone" prompt that invites replies, THEN point people to the app (e.g. "Free on Google Play, link in bio").
-- "hashtags": 6 to 8 lowercase hashtags as an array (no # symbol), for Instagram. Mix broad and specific community tags. Always include "able2love". Good tags: disabilitydating, datingwithadisability, accessibledating, disabilitycommunity, disabilitypride, chronicillness, spoonie, invisibledisability, neurodivergent, actuallyautistic, deafcommunity, accessibility, wheelchairlife, inclusion. NEVER use fetish or model-bait tags such as wheelchairgirl or wheelchairmodel; a disability dating app must not court that audience.
+- "angle": 2 to 5 word internal label (e.g. "bad bios", "nightclub stairs").
+- "headline": a short punchy line for the image card, max 90 characters, no hashtags, in your voice.
+- "x": the X post, max 260 chars including hashtags. Make a point or a joke FIRST. A question is optional; if you use one it must be specific and human, never the generic bait above. End with 1 to 2 lowercase hashtags.
+- "caption": the Instagram caption, 2 to 4 sentences in your voice. Land the point, then point to the app naturally (e.g. "Free on Google Play, link in bio"). No generic bait.
+- "hashtags": 6 to 8 lowercase hashtags (no # symbol). Always include "able2love". Good: disabilitydating, datingwithadisability, accessibledating, disabilitycommunity, disabilitypride, chronicillness, spoonie, invisibledisability, neurodivergent, actuallyautistic, deafcommunity, accessibility, wheelchairlife, inclusion. NEVER fetish or model-bait tags (wheelchairgirl, wheelchairmodel).
+- "image_query": a short, literal stock-photo search phrase (3 to 6 words) for a REAL photo that MATCHES this day's subject, so the picture actually illustrates the post. Show the real scene or thing:
+    * people connecting, dating, a couple, honesty between two people: feature disabled and non-disabled people together, e.g. "wheelchair user couple laughing cafe".
+    * a barrier or a place (inaccessible venue, nightclub with steps, bar with no ramp): show THAT, e.g. "nightclub entrance steps", "bar staircase no ramp", "crowded nightclub dancefloor".
+    * a feeling or a person on their own (energy limits, disclosure nerves): show that, e.g. "tired woman resting on sofa", "person nervous looking at phone".
+  Concrete and searchable, no abstract words, and it must obviously relate to the caption. Do NOT default to "happy couple on phone" unless the post is genuinely about that.
 
 Rules for ALL text:
-- UK English spelling only (normalise, colour, maths).
-- NEVER use an em dash or en dash. Use commas, brackets, colons or full stops.
-- Vary the days: dry observations, a question to the community, a blunt joke, and about two days that plainly invite people to download the app.
-- Humour may be dry, observational, dark or blunt. Good subjects: bad bios, weak opening messages, awkward dating behaviour, inaccessible venues, and the gap between what people claim and what they practise. Never make disabled bodies, care needs or private trauma the punchline. Disability does not need to be the subject of every joke.
-- Treat disabled users as adults with attraction, preferences, boundaries, humour and agency. Never praise non-disabled people merely for being willing to date a disabled person.
-- FACTS: never invent app features, release dates, prices, user numbers, testimonials, safety guarantees, partnerships, awards or statistics. The only product claims allowed: the app exists, it is free on Google Play, and what it stands for. Do not manufacture momentum.
-- PRIVACY: never reference the founder's private life or health. Public facts only: performer, comedy writer, musician, producer, Salford graduate, wheelchair user, founder.
-- Direct beats padded. Do not sound corporate, sentimental, over-inspirational, vague, or like an equality-and-diversity department.
-- Never use pity or inspiration framing. Never use any of these words/phrases: ${banned}.
+- UK English only. NEVER an em dash or en dash; use commas, brackets, colons, full stops.
+- Never make disabled bodies, care needs or private trauma the punchline. Disability is context, not the joke.
+- Treat disabled people as adults with attraction, humour and agency. Never praise non-disabled people just for dating a disabled person.
+- FACTS: never invent app features, prices, user numbers, testimonials, awards or statistics. Only true product claims: the app exists, it's free on Google Play, and what it stands for.
+- PRIVACY: never reference the founder's private life or health. Public facts only: performer, comedy writer, musician, wheelchair user, founder.
+- Never pity or inspiration framing. Never use: ${banned}.
 
-Before including a day, test it: Is it true? Is it specific? Does it sound like a real person? Does it centre agency rather than pity? Could the founder plausibly say it out loud? If any answer is no, rewrite it.
+VARIETY: no two days open the same way or share a signature phrase. Retired, banned outright: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Fresh angle every day; the belief stays, the wording never repeats.
 
-VARIETY, NON-NEGOTIABLE: a real person does not repeat catchphrases week after week. No two days may open the same way or share a signature phrase. These phrases are worn out from earlier posts and banned outright: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Find fresh images and fresh angles; the beliefs stay, the wording never repeats.
-
-Return ONLY a JSON array of ${DAYS_PER_WEEK} day objects with keys angle, x, headline, caption, hashtags. No markdown, no commentary.`;
+Return ONLY a JSON array of ${DAYS_PER_WEEK} day objects with keys angle, headline, x, caption, hashtags, image_query. No markdown, no commentary.`;
 }
 
 function parseDays(raw) {
@@ -131,9 +134,9 @@ function parseDays(raw) {
 }
 
 const SAMPLE_WEEK = [
-  { angle: 'why we built it', x: 'We got tired of dating apps that treat a disability like a plot twist. So we built one that does not. Able2Love is live, free on Google Play. Tag someone who has given up on the apps. #disabilitydating #able2love', headline: 'Dating apps were not built for us. So we built one.', caption: 'We got tired of dating apps that treat a disability like a plot twist you break gently in the DMs. So we built the one we actually wanted. Tag someone who has given up on the apps, this one is different. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'inclusivedating', 'disabilitycommunity', 'disabilitypride', 'datingwithadisability'] },
-  { angle: 'disclosure', x: 'Your disability should not be a speech you rehearse in the DMs. On Able2Love it is a card on your profile. Set it out once, done. What do you wish people just knew? #disabilitydating #able2love', headline: 'Your access needs. On a card, not a confession.', caption: 'On most apps your disability is a speech you rehearse in the DMs. On Able2Love it is a card on your profile. You set it out once, done. What do you wish people just knew so you did not have to explain it every time? Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'disabilitycommunity', 'invisibledisability', 'chronicillness', 'accessibility'] },
-  { angle: 'bad bios', x: 'Red flag: "Love to laugh, love to travel, no drama." A personality, or an airport? Worst bio cliche you have seen? I will start. #disabilitydating #able2love', headline: '"Love to laugh, love to travel, no drama." A personality, or an airport?', caption: 'Green flags only: asks instead of assumes, does not treat access needs like a favour, knows a wheelchair is freedom not a tragedy. Worst bio cliche you have seen? I will start. Write a better bio. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'dating', 'greenflags', 'disabilitycommunity', 'neurodivergent'] },
+  { angle: 'why we built it', x: 'We got tired of dating apps that treat a disability like a plot twist. So we built one that does not. Able2Love is live, free on Google Play. Tag someone who has given up on the apps. #disabilitydating #able2love', headline: 'Dating apps were not built for us. So we built one.', caption: 'We got tired of dating apps that treat a disability like a plot twist you break gently in the DMs. So we built the one we actually wanted. Tag someone who has given up on the apps, this one is different. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'inclusivedating', 'disabilitycommunity', 'disabilitypride', 'datingwithadisability'], image_query: 'wheelchair user couple laughing together' },
+  { angle: 'disclosure', x: 'Your disability should not be a speech you rehearse in the DMs. On Able2Love it is a card on your profile. Set it out once, done. What do you wish people just knew? #disabilitydating #able2love', headline: 'Your access needs. On a card, not a confession.', caption: 'On most apps your disability is a speech you rehearse in the DMs. On Able2Love it is a card on your profile. You set it out once, done. What do you wish people just knew so you did not have to explain it every time? Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'disabilitycommunity', 'invisibledisability', 'chronicillness', 'accessibility'], image_query: 'person looking at phone thoughtful' },
+  { angle: 'bad bios', x: 'Red flag: "Love to laugh, love to travel, no drama." A personality, or an airport? Worst bio cliche you have seen? I will start. #disabilitydating #able2love', headline: '"Love to laugh, love to travel, no drama." A personality, or an airport?', caption: 'Green flags only: asks instead of assumes, does not treat access needs like a favour, knows a wheelchair is freedom not a tragedy. Worst bio cliche you have seen? I will start. Write a better bio. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'dating', 'greenflags', 'disabilitycommunity', 'neurodivergent'], image_query: 'airport departure board crowd' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -148,10 +151,10 @@ const SAMPLE_WEEK = [
 // cards so a scroll never sees two of the same in a row.
 const TYPE_ROTA = ['statement', 'photo', 'split', 'statTake', 'flags', 'photoApp', 'photo'];
 
-// Photo search terms. VISIBLE disability is the point: wheelchairs, canes, Down
-// syndrome, blind/white cane, Deaf signing, and above all disabled AND
-// non-disabled people TOGETHER (interabled), because "it works" is the message.
-// Short, high-signal queries recall better on Pexels. Fed at render time.
+// FALLBACK photo queries, used only when the day has no topic-matched
+// image_query. The primary source is each day's own image_query, so the picture
+// illustrates that post. These still lean on visible disability + interabled
+// pairs so a fallback never lands on random able-bodied stock.
 const PHOTO_QUERIES = [
   'wheelchair couple love',
   'interabled couple smiling',
@@ -252,7 +255,9 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
   const fallback = { type: 'statement', eyebrow: 'Able2Love', statement: headline };
   try {
     if (type === 'photo' || type === 'photoApp') {
-      const q = PHOTO_QUERIES[i % PHOTO_QUERIES.length];
+      // Prefer the day's own topic-matched query so the photo illustrates the
+      // actual post; the fixed representation list is only a last-resort fallback.
+      const q = (day.imageQuery && day.imageQuery.length >= 4) ? day.imageQuery : PHOTO_QUERIES[i % PHOTO_QUERIES.length];
       const item = { type, caption: headline, imageQuery: q, eyebrow: null, tag: '#Able2Love', photoPick: weekNo };
       if (type === 'photoApp') item.feature = APP_FEATURES[i % APP_FEATURES.length];
       return item;
@@ -315,6 +320,7 @@ function approveDays(days, banned) {
     const headline = String(d.headline || '').trim();
     const caption = String(d.caption || '').trim();
     const hashtags = Array.isArray(d.hashtags) ? d.hashtags.map(String) : [];
+    const imageQuery = String(d.image_query || '').replace(/\s+/g, ' ').trim().slice(0, 80);
     if (!x || !headline || !caption) continue;
 
     const blob = `${x} ${headline} ${caption} ${hashtags.join(' ')}`;
@@ -324,7 +330,7 @@ function approveDays(days, banned) {
     if (x.length > 275) { console.warn(`Dropped a day (X post ${x.length} chars): ${angle}`); continue; }
     if (headline.length > 100) { console.warn(`Dropped a day (headline too long): ${angle}`); continue; }
 
-    approved.push({ angle, x, headline, caption, hashtags });
+    approved.push({ angle, x, headline, caption, hashtags, imageQuery });
   }
   return approved;
 }

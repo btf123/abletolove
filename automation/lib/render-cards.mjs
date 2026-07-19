@@ -92,14 +92,18 @@ function statementCard(it) {
 
 // --- STAT + TAKE ---
 function statTakeCard(it) {
+  // The take is clamped upstream, but scale the font as a belt-and-braces guard
+  // so a longer take can never shove the 58% off the top again.
+  const tn = String(it.take || '').length;
+  const takeFs = tn <= 110 ? 30 : tn <= 160 ? 26 : 23;
   return `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE} html{${WARM_BG}}${BRANDCSS}
     .wrap{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 80px}
     .eyebrow{font-size:24px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#FFC64D;margin-bottom:6px}
-    .stat{font-size:230px;font-weight:800;line-height:.86;letter-spacing:-6px;background:linear-gradient(135deg,#FFC64D,#FF8FA6);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0 0 6px -4px}
-    .claim{font-size:39px;font-weight:600;line-height:1.24;max-width:22ch;margin:0 0 26px;color:#F3E4EA}
-    .take{background:rgba(0,0,0,.3);border-left:6px solid #E23349;border-radius:14px;padding:24px 30px;max-width:27ch}
+    .stat{font-size:220px;font-weight:800;line-height:.86;letter-spacing:-6px;background:linear-gradient(135deg,#FFC64D,#FF8FA6);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0 0 6px -4px}
+    .claim{font-size:38px;font-weight:600;line-height:1.24;max-width:22ch;margin:0 0 24px;color:#F3E4EA}
+    .take{background:rgba(0,0,0,.3);border-left:6px solid #E23349;border-radius:14px;padding:22px 28px;max-width:27ch}
     .take .lbl{font-size:21px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#FF8FA6;margin-bottom:10px}
-    .take .txt{font-size:30px;font-weight:600;line-height:1.32}
+    .take .txt{font-size:${takeFs}px;font-weight:600;line-height:1.32}
     .source{position:absolute;bottom:54px;left:80px;font-size:20px;color:#C9A9B6;font-weight:500}
   </style></head><body>${BRANDROW()}
     <div class="wrap">
@@ -127,6 +131,15 @@ function phoneHtml(p, roles) {
     <div class="chat">${rows}</div>
   </div></div>`;
 }
+// Scale the chat text so even long, funny banter always fits both phones.
+function fontForChat(msgs) {
+  const n = msgs.join(' ').length;
+  if (n <= 150) return { fs: 23, gap: 16, pad: '15px 19px' };
+  if (n <= 230) return { fs: 21, gap: 14, pad: '13px 17px' };
+  if (n <= 320) return { fs: 19, gap: 12, pad: '12px 16px' };
+  if (n <= 420) return { fs: 17, gap: 11, pad: '11px 15px' };
+  return { fs: 15, gap: 9, pad: '10px 14px' };
+}
 function splitCard(it) {
   const A = it.personA, B = it.personB;
   const msgs = it.messages || [];
@@ -135,6 +148,7 @@ function splitCard(it) {
   A.messages = msgs; B.messages = msgs;
   const aRoles = ['out', 'in']; // msg0 (A) out on A's phone, msg1 (B) in, ...
   const bRoles = ['in', 'out'];
+  const c = fontForChat(msgs);
   return `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE} html{${WARM_BG}}${BRANDCSS}
     .brandrow{top:52px;left:70px}.mk{width:48px;height:48px}.brandname{font-size:26px}
     .hero{position:absolute;top:118px;left:70px;right:70px;text-align:center;z-index:8}
@@ -148,8 +162,8 @@ function splitCard(it) {
     .av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;flex:none}
     .pn{font-size:30px;font-weight:700}.pstat{font-size:19px;color:#7FE0A0;font-weight:600;margin-top:3px}
     .chip{display:inline-block;margin-top:6px;font-size:18px;font-weight:700;border:1.5px solid #C99BF055;color:#C99BF0;border-radius:100px;padding:4px 14px}
-    .chat{flex:1;display:flex;flex-direction:column;gap:16px;padding:26px 22px;justify-content:flex-end}
-    .msg{max-width:80%;font-size:23px;font-weight:500;line-height:1.3;padding:15px 19px;border-radius:22px}
+    .chat{flex:1;display:flex;flex-direction:column;gap:${c.gap}px;padding:24px 22px;justify-content:flex-end;overflow:hidden}
+    .msg{max-width:82%;font-size:${c.fs}px;font-weight:500;line-height:1.3;padding:${c.pad};border-radius:22px}
     .msg.in{align-self:flex-start;background:#2a2129;color:#F2E9ED;border-bottom-left-radius:7px}
     .msg.out{align-self:flex-end;background:linear-gradient(135deg,#E23349,#F5798F);color:#fff;border-bottom-right-radius:7px}
     .foot{position:absolute;bottom:50px;left:0;right:0;text-align:center;font-size:26px;font-weight:700;z-index:8}

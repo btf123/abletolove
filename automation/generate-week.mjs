@@ -184,6 +184,20 @@ function scrubText(s) {
   for (const ch of BANNED_CHARACTERS) t = t.split(ch).join(', ');
   return t.trim();
 }
+// Keep card text inside the card. Trims to at most `maxSentences` and `maxChars`,
+// cutting on a sentence or word boundary so nothing overflows the design.
+function clamp(s, maxSentences, maxChars) {
+  let t = scrubText(s).replace(/\s+/g, ' ');
+  const parts = t.match(/[^.!?]+[.!?]+/g);
+  if (parts && parts.length > maxSentences) t = parts.slice(0, maxSentences).join(' ').trim();
+  if (t.length > maxChars) {
+    const cut = t.slice(0, maxChars);
+    const sp = cut.lastIndexOf(' ');
+    t = (sp > 40 ? cut.slice(0, sp) : cut).replace(/[,;:\s]+$/, '');
+    if (!/[.!?]$/.test(t)) t += '.';
+  }
+  return t;
+}
 function cardClean(blob, banned) {
   const v = findViolation(blob, banned);
   if (v) return false;
@@ -205,7 +219,7 @@ async function genJson(prompt) {
 const VOICE_LINE = 'Voice: warm, human, dryly funny, angry at the barriers not the people, professional but with a pulse. UK English. Never an em dash or en dash. Never make disabled people the punchline. Never invent statistics or app features.';
 
 function chatPrompt(theme, chip, banned) {
-  return `Write a short, warm, believable dating-app exchange (3 messages) between two people on Able2Love, on the theme "${theme}". One of them has this access note on their profile: "${chip}". The access thing should come up lightly and naturally at most once (a step-free venue, a quiet place), never as the whole point, never as a hurdle. Real flirty banter, funny, kind. ${VOICE_LINE}
+  return `Write a short, warm, believable dating-app exchange (3 messages) between two people on Able2Love, on the theme "${theme}". One of them has this access note on their profile: "${chip}". The access thing should come up lightly and naturally at most once (a step-free venue, a quiet place), never as the whole point, never as a hurdle. Real flirty banter, funny, kind. Keep EACH message SHORT, like a real text: ideally under 80 characters, never more than 120. ${VOICE_LINE}
 Return STRICT JSON: {"messages":["<msg1>","<msg2>","<msg3>"]}. Alternating speakers, msg1 and msg3 from the same person. Never use: ${banned}.`;
 }
 function flagsPrompt(theme, banned) {
@@ -213,8 +227,8 @@ function flagsPrompt(theme, banned) {
 Return STRICT JSON: {"redBio":"<a cliche bio line in quotes>","redAside":"<dry one-liner>","greens":["<g1>","<g2>","<g3>"]}. Never use: ${banned}.`;
 }
 function takePrompt(stat, theme, banned) {
-  return `A real statistic: "${stat.stat} ${stat.claim}" (${stat.source}). Write Brogan's TAKE on it: 1 to 2 sentences, angry at the injustice and warm to the people, motivated and passionate, that ties to why Able2Love exists. Do NOT restate the number, do NOT invent any other number. ${VOICE_LINE}
-Return STRICT JSON: {"take":"<the take>"}. Never use: ${banned}.`;
+  return `A real statistic: "${stat.stat} ${stat.claim}" (${stat.source}). Write Brogan's TAKE on it: SHORT, punchy, at most 2 sentences and under 150 characters total, angry at the injustice and warm to the people, that ties to why Able2Love exists. Do NOT restate the number, do NOT invent any other number, do NOT write a paragraph. ${VOICE_LINE}
+Return STRICT JSON: {"take":"<the take, under 150 characters>"}. Never use: ${banned}.`;
 }
 
 // Build a typed card item for day i. Best-effort extras; on any failure or
@@ -235,7 +249,7 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
       const stat = STATS_POOL[weekNo % STATS_POOL.length];
       let take = `That gap is exactly why Able2Love exists.`;
       if (!dryRun) {
-        try { const r = await genJson(takePrompt(stat, theme, banned)); if (r.take) take = scrubText(r.take); } catch { /* keep default */ }
+        try { const r = await genJson(takePrompt(stat, theme, banned)); if (r.take) take = clamp(r.take, 2, 150); } catch { /* keep default */ }
       }
       if (!cardClean(take, banned)) return fallback;
       return { type: 'statTake', eyebrow: stat.eyebrow, stat: stat.stat, claim: stat.claim, take, source: stat.source };
@@ -245,7 +259,7 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
       const chip = ACCESS_CHIPS[weekNo % ACCESS_CHIPS.length];
       let messages = ['Your bio actually made me laugh out loud', 'Low bar for men, high bar for jokes', 'Coffee this week? Somewhere step-free, I already checked'];
       if (!dryRun) {
-        try { const r = await genJson(chatPrompt(theme, chip, banned)); if (Array.isArray(r.messages) && r.messages.length >= 2) messages = r.messages.slice(0, 3).map(scrubText); } catch { /* keep default */ }
+        try { const r = await genJson(chatPrompt(theme, chip, banned)); if (Array.isArray(r.messages) && r.messages.length >= 2) messages = r.messages.slice(0, 3).map((m) => clamp(m, 2, 120)); } catch { /* keep default */ }
       }
       if (!cardClean(messages.join(' '), banned)) return fallback;
       return { type: 'split', personA: { ...a, chip }, personB: { ...b }, messages };

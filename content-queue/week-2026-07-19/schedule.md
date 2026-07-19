@@ -4,117 +4,85 @@ Theme: **chronic illness and dating honestly**
 
 One subject a day, posted to BOTH Instagram and X at your peak time, same image both places. This is your review copy: the actual card image and the full caption for each day are below. If anything is off, say so before it goes out.
 
-## Day 1 — disclosure timing
+## Day 1 — disclosure done right
 
 ![Day 1 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-01.png)
 
 **Instagram caption:**
 
-> There's this idea that you save the chronic illness chat for later, like it's a plot twist you're supposed to soften someone up for first. I say it early, over the first coffee, because anyone who's going to vanish over it should do it before I've bothered getting dressed properly. That's the whole point of building somewhere honesty isn't a risk, it's just Tuesday. Free on Google Play, link in bio.
+> I've had dozens of daters tell me the same thing: mention a chronic illness on a mainstream app and the chat goes quiet, no explanation, just silence. On Able2Love it plays out differently, people ask whether Tuesday's better than Friday and keep the conversation going. That's not a nice extra, that's the bare minimum done right for once. Free on Google Play, link in bio.
 >
-> #able2love #chronicillness #disabilitydating #spoonie #invisibledisability #datingwithadisability #disabilitycommunity
+> #chronicillness #disabilitydating #datingwithadisability #spoonie #invisibledisability #able2love #disabilitycommunity
 
 **X post:**
 
-> Mainstream apps act like chronic illness is a twist you reveal on date five, after you've already fallen for the puppy filter. I'd rather scare the wrong ones off at hello. Saves everyone a Saturday. #chronicillness #disabilitydating
+> On mainstream apps, say the word 'chronic' and the replies dry up within the hour. On Able2Love people ask what a flare day looks like instead of ghosting. That's the whole difference right there. #chronicillness #disabilitydating
 
-**Alt text:** A branded Able2Love card that reads: "Tell them on date one. The wobble's already priced in."
+**Alt text:** A branded Able2Love card that reads: "Mention a chronic illness and watch who stays. That's the real filter."
 
-## Day 2 — bad day plans
+## Day 2 — flare day planning
 
 ![Day 2 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-02.png)
 
 **Instagram caption:**
 
-> Cancelling a date because you're flaring isn't the same as cancelling because you can't be bothered, but on the apps you get lumped in with the ghosters either way. Someone actually worth your time asks what a flare day looks like, not whether you're lying about it. That's the bar. Free on Google Play, link in bio.
+> Someone told me last week that rearranging a date around a flare up used to feel like an apology tour. Now she just says 'bad day, can we push to Thursday' and the reply is 'course, feel better'. That's the standard, not the exception, and it's exactly what we built Able2Love to make normal. It's free on Google Play, link in bio.
 >
-> #able2love #spoonie #chronicillness #disabilitydating #invisibledisability #datingwithadisability
+> #chronicillness #spoonie #disabilitydating #invisibledisability #able2love #datingwithadisability
 
 **X post:**
 
-> Fun game: explain to someone you met last week that today your body's decided no, and watch whether they read that as an excuse or just a Tuesday. The right ones don't need it decoded. #chronicillness #spoonie
+> Cancel a date because you're mid flare and some people hear 'not interested'. It's not that. It's a body having a bad day. Anyone who can't handle that was never going to handle the good days either. #chronicillness #spoonie
 
-**Alt text:** A branded Able2Love photo card. Caption: "Cancelled again. Not flaky. Flaring."
+**Alt text:** A branded Able2Love photo card. Caption: "Rescheduling for a flare up isn't flaky. Taking it personally is."
 
-## Day 3 — spoon maths
+## Day 3 — invisible illness doubt
 
 ![Day 3 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-03.png)
 
 **Instagram caption:**
 
-> Nobody warns you that looking presentable for a date can cost more than the date itself. You budget the whole day around one hour of being upright and charming, and if it goes well you still pay for it Thursday. Able2Love won't fix the maths, but it means the person across the table already understands it. Free on Google Play, link in bio.
+> The line that comes up again and again isn't about pain or fatigue, it's 'you don't look sick', said like it's a compliment. It's not, it's someone deciding your body owes them visible proof before they'll believe you. Nobody on Able2Love should have to win an argument before they get to a second date.
 >
-> #able2love #spoonie #chronicillness #disabilitydating #invisibledisability #disabilitycommunity
+> #invisibledisability #chronicillness #spoonie #disabilitydating #able2love #disabilitycommunity
 
 **X post:**
 
-> Showered, dressed, did my hair, arrived looking normal, had nothing left for the actual conversation. Chronic illness math never adds up in your favour before 7pm. #spoonie #chronicillness
+> 'But you don't look sick' has ended more dates than any actual symptom ever has. It's not curiosity, it's disbelief wearing a smile. #invisibledisability #chronicillness
 
 **Alt text:** An Able2Love card showing two phones side by side with a friendly dating-app conversation, one profile noting an access need.
 
-## Day 4 — you don't look sick
+## Day 4 — bios as filter
 
 ![Day 4 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-04.png)
 
 **Instagram caption:**
 
-> 'You don't look sick' gets said like it's a nice thing, when really it's someone deciding your pain needs to be visible to count. Invisible illness doesn't need your permission to be real, and it definitely doesn't need explaining on a first date. Built Able2Love so that conversation starts from belief, not interrogation. Free on Google Play, link in bio.
+> Try explaining a fluctuating condition in a dating bio with a character limit built for 'loves brunch and dogs'. People end up burying it, hoping to explain later, and later goes badly more often than it should. We built Able2Love so that context isn't a confession, it's just part of the profile. Free on Google Play, link in bio.
 >
-> #able2love #invisibledisability #chronicillness #spoonie #disabilitydating #disabilitycommunity
+> #chronicillness #datingwithadisability #disabilitydating #spoonie #able2love #invisibledisability
 
 **X post:**
 
-> 'But you don't look ill' isn't a compliment, it's you deciding my body owes you visible proof. Chronic illness doesn't audition for your approval. #invisibledisability #chronicillness
+> Mainstream apps give you a bio box and a swipe function and expect a chronic illness to fit both. It doesn't. That's why people end up hiding it until date three and hoping for the best. #chronicillness #datingwithadisability
 
-**Alt text:** An Able2Love statistic card with the founder's take. Headline: "You don't look sick. You don't look like you'd ask that either."
+**Alt text:** An Able2Love statistic card with the founder's take. Headline: "Explain your chronic illness in 500 characters or get swiped. Great system."
 
-## Day 5 — accessible nightlife
+## Day 5 — nightlife energy cost
 
 ![Day 5 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-05.png)
 
 **Instagram caption:**
 
-> Most venues manage a ramp at the front door and call it accessible, then the actual dancefloor's up three steps with no route round. The one that got it right moved their smoking area so the ramp leads all the way to the music, not just the till. Chronic illness makes energy scarce enough without spending it fighting a building. Free on Google Play, link in bio.
+> Access isn't just getting through the front door. It's seating near the dancefloor, a step-free route to the toilets, and a way out if energy runs low halfway through the night. Too many venues stop at the ramp and call it done. On Able2Love people compare notes on which places actually work end to end, not just at the entrance. Free on Google Play, link in bio.
 >
-> #able2love #accessibility #disabilitydating #chronicillness #wheelchairlife #disabilitycommunity
+> #chronicillness #accessibledating #disabilitydating #spoonie #able2love #disabilitycommunity
 
 **X post:**
 
-> There's a club near me that moved the smoking area so the ramp actually leads somewhere. Door to dancefloor, no detour through a fire exit. That's the standard, not the exception. #accessibility #disabilitydating
+> Loads of venues have a ramp at the front and then nothing: no seating near the floor, stairs to the loo, no route back if energy runs out halfway through. A proper night out needs the whole route sorted, not just the entrance. #chronicillness #accessibledating
 
-**Alt text:** A branded Able2Love photo card. Caption: "Step-free door. Step-free dancefloor. Turns out that's the whole ask."
-
-## Day 6 — disclosure done well
-
-![Day 6 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-06.png)
-
-**Instagram caption:**
-
-> Told someone about the flare-ups over a bag of chips, braced for the usual excuse to leave early. Instead she just asked what helps, and we kept eating. That's not a low bar, that's the actual point of dating someone chosen properly. Free on Google Play, link in bio.
->
-> #able2love #chronicillness #spoonie #disabilitydating #invisibledisability #datingwithadisability
-
-**X post:**
-
-> Told a date about my flare pattern over chips, expecting the usual polite exit. She just asked what actually helps on the bad days. That's it. That's the whole standard. #chronicillness #disabilitydating
-
-**Alt text:** A branded Able2Love photo card. Caption: "Told her about the flare-ups over chips. She just asked what helps."
-
-## Day 7 — vanishing after disclosure
-
-![Day 7 card](https://raw.githubusercontent.com/btf123/abletolove/main/content-queue/week-2026-07-19/card-07.png)
-
-**Instagram caption:**
-
-> Say the word 'chronic' and watch some people type for ten minutes before deciding silence is easier than an actual answer. That disappearing act happens so often it's basically a pattern, not a coincidence. Built this so the people who match you already know, and the ones who'd vanish never get the chance to waste your evening. Free on Google Play, link in bio.
->
-> #able2love #chronicillness #disabilitydating #spoonie #invisibledisability #disabilitycommunity
-
-**X post:**
-
-> Said 'chronic illness', watched the three dots appear and disappear for ten minutes, then silence forever. Not a rejection, just a disappearance. Own it or don't message me. #chronicillness #disabilitydating
-
-**Alt text:** A branded Able2Love photo card. Caption: "Said the word 'chronic'. Watched him type for ten minutes. Nothing."
+**Alt text:** A branded Able2Love photo card. Caption: "A ramp gets you in. Seating near the dancefloor is what gets you a night out."
 
 ---
 App link for bios and plugs: https://play.google.com/store/apps/details?id=com.abletolove.app

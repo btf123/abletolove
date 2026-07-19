@@ -14,10 +14,12 @@ later.
 
 ## App name / title  (max 30 characters)
 
-    Able2Love: Disability Dating
+    Able2Love: Inclusive Dating
 
-(28 characters. Putting the main keyword in the title is the single biggest ASO
-lever. Alternative if preferred: "Able2Love: Disabled Dating" — 26 chars.)
+(27 characters. This is the founder's chosen, live title. "Inclusive" reflects
+the disabled-and-non-disabled ethos rather than a narrower keyword. Because
+"disability / disabled dating" is not in the title, those search terms are woven
+strongly into the short and full descriptions below so search visibility holds.)
 
 ---
 

@@ -25,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { renderCards } from './lib/render-cards.mjs';
 import { generateText } from './lib/llm.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
+import { STATS_POOL, hasStats } from './lib/stats-pool.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
@@ -126,13 +127,152 @@ const SAMPLE_WEEK = [
   { angle: 'bad bios', x: 'Red flag: "Love to laugh, love to travel, no drama." A personality, or an airport? Worst bio cliche you have seen? I will start. #disabilitydating #able2love', headline: '"Love to laugh, love to travel, no drama." A personality, or an airport?', caption: 'Green flags only: asks instead of assumes, does not treat access needs like a favour, knows a wheelchair is freedom not a tragedy. Worst bio cliche you have seen? I will start. Write a better bio. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'dating', 'greenflags', 'disabilitycommunity', 'neurodivergent'] },
 ];
 
+// ---------------------------------------------------------------------------
+// Card-type assembly. Instead of seven identical text squares, each day becomes
+// a different, captivating card TYPE (photo, split-screen, stat+take, etc). The
+// day's written headline/caption feed the card; a few types need a little extra
+// structured content, generated best-effort with a fallback that never breaks
+// the week.
+// ---------------------------------------------------------------------------
+
+// The weekly mix. Leads with the manifesto, alternates photo-led and designed
+// cards so a scroll never sees two of the same in a row.
+const TYPE_ROTA = ['statement', 'photo', 'split', 'statTake', 'flags', 'photoApp', 'photo'];
+
+// Photo search terms, deliberately 50/50 disabled and non-disabled people, warm
+// and candid. Fed to Pexels at render time.
+const PHOTO_QUERIES = [
+  'wheelchair user smiling smartphone outdoors',
+  'happy couple laughing looking at phone',
+  'disabled woman smiling using smartphone',
+  'young man smiling texting phone',
+  'diverse friends laughing with phone',
+  'wheelchair user couple happy together',
+];
+// App screenshots available for the photoApp/feature overlays.
+const APP_FEATURES = ['disclosure', 'nearby', 'plandate'];
+// Rotating pairings for the split-screen card: varied names and genders.
+const NAME_PAIRS = [
+  [{ name: 'Maya', initial: 'M', grad: ['#B23AD8', '#E23349'] }, { name: 'Tom', initial: 'T', grad: ['#FF8FA6', '#FFC64D'] }],
+  [{ name: 'Priya', initial: 'P', grad: ['#E23349', '#FF8FA6'] }, { name: 'Jess', initial: 'J', grad: ['#B23AD8', '#8E24AA'] }],
+  [{ name: 'Leo', initial: 'L', grad: ['#FFC64D', '#E23349'] }, { name: 'Sam', initial: 'S', grad: ['#B23AD8', '#FF8FA6'] }],
+  [{ name: 'Aisha', initial: 'A', grad: ['#E23349', '#B23AD8'] }, { name: 'Danny', initial: 'D', grad: ['#FF8FA6', '#FFC64D'] }],
+];
+const ACCESS_CHIPS = ['Wheelchair user', 'Chronic illness', 'Deaf', 'Neurodivergent', 'Uses a cane'];
+
+// Honest alt text per card type, for accessibility.
+function altFor(d) {
+  const h = d.headline || '';
+  switch (d.cardType) {
+    case 'photo':
+    case 'photoApp':
+      return `A branded Able2Love photo card. Caption: "${h}"`;
+    case 'split':
+      return 'An Able2Love card showing two phones side by side with a friendly dating-app conversation, one profile noting an access need.';
+    case 'statTake':
+      return `An Able2Love statistic card with the founder's take. Headline: "${h}"`;
+    case 'flags':
+      return `An Able2Love red-flag versus green-flags card about respectful dating. Headline: "${h}"`;
+    case 'feature':
+      return `An Able2Love card showing an app screenshot. Caption: "${h}"`;
+    default:
+      return `A branded Able2Love card that reads: "${h}"`;
+  }
+}
+function scrubText(s) {
+  let t = String(s || '');
+  for (const ch of BANNED_CHARACTERS) t = t.split(ch).join(', ');
+  return t.trim();
+}
+function cardClean(blob, banned) {
+  const v = findViolation(blob, banned);
+  if (v) return false;
+  if (BANNED_CHARACTERS.some((ch) => blob.includes(ch))) return false;
+  return true;
+}
+
+function parseJsonLoose(raw) {
+  const cleaned = String(raw).trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+  const s = cleaned.indexOf('{'); const e = cleaned.lastIndexOf('}');
+  if (s === -1 || e === -1) throw new Error('no JSON object');
+  try { return JSON.parse(cleaned.slice(s, e + 1)); }
+  catch { return JSON.parse(cleaned.slice(s, e + 1).replace(/,(\s*[}\]])/g, '$1')); }
+}
+async function genJson(prompt) {
+  return parseJsonLoose(await generateText(prompt, { temperature: 0.9 }));
+}
+
+const VOICE_LINE = 'Voice: warm, human, dryly funny, angry at the barriers not the people, professional but with a pulse. UK English. Never an em dash or en dash. Never make disabled people the punchline. Never invent statistics or app features.';
+
+function chatPrompt(theme, chip, banned) {
+  return `Write a short, warm, believable dating-app exchange (3 messages) between two people on Able2Love, on the theme "${theme}". One of them has this access note on their profile: "${chip}". The access thing should come up lightly and naturally at most once (a step-free venue, a quiet place), never as the whole point, never as a hurdle. Real flirty banter, funny, kind. ${VOICE_LINE}
+Return STRICT JSON: {"messages":["<msg1>","<msg2>","<msg3>"]}. Alternating speakers, msg1 and msg3 from the same person. Never use: ${banned}.`;
+}
+function flagsPrompt(theme, banned) {
+  return `For an Able2Love "red flag vs green flags" card on the theme "${theme}". Give ONE cliche dating-bio red flag line (in quotes) with a dry one-line aside, and THREE green flags about respectful, decent behaviour towards a disabled date (short punchy phrases). ${VOICE_LINE}
+Return STRICT JSON: {"redBio":"<a cliche bio line in quotes>","redAside":"<dry one-liner>","greens":["<g1>","<g2>","<g3>"]}. Never use: ${banned}.`;
+}
+function takePrompt(stat, theme, banned) {
+  return `A real statistic: "${stat.stat} ${stat.claim}" (${stat.source}). Write Brogan's TAKE on it: 1 to 2 sentences, angry at the injustice and warm to the people, motivated and passionate, that ties to why Able2Love exists. Do NOT restate the number, do NOT invent any other number. ${VOICE_LINE}
+Return STRICT JSON: {"take":"<the take>"}. Never use: ${banned}.`;
+}
+
+// Build a typed card item for day i. Best-effort extras; on any failure or
+// guardrail trip, fall back to a warm statement card from the day's headline.
+async function buildCard(day, i, theme, weekNo, banned, dryRun) {
+  const type = TYPE_ROTA[i % TYPE_ROTA.length];
+  const headline = scrubText(day.headline);
+  const fallback = { type: 'statement', eyebrow: 'Able2Love', statement: headline };
+  try {
+    if (type === 'photo' || type === 'photoApp') {
+      const q = PHOTO_QUERIES[i % PHOTO_QUERIES.length];
+      const item = { type, caption: headline, imageQuery: q, eyebrow: null, tag: '#Able2Love' };
+      if (type === 'photoApp') item.feature = APP_FEATURES[i % APP_FEATURES.length];
+      return item;
+    }
+    if (type === 'statTake') {
+      if (!hasStats()) return fallback;
+      const stat = STATS_POOL[weekNo % STATS_POOL.length];
+      let take = `That gap is exactly why Able2Love exists.`;
+      if (!dryRun) {
+        try { const r = await genJson(takePrompt(stat, theme, banned)); if (r.take) take = scrubText(r.take); } catch { /* keep default */ }
+      }
+      if (!cardClean(take, banned)) return fallback;
+      return { type: 'statTake', eyebrow: stat.eyebrow, stat: stat.stat, claim: stat.claim, take, source: stat.source };
+    }
+    if (type === 'split') {
+      const [a, b] = NAME_PAIRS[weekNo % NAME_PAIRS.length];
+      const chip = ACCESS_CHIPS[weekNo % ACCESS_CHIPS.length];
+      let messages = ['Your bio actually made me laugh out loud', 'Low bar for men, high bar for jokes', 'Coffee this week? Somewhere step-free, I already checked'];
+      if (!dryRun) {
+        try { const r = await genJson(chatPrompt(theme, chip, banned)); if (Array.isArray(r.messages) && r.messages.length >= 2) messages = r.messages.slice(0, 3).map(scrubText); } catch { /* keep default */ }
+      }
+      if (!cardClean(messages.join(' '), banned)) return fallback;
+      return { type: 'split', personA: { ...a, chip }, personB: { ...b }, messages };
+    }
+    if (type === 'flags') {
+      let f = { redBio: '"Love to laugh, love to travel, no drama."', redAside: 'A personality, or an airport?', greens: ['Asks instead of assumes', "Doesn't treat access needs like a favour", 'Knows a wheelchair is freedom, not a tragedy'] };
+      if (!dryRun) {
+        try { const r = await genJson(flagsPrompt(theme, banned)); if (r.redBio && Array.isArray(r.greens) && r.greens.length >= 3) f = { redBio: scrubText(r.redBio), redAside: scrubText(r.redAside), greens: r.greens.slice(0, 3).map(scrubText) }; } catch { /* keep default */ }
+      }
+      if (!cardClean(`${f.redBio} ${f.redAside} ${f.greens.join(' ')}`, banned)) return fallback;
+      return { type: 'flags', ...f };
+    }
+    // statement (and anything else): the day's headline as the belief line.
+    return { type: 'statement', eyebrow: 'Able2Love', statement: headline };
+  } catch {
+    return fallback;
+  }
+}
+
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
   const niche = JSON.parse(await readFile(NICHE_FILE, 'utf8'));
   const banned = niche.campaign_guardrails?.banned_language || DEFAULT_BANNED;
 
   const now = new Date();
-  const theme = THEMES[isoWeek(now) % THEMES.length];
+  const weekNo = isoWeek(now);
+  const theme = THEMES[weekNo % THEMES.length];
   console.log(`Theme this week (both platforms): ${theme}`);
 
   let days;
@@ -178,7 +318,17 @@ async function main() {
 
   const stamp = now.toISOString().slice(0, 10);
   const weekDir = path.join(OUT_DIR, `week-${stamp}`);
-  const cardFiles = await renderCards(approved, weekDir); // card-01.png ... in weekDir
+
+  // Turn each approved day into a captivating, typed card (photo, split-screen,
+  // stat+take, flags, statement...) instead of a plain text square. Best-effort
+  // extras; a failure falls back to a warm statement card, never a broken week.
+  const cardItems = [];
+  for (let i = 0; i < approved.length; i++) {
+    cardItems.push(await buildCard(approved[i], i, theme, weekNo, banned, dryRun));
+    approved[i].cardType = cardItems[i].type;
+  }
+  console.log(`Card mix: ${cardItems.map((c) => c.type).join(', ')}`);
+  const cardFiles = await renderCards(cardItems, weekDir); // card-01.png ... in weekDir
 
   const lines = [];
   lines.push(`# Able2Love week: ${stamp} (Instagram + X, in tandem)`);
@@ -200,7 +350,7 @@ async function main() {
     lines.push('```');
     lines.push(d.x);
     lines.push('```');
-    lines.push(`**Alt text:** Text on a dark Able2Love card that reads: "${d.headline}"`);
+    lines.push(`**Alt text:** ${altFor(d)}`);
     lines.push('');
   });
   lines.push('---');
@@ -224,7 +374,7 @@ async function main() {
       card: path.basename(cardFiles[i]),
       x: d.x,
       instagram: `${d.caption}\n\n${d.hashtags.map((h) => '#' + h).join(' ')}`,
-      alt: `Text on a dark Able2Love card that reads: "${d.headline}"`,
+      alt: altFor(d),
       hold: false, // set true on a day to keep the publisher's hands off it
     })),
   };

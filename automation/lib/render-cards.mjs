@@ -288,7 +288,7 @@ async function shot(feature) {
 async function itemToHtml(it, index) {
   const type = it.type || 'headline';
   if (type === 'photo' || type === 'photoApp') {
-    const photo = await fetchPhoto(it.imageQuery || 'happy people phone', { pick: index });
+    const photo = await fetchPhoto(it.imageQuery || 'interabled couple smiling', { pick: (it.photoPick || 0) + index });
     if (!photo) {
       // Graceful fallback: no photo -> a warm statement card carrying the caption.
       return statementCard({ eyebrow: it.eyebrow, statement: it.caption, allowHtml: it.allowHtml });

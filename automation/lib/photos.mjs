@@ -20,12 +20,16 @@ export function hasPexels() {
 // Fetch one photo for a query. `pick` rotates the choice so repeated queries in
 // one week don't all return the identical top result. Returns
 // { b64, mime, photographer, url } or null.
-export async function fetchPhoto(query, { orientation = 'square', pick = 0 } = {}) {
+export async function fetchPhoto(query, { orientation = '', pick = 0 } = {}) {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return null;
   try {
-    const perPage = 20;
-    const url = `${API}?query=${encodeURIComponent(query)}&per_page=${perPage}&orientation=${orientation}`;
+    const perPage = 30;
+    // Only constrain orientation when explicitly asked. Niche, high-signal
+    // queries (e.g. "deaf couple sign language") have far fewer photos, and the
+    // card crops with object-fit anyway, so an unconstrained search finds a
+    // genuinely representative image far more often than a square-only one.
+    const url = `${API}?query=${encodeURIComponent(query)}&per_page=${perPage}${orientation ? `&orientation=${orientation}` : ''}`;
     const res = await fetch(url, { headers: { Authorization: key } });
     if (!res.ok) { console.warn(`Pexels HTTP ${res.status} for "${query}"`); return null; }
     const data = await res.json();

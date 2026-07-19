@@ -8,7 +8,7 @@ export function hasTavily() {
   return !!process.env.TAVILY_API_KEY;
 }
 
-export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'news', includeDomains } = {}) {
+export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'news', includeDomains, timeRange } = {}) {
   const key = process.env.TAVILY_API_KEY;
   const res = await fetch('https://api.tavily.com/search', {
     method: 'POST',
@@ -20,6 +20,10 @@ export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'n
       topic,
       days,
       max_results: maxResults,
+      // For topic:'general' Tavily ignores `days`; only `time_range`
+      // (day|week|month|year) bounds recency, so pass it whenever we need "no
+      // older than a week" on non-news searches.
+      ...(timeRange ? { time_range: timeRange } : {}),
       ...(includeDomains ? { include_domains: includeDomains } : {}),
     }),
   });
@@ -76,7 +80,10 @@ function isTragedy(item) {
 const X_QUERIES = [
   'disability dating', 'dating with a disability', 'disabled dating apps',
   'wheelchair accessible venue', 'accessible nightlife', 'chronic illness dating',
-  'disability pride dating', 'accessible date night',
+  'disability pride dating', 'accessible date night', 'dating as a disabled person',
+  'disabled and single', 'ghosted disability dating', 'inaccessible venue date',
+  'spoonie dating', 'neurodivergent dating', 'dating apps ableism',
+  'invisible illness dating', 'wheelchair user dating', 'disabled representation dating apps',
 ];
 
 export async function findTweets() {
@@ -84,7 +91,9 @@ export async function findTweets() {
   for (const q of X_QUERIES) {
     try {
       found.push(...(await tavilySearch(q, {
-        topic: 'general', days: 7, maxResults: 5,
+        // time_range:'week' is what actually enforces "no post older than a
+        // week" here; days is ignored for topic:'general'.
+        topic: 'general', timeRange: 'week', maxResults: 6,
         includeDomains: ['x.com', 'twitter.com'],
       })));
     } catch (e) {
@@ -118,7 +127,7 @@ export async function gatherLiveItems(target) {
   // The outreach target of the day, searched by name.
   try {
     const name = target.split('(')[0].trim();
-    items.push(...(await tavilySearch(name, { topic: 'general', days: 21, maxResults: 2 })));
+    items.push(...(await tavilySearch(name, { topic: 'general', timeRange: 'week', maxResults: 2 })));
   } catch (e) {
     console.warn(`target search failed: ${e.message.slice(0, 120)}`);
   }

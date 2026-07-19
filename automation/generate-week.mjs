@@ -32,8 +32,17 @@ const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.jso
 const OUT_DIR = path.join(ROOT, 'content-queue');
 
 const PLAY_LINK = 'https://play.google.com/store/apps/details?id=com.abletolove.app';
+// Raw base so the review issue can SHOW each card image (committed just before
+// the issue is opened), instead of printing the filename.
+const REPO_RAW = 'https://raw.githubusercontent.com/btf123/abletolove/main';
 const DAYS_PER_WEEK = 7;
 const MIN_DAYS = 5; // if fewer survive the guardrails, fail and re-run
+
+// Render text as a Markdown blockquote so it WRAPS in the review issue (a code
+// fence forces a horizontal scrollbar, which is the slider the founder hates).
+function quoteBlock(text) {
+  return String(text || '').split('\n').map((l) => (l.trim() ? `> ${l}` : '>')).join('\n');
+}
 
 // One theme per week, rotating forever. Both platforms share it.
 const THEMES = [
@@ -377,21 +386,23 @@ async function main() {
   lines.push('');
   lines.push(`Theme: **${theme}**`);
   lines.push('');
-  lines.push('One subject a day, posted to BOTH Instagram and X at your peak time, same image both places. Instagram uses the longer caption, X uses the tight version. Review, then load into Buffer, or hand this folder to the Claude browser extension.');
+  lines.push('One subject a day, posted to BOTH Instagram and X at your peak time, same image both places. This is your review copy: the actual card image and the full caption for each day are below. If anything is off, say so before it goes out.');
   lines.push('');
   approved.forEach((d, i) => {
     const img = path.basename(cardFiles[i]);
     lines.push(`## Day ${i + 1} — ${d.angle}`);
-    lines.push(`**Image:** \`${img}\``);
     lines.push('');
-    lines.push('**Instagram:**');
-    lines.push('```');
-    lines.push(`${d.caption}\n\n${d.hashtags.map((h) => '#' + h).join(' ')}`);
-    lines.push('```');
-    lines.push('**X:**');
-    lines.push('```');
-    lines.push(d.x);
-    lines.push('```');
+    // Show the real card, not its filename.
+    lines.push(`![Day ${i + 1} card](${REPO_RAW}/content-queue/week-${stamp}/${img})`);
+    lines.push('');
+    lines.push('**Instagram caption:**');
+    lines.push('');
+    lines.push(quoteBlock(`${d.caption}\n\n${d.hashtags.map((h) => '#' + h).join(' ')}`));
+    lines.push('');
+    lines.push('**X post:**');
+    lines.push('');
+    lines.push(quoteBlock(d.x));
+    lines.push('');
     lines.push(`**Alt text:** ${altFor(d)}`);
     lines.push('');
   });

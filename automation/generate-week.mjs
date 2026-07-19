@@ -76,7 +76,29 @@ const WEEKLY_RETIRED = [
   'game-changer', 'game changer', "let's make it happen", "let's break it",
   'share your stories', 'what changes would you like', 'have you experienced',
   'regardless of ability', 'let us', 'we must',
+  // Second-generation crutches the model reached for once the first were banned:
+  'what if we could', 'what if you could', 'create a space where',
+  'make that a reality', 'one venue at a time', 'one profile at a time',
+  'leading the charge', 'changing the game', 'is here to help', 'we could create',
+  'working to change', 'working to make', 'more inclusive nightlife',
 ];
+
+// Normalise a caption/X post and return its word runs, stripping the constant
+// CTA, app name and hashtags. Used to catch ANY repeated skeleton across a week,
+// not just phrases we thought to ban.
+function phraseGrams(text, n = 5) {
+  let t = String(text || '').toLowerCase();
+  t = t.replace(/#[a-z0-9_]+/g, ' ')
+    .replace(/free on google play[^.]*/g, ' ')
+    .replace(/link in bio/g, ' ')
+    .replace(/able2love/g, ' ')
+    .replace(/[^a-z0-9'\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+  const w = t.split(' ').filter(Boolean);
+  const grams = [];
+  for (let i = 0; i + n <= w.length; i++) grams.push(w.slice(i, i + n).join(' '));
+  return grams;
+}
 
 function isoWeek(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -107,6 +129,8 @@ YOUR VOICE, THIS IS THE WHOLE POINT, GET IT RIGHT:
 - First person is good ("I built this because", "we"). Specific and lived. Never a charity, never an equality-and-diversity department, never inspiration-porn.
 
 DEAD ON ARRIVAL, never write like this: faceless engagement-bait such as "Share your stories", "What changes would you like to see?", "Have you experienced X? How did you handle it?", "Let's celebrate the venues that get it right", "X can be tough, but what if...", "Nightlife should be for everyone, regardless of ability". These are limp and could come from any brand's social calendar. If a line isn't unmistakably YOU, bin it and say it like a person with a pulse.
+
+BANNED STRUCTURE, do not build posts this way: the arc "here's a problem... but what if we could create a space where...... Able2Love is working to make that a reality" is DEAD. Do not use "what if we could", "create a space where", "make that a reality", "one venue at a time", "leading the charge". Do NOT end every post with an Able2Love-will-fix-it promise. Vary the shape completely: some posts are just a blunt observation or a joke and stop; some end on the ache with no tidy resolution; only SOME mention the app, and when you do, word it differently every single time. No two posts may end the same way or use the same skeleton.
 
 Plan ${DAYS_PER_WEEK} days, this week's theme: ${theme}. Each day is ONE subject (an "angle"), written two ways: a tight version for X and a fuller one for Instagram, clearly the same idea.
 
@@ -331,6 +355,7 @@ async function generateWeekDays(niche, theme, lessonsBlock) {
 // Filter a raw day list down to the ones that pass the public-copy guardrails.
 function approveDays(days, banned) {
   const approved = [];
+  const seenGrams = new Set(); // 5-word runs already used this week
   for (const d of days || []) {
     const angle = String(d.angle || '').trim();
     const x = String(d.x || '').trim();
@@ -348,6 +373,14 @@ function approveDays(days, banned) {
     if (BANNED_CHARACTERS.some((ch) => blob.includes(ch))) { console.warn(`Dropped a day (em/en dash): ${angle}`); continue; }
     if (x.length > 275) { console.warn(`Dropped a day (X post ${x.length} chars): ${angle}`); continue; }
     if (headline.length > 100) { console.warn(`Dropped a day (headline too long): ${angle}`); continue; }
+
+    // Auto repeat-catcher: if this day reuses a 5-word run from an earlier day,
+    // it's the same skeleton in fresh clothes. Drop it; the retry loop will
+    // regenerate a differently-shaped one.
+    const grams = [...phraseGrams(caption), ...phraseGrams(x)];
+    const echo = grams.find((g) => seenGrams.has(g));
+    if (echo) { console.warn(`Dropped a day (repeats "${echo}" from an earlier day): ${angle}`); continue; }
+    grams.forEach((g) => seenGrams.add(g));
 
     approved.push({ angle, x, headline, caption, hashtags, imageQuery });
   }

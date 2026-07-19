@@ -104,14 +104,11 @@
   .conv.is-no .nobtn{background:rgba(226,51,73,.2);color:#FF8B9C;border-color:#FF8B9C}
 </style>
 <section>
-  <h2><span class="dot"></span>Today's outreach on X — tap Yes or No</h2>
-  <p class="hint">Real X posts the scout found, each with a reply drafted in your voice. Tap ✓ to approve or ✗ to swap in a fresh one. Then press "Post approved" and they go out from @Able2LoveApp automatically. No copying, nothing posts until you approve it.</p>
-  <div id="xgate" style="display:none"></div>
+  <h2><span class="dot"></span>Today's outreach on X — tap to reply as yourself</h2>
+  <p class="hint">Real X posts the scout found, each with a reply drafted in your voice. Tap <b>Reply on X</b> and the tweet opens with your reply already typed in, you just read it and press Post. You are posting as you, a real person, so it is safe and never looks like a bot. Tap <b>Swap</b> to trade one for a fresh draft. Nothing goes out until you post it yourself.</p>
   <div id="outreach" class="loading">Loading today's replies…</div>
   <div id="outreach-actions" style="margin-top:14px;display:none">
-    <button class="btn" id="postApproved">Post approved replies</button>
-    <span id="approvedCount" class="meta" style="margin-left:10px"></span>
-    <div id="postStatus" class="meta" style="margin-top:8px"></div>
+    <span id="approvedCount" class="meta"></span>
     <div style="margin-top:14px">
       <input id="teachNotes" placeholder="Note for the bot, e.g. 'more anger on venue stories'" style="width:100%;max-width:560px;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 12px;font-size:14px">
       <button class="btn ghost" id="teachBot" style="margin-top:8px">Teach the bot (send this note)</button>
@@ -302,7 +299,7 @@ wfStatus('engage-ig.yml','wf-engage');
 
 // ---------- daily routine ----------
 const TASKS=[
-  'Tap the green ticks on today\'s outreach at the top, press "Copy approved", paste into the extension and post the replies',
+  'Go down today\'s outreach at the top: tap "Reply on X" on each good one (your reply opens ready, just read it and post), or Swap for a fresh draft',
   'Do 3 to 5 comments from the Instagram hit-list in today\'s brief (spread through the day, never in one burst)',
   'Check the repo issues for anything the bots flagged for you (sensitive comments or DMs) and answer those yourself',
   'One quote-share of a community post with your own line',
@@ -330,28 +327,15 @@ reset.addEventListener('click',()=>{
 });
 box.appendChild(reset);
 
-// ---------- today's outreach on X: tap Yes/No, then post by API ----------
+// ---------- today's outreach on X: tap to reply as yourself (ban-safe) ----------
 (function(){
   const box=document.getElementById('outreach');
-  const TARGET=10, TOKEN_KEY='a2l-gh-token';
+  const TARGET=10;
   const RAWBASE=`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/content-queue/outreach`;
-  const token=()=>localStorage.getItem(TOKEN_KEY)||'';
-  const gh=(p,init={})=>fetch(`${API}${p}`,{...init,headers:{Authorization:`token ${token()}`,Accept:'application/vnd.github+json','Content-Type':'application/json',...(init.headers||{})}});
-  const b64=(s)=>btoa(unescape(encodeURIComponent(s)));
-
-  // One-time connect: a fine-grained token (Contents + Actions write) lets the
-  // buttons write approvals and fire the sender. Stored only in this browser.
-  function gate(){
-    const g=document.getElementById('xgate');
-    if(token()){g.style.display='none';return true;}
-    g.style.display='block';
-    g.innerHTML=`<div class="card"><h3>One-time connect</h3>
-      <div class="meta">To let these buttons post for you, paste a GitHub token once. It is saved only in this browser, never uploaded. Make it at github.com/settings/personal-access-tokens/new for this repo with "Contents: read and write" and "Actions: read and write".</div>
-      <div style="margin-top:10px"><input id="ghtok" placeholder="github_pat_..." style="width:100%;max-width:520px;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:9px 12px;font-size:14px">
-      <button class="btn" id="savetok" style="margin-top:8px">Save token</button></div></div>`;
-    g.querySelector('#savetok').onclick=()=>{const v=g.querySelector('#ghtok').value.trim();if(!v){alert('Paste the token first.');return;}localStorage.setItem(TOKEN_KEY,v);location.reload();};
-    return false;
-  }
+  // Open X's composer as a reply to that exact tweet, with the drafted text
+  // pre-filled. The founder reads it and posts as a human: no API, no 403,
+  // ban-safe, and no token needed anywhere.
+  const intentUrl=(c)=>`https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(c.id)}&text=${encodeURIComponent(c.reply||'')}`;
 
   fetch(`${API}/contents/content-queue/outreach`).then(r=>r.json()).then(list=>{
     const files=(Array.isArray(list)?list:[]).filter(f=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f=>f.name).sort();
@@ -360,7 +344,6 @@ box.appendChild(reset);
   }).then(render).catch(()=>{box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';});
 
   function render(data){
-    gate();
     document.getElementById('outreach-actions').style.display='block';
     setupTeach(data);
     const cands=(data.x_candidates||[]).slice();
@@ -369,17 +352,17 @@ box.appendChild(reset);
       box.innerHTML='<div class="card"><div class="meta">No X posts found to reply to today (the search index for X is thin some days). The scout tries again tomorrow, or press Run now on the Outreach scout below.</div></div>';
       return;
     }
-    let cursor=0; const slots=[]; const approved=new Map();
+    let cursor=0; const slots=[]; const posted=new Set();
     while(slots.length<TARGET && cursor<cands.length) slots.push(cands[cursor++]);
 
-    function count(){document.getElementById('approvedCount').textContent=approved.size+' approved';}
+    function count(){document.getElementById('approvedCount').textContent=posted.size+' opened to post';}
     function slotCard(c){
       const el=document.createElement('div');el.className='card conv';
       if(!c){el.innerHTML='<div class="meta">No more candidates in the queue.</div>';return el;}
-      el.innerHTML=`<div class="meta">Replying to <a target="_blank" href="${esc(c.url)}">@${esc(c.author)}</a> on X</div>
+      el.innerHTML=`<div class="meta">Replying to <a target="_blank" rel="noopener" href="${esc(c.url)}">@${esc(c.author)}</a> on X</div>
         <div class="meta" style="margin:6px 0;color:var(--muted)">Their post: ${esc(c.post||'')}</div>
         <div class="reply">${esc(c.reply||'')}</div>
-        <div class="yn"><button class="yesbtn">✓ Approve</button><button class="nobtn">✗ Swap</button></div>`;
+        <div class="yn"><a class="btn replybtn" target="_blank" rel="noopener" href="${esc(intentUrl(c))}">Reply on X ↗</a><button class="nobtn">✗ Swap</button></div>`;
       return el;
     }
     function draw(){
@@ -387,32 +370,17 @@ box.appendChild(reset);
       slots.forEach((c,i)=>{
         const el=slotCard(c);box.appendChild(el);
         if(!c) return;
-        if(approved.has(c.id)) el.classList.add('is-yes');
-        const yes=el.querySelector('.yesbtn'), no=el.querySelector('.nobtn');
-        if(yes) yes.onclick=()=>{ if(approved.has(c.id)){approved.delete(c.id);} else {approved.set(c.id,c.reply);} count(); draw(); };
-        if(no) no.onclick=()=>{ approved.delete(c.id); slots[i]= cursor<cands.length ? cands[cursor++] : null; draw(); };
+        if(posted.has(c.id)) el.classList.add('is-yes');
+        const rep=el.querySelector('.replybtn'), no=el.querySelector('.nobtn');
+        // Tapping "Reply on X" opens the tweet with the reply prefilled (new tab);
+        // we mark it done here so you can see what you've handled. It never posts
+        // for you, X does not open unless you press Post there.
+        if(rep) rep.onclick=()=>{ posted.add(c.id); setTimeout(()=>{count();draw();},600); };
+        if(no) no.onclick=()=>{ posted.delete(c.id); slots[i]= cursor<cands.length ? cands[cursor++] : null; draw(); };
       });
       count();
     }
     draw();
-
-    document.getElementById('postApproved').onclick=async()=>{
-      if(!token()){gate();alert('Connect your token once (box above), then post.');return;}
-      if(!approved.size){alert('Approve at least one reply first (tap the green ✓).');return;}
-      const s=document.getElementById('postStatus'); const btn=document.getElementById('postApproved');
-      btn.disabled=true; s.textContent='Saving your approvals...';
-      const payload={date:data.date, approvals:[...approved].map(([id,reply])=>({id,reply}))};
-      const p=`/contents/content-queue/outreach/approved-${data.date}.json`;
-      try{
-        let sha; const cur=await gh(p); if(cur.ok){sha=(await cur.json()).sha;}
-        const put=await gh(p,{method:'PUT',body:JSON.stringify({message:`Approved outreach replies ${data.date} [skip ci]`,content:b64(JSON.stringify(payload,null,2)),...(sha?{sha}:{})})});
-        if(!put.ok) throw new Error('save '+put.status+': '+(await put.text()).slice(0,120));
-        s.textContent='Firing the sender...';
-        const disp=await gh(`/actions/workflows/post-approved.yml/dispatches`,{method:'POST',body:JSON.stringify({ref:'main',inputs:{date:data.date}})});
-        if(!disp.ok) throw new Error('dispatch '+disp.status+': '+(await disp.text()).slice(0,120));
-        s.innerHTML=`Sent ${approved.size} reply(ies) to be posted. <a target="_blank" href="https://github.com/${OWNER}/${REPO}/actions/workflows/post-approved.yml">Watch it post</a>. They go out spaced a minute or two apart.`;
-      }catch(e){ s.textContent='Problem: '+e.message+' (if it says 401/403, your token needs Contents + Actions write, or has expired).'; btn.disabled=false; }
-    };
   }
 
   function setupTeach(data){

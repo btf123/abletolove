@@ -287,6 +287,18 @@ function renderMarkdown(dateStr, data, warnings) {
   lines.push('');
   lines.push(data.moment || '');
   lines.push('');
+  if ((data.follow_suggestions || []).length) {
+    lines.push('## Who to follow on X (one tap, you post the follow yourself)');
+    lines.push('');
+    lines.push('Real accounts found today talking about disability dating. Auto-following is deliberately NOT built here, it is one of the most ban-prone things on X. Tap Follow, confirm on X, done.');
+    lines.push('');
+    data.follow_suggestions.forEach((f, i) => {
+      lines.push(`**${i + 1}. @${f.author}** ([their profile](${f.url}))`);
+      lines.push(`_${f.why}_`);
+      lines.push(`👉 [**Follow**](${f.followUrl})`);
+      lines.push('');
+    });
+  }
   if ((data.instagram_hitlist || []).length) {
     lines.push('## Instagram hit-list (open these, leave a genuine comment)');
     lines.push('');
@@ -546,6 +558,26 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
         }
         console.log(`X reply queue: ${data.x_candidates.length} candidate(s) incl. spares.`);
       }
+
+      // Who to follow: real, verified accounts found by the same search (never
+      // a guessed handle). Following is a ONE-TAP link the founder clicks
+      // himself; nothing here follows on his behalf. Auto-following via API is
+      // deliberately not built: it is one of the most ban-prone things on X.
+      const seenAuthors = new Set();
+      data.follow_suggestions = [];
+      for (const t of tweets) {
+        const handle = t.author.toLowerCase();
+        if (seenAuthors.has(handle) || handle === 'able2loveapp') continue;
+        seenAuthors.add(handle);
+        data.follow_suggestions.push({
+          author: t.author,
+          url: `https://x.com/${t.author}`,
+          why: `Posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
+          followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
+        });
+        if (data.follow_suggestions.length >= 10) break;
+      }
+      console.log(`Follow suggestions: ${data.follow_suggestions.length} real account(s).`);
     } catch (e) {
       console.warn(`X candidate drafting skipped (${e.message.slice(0, 120)}).`);
     }

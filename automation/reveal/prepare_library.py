@@ -42,6 +42,12 @@ ASSETS = {
     "5.png":        ("chair", "pink-gig.jpg",     (0.275, 0.325)),
     "52326975_10218986247033688_2438881901834928128_o-sharpen-focus.png":
                     ("chair", "neon-studs.jpg",   (0.27, 0.35)),
+    # Studio shoot (seamless white, open pink jacket, powerchair fully visible).
+    # The flagship same-picture frame.
+    "305A0467.jpg": ("chair", "studio-pink-0467.jpg", (0.265, 0.295)),
+    # Black-outfit studio upright: boots up on the seat, legs over the armrest,
+    # full powerchair on seamless white.
+    "305A0312_result.jpg": ("chair", "studio-black-0312.jpg", (0.095, 0.135)),
 }
 
 # For chair images where a tight head+torso crop hides the wheelchair (so
@@ -54,6 +60,12 @@ CLOSECROP = {
     # face centred, top of the seat back reads as a normal chair; joystick,
     # wheels and motor all fall below/left of the box.
     "pink-gig.jpg": [0.41, 0.16, 0.81, 0.58],
+    # chest-up: fierce face + open jacket; both joysticks (y~0.49 of the base)
+    # and all chair hardware fall below the box.
+    "studio-pink-0467.jpg": [0.40, 0.06, 0.80, 0.46],
+    # head + shoulders + top of the seat back (reads as an ordinary chair);
+    # boots, wheels and frame all fall outside.
+    "studio-black-0312.jpg": [0.50, 0.02, 0.90, 0.35],
     # (neon-studs pulled from rotation: the joystick is too subtle in the full
     # frame — Brogan: "you can't even see the wheelchair" — so the reveal
     # doesn't land. The base stays in the library for other card uses.)

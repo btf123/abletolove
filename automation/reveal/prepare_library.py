@@ -35,6 +35,13 @@ ASSETS = {
                     ("chair", "chair-cafe.jpg",   (0.22, 0.40)),
     "44359190_1619180541520899_4354854992830529536_n.jpg":
                     ("chair", "chair-headset.jpg", (0.155, 0.285)),
+    # Same-picture reveals: chair fully visible in the full frame, but a tight
+    # crop hides it (or leaves just an ordinary-chair hint). Eye bands are kept
+    # TIGHT — the strip scales up with the slide-1 zoom, so extra height turns
+    # into a huge bar across the face.
+    "5.png":        ("chair", "pink-gig.jpg",     (0.275, 0.325)),
+    "52326975_10218986247033688_2438881901834928128_o-sharpen-focus.png":
+                    ("chair", "neon-studs.jpg",   (0.27, 0.35)),
 }
 
 # For chair images where a tight head+torso crop hides the wheelchair (so
@@ -42,7 +49,13 @@ ASSETS = {
 # picture): the crop box in fractions of the finished 1080x1350 base.
 # Verified against the base so the wheels/frame/footplate fall outside it.
 CLOSECROP = {
-    "chair-headset.jpg": [0.12, 0.0, 0.74, 0.52],
+    # (chair-headset dropped from same-picture duty: the head sits too high to
+    # crop well, and the dim pub shot isn't a slide-1 "sexy" frame anyway.)
+    # face centred, top of the seat back reads as a normal chair; joystick,
+    # wheels and motor all fall below/left of the box.
+    "pink-gig.jpg": [0.41, 0.16, 0.81, 0.58],
+    # everything above the joystick (bottom-left): head + studded shoulders.
+    "neon-studs.jpg": [0.0, 0.0, 1.0, 0.72],
 }
 
 
@@ -76,7 +89,7 @@ def main():
     src_dir = sys.argv[1] if len(sys.argv) > 1 else "."
     os.makedirs(OUT_DIR, exist_ok=True)
     manifest = {"sexy": [], "chair": []}
-    MIN_STRIP = 96
+    MIN_STRIP = 56  # just enough to kill the eye line; big text no longer sits on the strip
     for src, (kind, out, eye) in ASSETS.items():
         p = os.path.join(src_dir, src)
         if not os.path.exists(p):

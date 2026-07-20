@@ -33,29 +33,18 @@ export async function buildReveal(weekNo, weekDir) {
   const CTA = 'Able2Love — first of its kind · free on Google Play';
   const revealSub = `See the full picture. ${pair.bSub}`;
 
-  // Two reveal shapes, alternated for variety:
-  //  - "zoom": ONE wheelchair photo, cropped on slide 1 so the chair reads as an
-  //    ordinary seat, then the full frame on slide 2 — the strongest "same
-  //    person" proof, and the most literal "see the full picture".
-  //  - "pair": a sexy no-chair photo on slide 1, a full wheelchair photo on
-  //    slide 2.
-  const cropChair = manifest.chair.find((c) => Array.isArray(c.closeCrop));
-  const useZoom = cropChair && (weekNo % 2 === 0);
-
-  let slide1, slide2, mode;
-  if (useZoom) {
-    mode = 'zoom';
-    slide1 = { base: cropChair.file, crop: cropChair.closeCrop, num: '1 / 2', prompt: pair.aPrompt };
-    slide2 = { base: cropChair.file, stripY0: cropChair.stripY0, stripY1: cropChair.stripY1, num: '2 / 2',
-               prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA };
-  } else {
-    mode = 'pair';
-    const sexy = pick(manifest.sexy, weekNo);
-    const chair = pick(manifest.chair, weekNo + 1);
-    slide1 = { base: sexy.file, stripY0: sexy.stripY0, stripY1: sexy.stripY1, num: '1 / 2', prompt: pair.aPrompt };
-    slide2 = { base: chair.file, stripY0: chair.stripY0, stripY1: chair.stripY1, num: '2 / 2',
-               prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA };
-  }
+  // SAME PICTURE, always (Brogan: "they have to be the same picture or it
+  // doesn't work"). Slide 1 is a tight crop of a wheelchair photo, framed so
+  // the chair is out of shot (or reads as an ordinary seat); slide 2 is the
+  // FULL frame of that exact photo — chair and all. The zoom-out is the proof:
+  // same person, same moment, nothing changed but what you can see.
+  const croppable = manifest.chair.filter((c) => Array.isArray(c.closeCrop));
+  if (!croppable.length) throw new Error('no reveal-library images have a closeCrop');
+  const shot = pick(croppable, weekNo);
+  const mode = 'zoom';
+  const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: pair.aPrompt };
+  const slide2 = { base: shot.file, stripY0: shot.stripY0, stripY1: shot.stripY1, num: '2 / 2',
+                   prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA };
 
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };
@@ -67,7 +56,7 @@ export async function buildReveal(weekNo, weekDir) {
 
   return {
     type: 'reveal',
-    angle: `sexy reveal — ${mode === 'zoom' ? 'crop hides the chair, then the full picture' : 'sexy shot, then the full picture'}`,
+    angle: 'sexy reveal — same photo: crop hides the chair, swipe shows the full picture',
     carousel: ['reveal_1.jpg', 'reveal_2.jpg'],
     instagram: igCaption,
     x: xText.slice(0, 280),

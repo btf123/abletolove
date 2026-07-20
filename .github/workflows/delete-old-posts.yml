@@ -1,0 +1,36 @@
+name: Delete old off-voice posts
+
+# One-off cleanup: deletes the 4 X posts logged before the voice fix that used
+# the retired "testimony / vanishing act" register. Requires typing the exact
+# confirm phrase, so it can never fire by accident. Instagram's 2 old posts
+# are NOT deleted here (Meta's API has no delete-media endpoint); do those by
+# hand in the Instagram app.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type exactly: yes-delete-old-posts'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Delete the old posts
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          CONFIRM_DELETE: ${{ inputs.confirm }}
+        run: node automation/delete-old-posts.mjs

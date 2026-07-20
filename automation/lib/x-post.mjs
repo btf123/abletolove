@@ -59,6 +59,17 @@ async function setAltText(mediaId, altText) {
   if (!res.ok) console.warn(`X alt text failed ${res.status}: ${await res.text()}`);
 }
 
+// Delete a tweet posted by this account (official API, DELETE /2/tweets/:id).
+// Returns true if deleted (or already gone), throws on a real failure.
+export async function deleteTweet(id) {
+  const url = `https://api.x.com/2/tweets/${encodeURIComponent(id)}`;
+  const res = await fetch(url, { method: 'DELETE', headers: { Authorization: oauthHeader('DELETE', url) } });
+  if (res.status === 404) return true; // already gone
+  if (!res.ok) throw new Error(`X delete failed ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  return !!data.data?.deleted;
+}
+
 export async function postToX({ text, imageBytes, altText, replyToId }) {
   let mediaIds;
   if (imageBytes) {

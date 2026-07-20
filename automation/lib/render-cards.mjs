@@ -26,9 +26,13 @@ import { fetchPhoto } from './photos.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = path.join(ROOT, 'marketing/brand-assets/src');
-// Real photos of the founder. When present, the manifesto/"why I built it"
-// (statement) card is rendered over one of these instead of a plain gradient,
-// so the identity posts show the actual disabled performer who built the app.
+// Optional background imagery for the manifesto/"why I built it" (statement)
+// card. POLICY: Brogan is deliberately NOT the face of the app — his
+// identifiable face must never appear on a rendered card. So this directory is
+// kept EMPTY of any photo in which he is recognisable. Only genuinely
+// non-identifying imagery belongs here (e.g. stage lights, a silhouette, a
+// crowd from behind, hands). With the directory empty, statement/founder cards
+// fall back to the warm gradient card, which is the safe default.
 const FOUNDER_DIR = path.join(ROOT, 'marketing/brand-assets/founder-photos');
 async function listFounderPhotos() {
   try {

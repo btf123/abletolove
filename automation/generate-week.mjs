@@ -153,6 +153,7 @@ Rules for ALL text:
 - Treat disabled people as adults with attraction, humour and agency. Never praise non-disabled people just for dating a disabled person.
 - FACTS: never invent app features, prices, user numbers, testimonials, awards or statistics. Only true product claims: the app exists, it's free on Google Play, and what it stands for.
 - PRIVACY: never reference the founder's private life or health. Public facts only: performer, comedy writer, musician, wheelchair user, founder.
+- THE UMBRELLA: the world keeps finding new ways to divide people; Able2Love exists to bring them together. Let that under-pin ideas without ever using the phrase itself as a slogan. Posts about how disabled people are UNDERSERVED (by dating apps, venues, attitudes) with real facts and lived testimony are core, not filler.
 - Never pity or inspiration framing. Never use: ${banned}.
 
 VARIETY, NON-NEGOTIABLE: EVERY caption must OPEN differently. Do not reuse a sentence frame across the week. These frames are banned outright, do not use ANY of them even once: "The real story is...", "The test is not about...", "It is not about X, it's about Y", "part of this movement", "a more inclusive community", "a more inclusive world", "game-changer", "let's make it happen", "let's break it". Also retired: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Open each day a different way: a blunt line, a joke, a specific gripe, a flat statement of fact, a bit of anger. The belief stays; the wording and the shape never repeat.
@@ -186,7 +187,7 @@ const SAMPLE_WEEK = [
 
 // The weekly mix. Leads with the manifesto, alternates photo-led and designed
 // cards so a scroll never sees two of the same in a row.
-const TYPE_ROTA = ['statement', 'photo', 'split', 'statTake', 'flags', 'photoApp', 'photo'];
+const TYPE_ROTA = ['statement', 'statTake', 'photo', 'split', 'flags', 'photoApp', 'photo'];
 
 // FALLBACK photo queries, used only when the day has no topic-matched
 // image_query. The primary source is each day's own image_query, so the picture

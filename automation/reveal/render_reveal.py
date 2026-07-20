@@ -125,6 +125,22 @@ def swipe_bar(img, y):
             _bolt(d, cx, y, r * 0.6, col)
 
 
+def bar_label(img, y0, y1, label):
+    """Draw copy on the baked strip (text only; the bar is baked into the base).
+    Shrinks to fit; clamps inside the canvas."""
+    if not label:
+        return
+    y0, y1 = max(0, y0), min(H, y1)
+    if y1 - y0 < 34:
+        return
+    d = ImageDraw.Draw(img)
+    f = font(min(44, y1 - y0 - 14))
+    while d.textlength(label, font=f) > W - 90 and f.size > 20:
+        f = font(f.size - 2)
+    tw = d.textlength(label, font=f)
+    d.text(((W - tw) / 2, (y0 + y1) / 2 - f.size * 0.58), label, font=f, fill=(255, 255, 255))
+
+
 def eye_bar(img, y0, y1, label="able2love"):
     """Keep the identity strip, styled as a low-key brand bar."""
     y0, y1 = max(0, y0), min(H, y1)
@@ -179,17 +195,21 @@ def render_slide(slide):
     crop = slide.get("crop")
     if crop:
         bw, bh = img.size
-        c = img.crop((int(crop[0] * bw), int(crop[1] * bh), int(crop[2] * bw), int(crop[3] * bh)))
-        s = max(W / c.width, H / c.height)
-        c = c.resize((int(c.width * s + .5), int(c.height * s + .5)), Image.LANCZOS)
-        img = c.crop(((c.width - W) // 2, (c.height - H) // 2,
-                      (c.width - W) // 2 + W, (c.height - H) // 2 + H))
+        cy0 = int(crop[1] * bh)
+        c = img.crop((int(crop[0] * bw), cy0, int(crop[2] * bw), int(crop[3] * bh)))
+        sc = max(W / c.width, H / c.height)
+        c = c.resize((int(c.width * sc + .5), int(c.height * sc + .5)), Image.LANCZOS)
+        oy = (c.height - H) // 2
+        img = c.crop(((c.width - W) // 2, oy, (c.width - W) // 2 + W, oy + H))
+        # the baked strip travels with the pixels; transform its coords so the
+        # bar copy still lands on it
+        by0 = int((slide["stripY0"] - cy0) * sc - oy)
+        by1 = int((slide["stripY1"] - cy0) * sc - oy)
+    else:
+        by0, by1 = slide["stripY0"], slide["stripY1"]
     top_dots(img, slide.get("num", "1"))
-    # The eye strip is baked into the base pixels, so it already covers the eyes
-    # (and travels with a crop). Only redraw the decorative brand bar on the
-    # UNcropped full frame, where stripY0/Y1 still line up.
-    if not crop:
-        eye_bar(img, slide["stripY0"], slide["stripY1"], slide.get("barlabel", "able2love"))
+    # The bars are never empty: every slide carries copy on its strip.
+    bar_label(img, by0, by1, slide.get("barlabel", "able2love"))
     bottom_scrim(img)
     d = ImageDraw.Draw(img)
 

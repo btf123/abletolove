@@ -34,9 +34,18 @@ const SRC = path.join(ROOT, 'marketing/brand-assets/src');
 // crowd from behind, hands). With the directory empty, statement/founder cards
 // fall back to the warm gradient card, which is the safe default.
 const FOUNDER_DIR = path.join(ROOT, 'marketing/brand-assets/founder-photos');
+// The reveal library's bases have the identity strip BAKED over the eyes, so
+// they are safe by construction — statement cards may use them as backdrops.
+const REVEAL_LIB = path.join(ROOT, 'marketing/brand-assets/reveal-library');
+let founderPhotoDir = FOUNDER_DIR;
 async function listFounderPhotos() {
   try {
-    return (await readdir(FOUNDER_DIR)).filter((f) => /\.(jpe?g|png)$/i.test(f)).sort();
+    const own = (await readdir(FOUNDER_DIR)).filter((f) => /\.(jpe?g|png)$/i.test(f)).sort();
+    if (own.length) { founderPhotoDir = FOUNDER_DIR; return own; }
+  } catch { /* fall through */ }
+  try {
+    founderPhotoDir = REVEAL_LIB;
+    return (await readdir(REVEAL_LIB)).filter((f) => /\.jpe?g$/i.test(f)).sort();
   } catch { return []; }
 }
 
@@ -341,7 +350,7 @@ async function itemToHtml(it, index) {
     if (founders.length) {
       const file = founders[(it.photoPick || 0 + index) % founders.length];
       try {
-        const buf = await readFile(path.join(FOUNDER_DIR, file));
+        const buf = await readFile(path.join(founderPhotoDir, file));
         const mime = /\.png$/i.test(file) ? 'image/png' : 'image/jpeg';
         return founderCard(it, buf.toString('base64'), mime);
       } catch { /* fall through to gradient */ }

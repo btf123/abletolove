@@ -37,6 +37,14 @@ ASSETS = {
                     ("chair", "chair-headset.jpg", (0.155, 0.285)),
 }
 
+# For chair images where a tight head+torso crop hides the wheelchair (so
+# slide 1 reads as an ordinary seated portrait, then slide 2 shows the full
+# picture): the crop box in fractions of the finished 1080x1350 base.
+# Verified against the base so the wheels/frame/footplate fall outside it.
+CLOSECROP = {
+    "chair-headset.jpg": [0.12, 0.0, 0.74, 0.52],
+}
+
 
 def fit(path):
     im = Image.open(path).convert("RGB")
@@ -83,7 +91,10 @@ def main():
             ey0, ey1 = c - MIN_STRIP // 2, c + MIN_STRIP // 2
         y0, y1 = bake_strip(img, ey0 - 10, ey1 + 10)
         img.save(os.path.join(OUT_DIR, out), quality=90)
-        manifest[kind].append({"file": out, "stripY0": y0, "stripY1": y1})
+        entry = {"file": out, "stripY0": y0, "stripY1": y1}
+        if out in CLOSECROP:
+            entry["closeCrop"] = CLOSECROP[out]
+        manifest[kind].append(entry)
         print(f"baked {out}  kind={kind}  strip={y0}-{y1}px")
     with open(os.path.join(OUT_DIR, "reveal-library.json"), "w") as f:
         json.dump(manifest, f, indent=2)

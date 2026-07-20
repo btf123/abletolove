@@ -174,23 +174,50 @@ def render_slide(slide):
     img = Image.open(os.path.join(LIB, slide["base"])).convert("RGB")
     if img.size != (W, H):
         img = img.resize((W, H))
+    # optional close-crop (fractions of the base) that hides the wheelchair,
+    # cover-fitted back to the full frame.
+    crop = slide.get("crop")
+    if crop:
+        bw, bh = img.size
+        c = img.crop((int(crop[0] * bw), int(crop[1] * bh), int(crop[2] * bw), int(crop[3] * bh)))
+        s = max(W / c.width, H / c.height)
+        c = c.resize((int(c.width * s + .5), int(c.height * s + .5)), Image.LANCZOS)
+        img = c.crop(((c.width - W) // 2, (c.height - H) // 2,
+                      (c.width - W) // 2 + W, (c.height - H) // 2 + H))
     top_dots(img, slide.get("num", "1"))
-    eye_bar(img, slide["stripY0"], slide["stripY1"], slide.get("barlabel", "able2love"))
+    # The eye strip is baked into the base pixels, so it already covers the eyes
+    # (and travels with a crop). Only redraw the decorative brand bar on the
+    # UNcropped full frame, where stripY0/Y1 still line up.
+    if not crop:
+        eye_bar(img, slide["stripY0"], slide["stripY1"], slide.get("barlabel", "able2love"))
     bottom_scrim(img)
     d = ImageDraw.Draw(img)
-    # text block sits ABOVE the swipe bar
-    y = H - 372
+
+    # Build the text block bottom-up so it always sits ABOVE the swipe bar
+    # (buttons centred at H-96 occupy roughly H-156..H-36).
+    BTN_Y = H - 96
+    block = []  # (font, colour, gap_after, line)
     if slide.get("kicker"):
-        d.text((60, y), str(slide["kicker"]).upper(), font=font(24), fill=(255, 200, 90)); y += 36
-    for ln in wrap(d, slide["prompt"], font(72), W - 120):
-        d.text((60, y), ln, font=font(72), fill=(255, 255, 255)); y += 78
+        block.append((font(24), (255, 200, 90), 12, str(slide["kicker"]).upper()))
+    pf = font(62)
+    for ln in wrap(d, slide["prompt"], pf, W - 120):
+        block.append((pf, (255, 255, 255), 6, ln))
+    block[-1] = (block[-1][0], block[-1][1], 14, block[-1][3])
     if slide.get("sub"):
-        for ln in wrap(d, slide["sub"], font(34), W - 120):
-            d.text((60, y + 2), ln, font=font(34), fill=(245, 210, 220)); y += 42
+        sf = font(32)
+        for ln in wrap(d, slide["sub"], sf, W - 120):
+            block.append((sf, (245, 210, 220), 4, ln))
+        block[-1] = (block[-1][0], block[-1][1], 12, block[-1][3])
     if slide.get("cta"):
-        d.text((60, y + 8), slide["cta"], font=font(28), fill=(255, 157, 176))
-    # the generic swipe buttons
-    swipe_bar(img, H - 128)
+        block.append((font(26), (255, 157, 176), 0, slide["cta"]))
+
+    total = sum(f.size + gap for f, _, gap, _ in block)
+    y = (BTN_Y - 62) - total  # end the text 62px above the button centres
+    for f, col, gap, ln in block:
+        d.text((60, y), ln, font=f, fill=col)
+        y += f.size + gap
+
+    swipe_bar(img, BTN_Y)
     return img
 
 

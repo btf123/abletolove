@@ -28,36 +28,52 @@ export async function buildReveal(weekNo, weekDir) {
   if (!manifest.sexy?.length || !manifest.chair?.length) {
     throw new Error('reveal library has no sexy/chair images');
   }
-  const sexy = pick(manifest.sexy, weekNo);
-  const chair = pick(manifest.chair, weekNo + 1); // offset so the pair varies
   const pair = pick(bank.pairs, weekNo);
   const caption = pick(bank.captions, weekNo);
+  const CTA = 'Able2Love — first of its kind · free on Google Play';
+  const revealSub = `See the full picture. ${pair.bSub}`;
+
+  // Two reveal shapes, alternated for variety:
+  //  - "zoom": ONE wheelchair photo, cropped on slide 1 so the chair reads as an
+  //    ordinary seat, then the full frame on slide 2 — the strongest "same
+  //    person" proof, and the most literal "see the full picture".
+  //  - "pair": a sexy no-chair photo on slide 1, a full wheelchair photo on
+  //    slide 2.
+  const cropChair = manifest.chair.find((c) => Array.isArray(c.closeCrop));
+  const useZoom = cropChair && (weekNo % 2 === 0);
+
+  let slide1, slide2, mode;
+  if (useZoom) {
+    mode = 'zoom';
+    slide1 = { base: cropChair.file, crop: cropChair.closeCrop, num: '1 / 2', prompt: pair.aPrompt };
+    slide2 = { base: cropChair.file, stripY0: cropChair.stripY0, stripY1: cropChair.stripY1, num: '2 / 2',
+               prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA };
+  } else {
+    mode = 'pair';
+    const sexy = pick(manifest.sexy, weekNo);
+    const chair = pick(manifest.chair, weekNo + 1);
+    slide1 = { base: sexy.file, stripY0: sexy.stripY0, stripY1: sexy.stripY1, num: '1 / 2', prompt: pair.aPrompt };
+    slide2 = { base: chair.file, stripY0: chair.stripY0, stripY1: chair.stripY1, num: '2 / 2',
+               prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA };
+  }
 
   const outPrefix = path.join(weekDir, 'reveal');
-  const plan = {
-    slides: [
-      { base: sexy.file, stripY0: sexy.stripY0, stripY1: sexy.stripY1, num: '1 / 2',
-        prompt: pair.aPrompt },
-      { base: chair.file, stripY0: chair.stripY0, stripY1: chair.stripY1, num: '2 / 2',
-        prompt: pair.bPrompt, sub: pair.bSub, kicker: pair.dare,
-        cta: 'Able2Love · free on Google Play' },
-    ],
-    out: outPrefix,
-  };
-
+  const plan = { slides: [slide1, slide2], out: outPrefix };
   await renderReveal(plan);
 
   // X can't carousel the same way; lead with slide 1's hook + a swipe nudge.
-  const xText = `${pair.aPrompt} 👀 (swipe on IG for the twist) — Able2Love, inclusive dating, free on Google Play. #dating #disability`;
+  const xText = `${pair.aPrompt} 👀 (swipe on IG to see the full picture) — Able2Love, inclusive dating, first of its kind, free on Google Play. #dating #disability`;
+  const igCaption = `${caption}\n\nSee the full picture — Able2Love, the first-of-its-kind inclusive dating app.`;
 
   return {
     type: 'reveal',
-    angle: 'sexy reveal (is this person attractive? → they’re disabled)',
+    angle: `sexy reveal — ${mode === 'zoom' ? 'crop hides the chair, then the full picture' : 'sexy shot, then the full picture'}`,
     carousel: ['reveal_1.jpg', 'reveal_2.jpg'],
-    instagram: caption,
+    instagram: igCaption,
     x: xText.slice(0, 280),
-    alt: 'Two-slide carousel: a striking photo with the eyes covered by a caption strip asking if the person is attractive, then the reveal that they are a wheelchair user, for the inclusive dating app Able2Love.',
+    alt: 'Two-slide dating-app-style carousel: a striking photo framed like a swipe card (eyes covered) with a blunt "smash or pass" prompt, then the reveal that the person is a wheelchair user, for Able2Love, an inclusive dating app.',
     copy: pair,
+    mode,
   };
 }
 

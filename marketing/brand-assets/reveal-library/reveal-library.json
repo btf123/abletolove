@@ -20,7 +20,13 @@
     {
       "file": "chair-headset.jpg",
       "stripY0": 168,
-      "stripY1": 375
+      "stripY1": 375,
+      "closeCrop": [
+        0.12,
+        0.0,
+        0.74,
+        0.52
+      ]
     }
   ]
 }

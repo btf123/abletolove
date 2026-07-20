@@ -1,53 +1,69 @@
 {
-  "_note": "Dating-app binary prompts for the reveal carousels. Blunt, cheeky, made to trigger a swipe/comment reaction — smash-or-pass energy, never insulting the audience. Vary the phrasing every time; don't lean on any one opener (e.g. not 'be real' every post). Slide 1 baits; slide 2 reveals the wheelchair and dares them.",
+  "_note": "Dating-app binary prompts for the reveal carousels. Blunt, cheeky, made to trigger a swipe/comment reaction — smash-or-pass energy, never insulting the audience. Vary the phrasing every time; don't lean on any one opener (e.g. not 'be real' every post). Slide 1 baits; slide 2 reveals the wheelchair and dares them. aBar/bBar are the strip lines — the bars must never be empty.",
   "pairs": [
     {
       "aPrompt": "Smash or pass?",
       "bPrompt": "Smash or pass now?",
       "bSub": "Full-time wheelchair user. Same person, same face.",
-      "dare": "swipe left. i dare you."
+      "dare": "swipe left. i dare you.",
+      "aBar": "EYES CENSORED. OPINIONS AREN'T.",
+      "bBar": "SAME PERSON. KEEP UP."
     },
     {
       "aPrompt": "Hot or not?",
       "bPrompt": "Still hot though, right?",
       "bSub": "Yeah — they're disabled.",
-      "dare": "say it in the comments then"
+      "dare": "say it in the comments then",
+      "aBar": "IDENTITY HIDDEN. VIBE ISN'T.",
+      "bBar": "TOLD YOU IT WAS THE SAME PICTURE."
     },
     {
       "aPrompt": "Would you? Yes or no.",
       "bPrompt": "Still a yes?",
       "bSub": "Now you know they use a wheelchair.",
-      "dare": "go on, change your answer"
+      "dare": "go on, change your answer",
+      "aBar": "NO PEEKING. JUST ANSWER.",
+      "bBar": "ZOOMED OUT. STILL GORGEOUS."
     },
     {
       "aPrompt": "Left or right?",
       "bPrompt": "Still swiping right?",
       "bSub": "They're disabled. Bet your thumb didn't move.",
-      "dare": "prove me wrong 👇"
+      "dare": "prove me wrong 👇",
+      "aBar": "YOU DON'T NEED THE EYES FOR THIS.",
+      "bBar": "THE FULL PICTURE. AS PROMISED."
     },
     {
       "aPrompt": "Be real — would you hit this?",
       "bPrompt": "Be real. Still would?",
       "bSub": "They use a wheelchair.",
-      "dare": "‘still would’ if you mean it"
+      "dare": "‘still would’ if you mean it",
+      "aBar": "FACE REDACTED. QUESTION STANDS.",
+      "bBar": "NOTHING CHANGED BUT THE FRAME."
     },
     {
       "aPrompt": "Into it or nah?",
       "bPrompt": "Into it or nah — now?",
       "bSub": "Disabled. Didn't change a thing, did it.",
-      "dare": "come argue with me down here"
+      "dare": "come argue with me down here",
+      "aBar": "DON'T OVERTHINK IT.",
+      "bBar": "YOU ALREADY ANSWERED, REMEMBER?"
     },
     {
       "aPrompt": "Would or wouldn't?",
       "bPrompt": "Would or wouldn't — now?",
       "bSub": "They're a wheelchair user. Same person.",
-      "dare": "liar. you already answered."
+      "dare": "liar. you already answered.",
+      "aBar": "FIRST INSTINCT ONLY.",
+      "bBar": "SAME SHOT. WIDER TRUTH."
     },
     {
       "aPrompt": "Rate them. 🔥 or 💀?",
       "bPrompt": "Still 🔥?",
       "bSub": "Plot the twist yourself: they're disabled.",
-      "dare": "drop your emoji, no take-backs"
+      "dare": "drop your emoji, no take-backs",
+      "aBar": "ANSWER BEFORE YOU SWIPE.",
+      "bBar": "AND THERE'S THE REST OF IT."
     }
   ],
   "captions": [

@@ -119,15 +119,23 @@ def main():
             print("MISSING source:", p)
             continue
         img, s, ih, oy = fit(p)
-        ey0 = int(eye[0] * ih * s - oy)
-        ey1 = int(eye[1] * ih * s - oy)
-        # guarantee a minimum strip height (room for the caption text)
-        if ey1 - ey0 < MIN_STRIP:
-            c = (ey0 + ey1) // 2
-            ey0, ey1 = c - MIN_STRIP // 2, c + MIN_STRIP // 2
-        y0, y1 = bake_strip(img, ey0 - 10, ey1 + 10)
+        # `eye` is one (y0,y1) band, or a LIST of bands for photos with other
+        # (explicitly consenting) people in them — every face gets a bar, same
+        # treatment as Brogan's. The FIRST band is his and carries the copy.
+        bands = eye if isinstance(eye, list) else [eye]
+        baked = []
+        for band in bands:
+            ey0 = int(band[0] * ih * s - oy)
+            ey1 = int(band[1] * ih * s - oy)
+            if ey1 - ey0 < MIN_STRIP:
+                c = (ey0 + ey1) // 2
+                ey0, ey1 = c - MIN_STRIP // 2, c + MIN_STRIP // 2
+            baked.append(bake_strip(img, ey0 - 10, ey1 + 10))
+        y0, y1 = baked[0]
         img.save(os.path.join(OUT_DIR, out), quality=90)
         entry = {"file": out, "stripY0": y0, "stripY1": y1}
+        if len(baked) > 1:
+            entry["extraStrips"] = [[a, b] for a, b in baked[1:]]
         if out in CLOSECROP:
             entry["closeCrop"] = CLOSECROP[out]
         manifest[kind].append(entry)

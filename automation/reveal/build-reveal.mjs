@@ -42,9 +42,12 @@ export async function buildReveal(weekNo, weekDir) {
   if (!croppable.length) throw new Error('no reveal-library images have a closeCrop');
   const shot = pick(croppable, weekNo);
   const mode = 'zoom';
-  const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: pair.aPrompt };
+  const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: pair.aPrompt,
+                   stripY0: shot.stripY0, stripY1: shot.stripY1,
+                   barlabel: pair.aBar || 'EYES CENSORED. OPINIONS AREN\u2019T.' };
   const slide2 = { base: shot.file, stripY0: shot.stripY0, stripY1: shot.stripY1, num: '2 / 2',
-                   prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA };
+                   prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA,
+                   barlabel: pair.bBar || 'SAME PERSON. KEEP UP.' };
 
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };

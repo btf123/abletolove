@@ -293,7 +293,7 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
   const barrier = /\b(venue|nightclub|night club|club|nightlife|stair|stairs|step|steps|ramp|inaccessible|entrance|doorway|building|toilet|lift|pub|bar|dancefloor|dance floor)\b/i.test(`${day.angle} ${day.imageQuery} ${day.headline}`);
   if (barrier && day.imageQuery && day.imageQuery.length >= 4 && type !== 'photoApp') type = 'photo';
   const headline = scrubText(day.headline);
-  const fallback = { type: 'statement', eyebrow: 'Able2Love', statement: headline };
+  const fallback = { type: 'statement', eyebrow: 'Able2Love', statement: headline, photoPick: weekNo };
   try {
     if (type === 'photo' || type === 'photoApp') {
       // Prefer the day's own topic-matched query so the photo illustrates the
@@ -332,7 +332,7 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
       return { type: 'flags', ...f };
     }
     // statement (and anything else): the day's headline as the belief line.
-    return { type: 'statement', eyebrow: 'Able2Love', statement: headline };
+    return { type: 'statement', eyebrow: 'Able2Love', statement: headline, photoPick: weekNo };
   } catch {
     return fallback;
   }

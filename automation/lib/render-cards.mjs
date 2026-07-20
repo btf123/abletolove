@@ -19,13 +19,22 @@
 // Works locally (set PLAYWRIGHT_EXECUTABLE_PATH) and in GitHub Actions.
 
 import { chromium } from 'playwright-core';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchPhoto } from './photos.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = path.join(ROOT, 'marketing/brand-assets/src');
+// Real photos of the founder. When present, the manifesto/"why I built it"
+// (statement) card is rendered over one of these instead of a plain gradient,
+// so the identity posts show the actual disabled performer who built the app.
+const FOUNDER_DIR = path.join(ROOT, 'marketing/brand-assets/founder-photos');
+async function listFounderPhotos() {
+  try {
+    return (await readdir(FOUNDER_DIR)).filter((f) => /\.(jpe?g|png)$/i.test(f)).sort();
+  } catch { return []; }
+}
 
 // Feature key -> real app screenshot file.
 const FEATURE_SHOTS = {
@@ -86,6 +95,28 @@ function statementCard(it) {
       <div class="statement">${it.allowHtml ? st : esc(st)}</div>
       ${it.support ? `<div class="support">${esc(it.support)}</div>` : ''}
     </div>
+    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+  </body></html>`;
+}
+
+// --- FOUNDER (statement over a real photo of Brogan) ---
+function founderCard(it, photoB64, mime) {
+  const st = it.statement || it.headline || '';
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE}
+    .bg{position:absolute;inset:0}.bg img{width:100%;height:100%;object-fit:cover;object-position:50% 24%}
+    .wash{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,8,15,.4) 0%,rgba(20,8,15,0) 24%,rgba(18,7,12,.22) 52%,rgba(18,7,12,.85) 80%,#120709 100%),radial-gradient(circle at 80% 88%,rgba(226,51,73,.28),rgba(226,51,73,0) 60%)}
+    ${BRANDCSS}.brandrow{top:44px;left:52px}.mk{width:52px;height:52px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6))}.brandname{text-shadow:0 2px 12px rgba(0,0,0,.7)}
+    .eyebrow{position:absolute;left:56px;bottom:${it.support ? 348 : 300}px;font-size:24px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#FF9DB0;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+    .statement{position:absolute;left:56px;right:70px;bottom:${it.support ? 232 : 150}px;font-size:${Math.min(66, fontForStatement(st))}px;font-weight:800;line-height:1.06;letter-spacing:-1.4px;text-shadow:0 4px 30px rgba(0,0,0,.72)}
+    .statement b{background:linear-gradient(120deg,#FFC64D,#FF8FA6);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .support{position:absolute;left:56px;right:90px;bottom:150px;font-size:29px;font-weight:600;line-height:1.35;color:#F3E4EA;text-shadow:0 2px 14px rgba(0,0,0,.7)}
+    .foot{position:absolute;left:56px;bottom:60px;font-size:25px;font-weight:700}.foot small{color:#F5C6D2;font-weight:500;margin-left:6px}
+  </style></head><body>
+    <div class="bg"><img src="data:${mime};base64,${photoB64}" alt=""></div>
+    <div class="wash"></div>${BRANDROW()}
+    ${it.eyebrow ? `<div class="eyebrow">${esc(it.eyebrow)}</div>` : ''}
+    <div class="statement">${it.allowHtml ? st : esc(st)}</div>
+    ${it.support ? `<div class="support">${esc(it.support)}</div>` : ''}
     <div class="foot">Able2Love<small>Free on Google Play</small></div>
   </body></html>`;
 }
@@ -300,7 +331,19 @@ async function itemToHtml(it, index) {
   if (type === 'statTake') return statTakeCard(it);
   if (type === 'split') return splitCard(it);
   if (type === 'flags') return flagsCard(it);
-  if (type === 'statement') return statementCard(it);
+  if (type === 'statement' || type === 'founder') {
+    // Put Brogan's real photo behind the manifesto card when we have one.
+    const founders = await listFounderPhotos();
+    if (founders.length) {
+      const file = founders[(it.photoPick || 0 + index) % founders.length];
+      try {
+        const buf = await readFile(path.join(FOUNDER_DIR, file));
+        const mime = /\.png$/i.test(file) ? 'image/png' : 'image/jpeg';
+        return founderCard(it, buf.toString('base64'), mime);
+      } catch { /* fall through to gradient */ }
+    }
+    return statementCard(it);
+  }
   return statementCard({ statement: it.headline || it.statement || '', eyebrow: it.eyebrow });
 }
 

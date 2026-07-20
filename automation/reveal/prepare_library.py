@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""
+DEV-TIME TOOL (run by hand, not in CI).
+
+Turns Brogan's raw source photos into the committed reveal library:
+  - cover-fits each photo to the 1080x1350 carousel frame,
+  - BAKES an opaque strip over the eyes at a hand-verified position, so the
+    committed asset is already de-identified (eyes never appear in the repo or
+    in a post) while the rest of the face — lips, jaw, expression, styling —
+    stays visible, which is what makes the "is this person attractive?" hook
+    work,
+  - records each asset's baked strip position in reveal-library.json so the
+    render step can drop the rotating caption exactly on the strip.
+
+The raw source photos (which still show the eyes) are NEVER committed; only the
+eyes-baked 1080x1350 bases go into marketing/brand-assets/reveal-library/.
+
+Usage:  python3 automation/reveal/prepare_library.py /path/to/source/photos
+"""
+import os
+import sys
+import json
+from PIL import Image, ImageDraw
+
+W, H = 1080, 1350
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT_DIR = os.path.join(ROOT, "marketing", "brand-assets", "reveal-library")
+
+# source filename -> (kind, out name, eye band as SOURCE fractions (y0,y1))
+# eye fractions were verified by zooming into each rendered head.
+ASSETS = {
+    "Shot3.jpg":    ("sexy",  "sequins.jpg",      (0.14, 0.215)),
+    "live1.jpg":    ("sexy",  "stage.jpg",        (0.12, 0.26)),
+    "44429804_321766475280726_2978850043601092608_n.jpg":
+                    ("chair", "chair-cafe.jpg",   (0.22, 0.40)),
+    "44359190_1619180541520899_4354854992830529536_n.jpg":
+                    ("chair", "chair-headset.jpg", (0.155, 0.285)),
+}
+
+
+def fit(path):
+    im = Image.open(path).convert("RGB")
+    iw, ih = im.size
+    s = max(W / iw, H / ih)
+    im = im.resize((int(iw * s + .5), int(ih * s + .5)), Image.LANCZOS)
+    ox, oy = (im.width - W) // 2, (im.height - H) // 2
+    return im.crop((ox, oy, ox + W, oy + H)), s, ih, oy
+
+
+def bake_strip(img, y0, y1):
+    """Opaque near-black strip with brand-red edges. Returns (y0,y1) clamped."""
+    y0, y1 = max(0, y0), min(H, y1)
+    band = Image.new("RGB", (W, y1 - y0))
+    px = band.load()
+    for x in range(W):
+        t = x / W
+        col = (int(20 + 6 * t), 12, int(18 + 10 * t))
+        for yy in range(y1 - y0):
+            px[x, yy] = col
+    img.paste(band, (0, y0))
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, y0, W, y0 + 4), fill=(226, 51, 73))
+    d.rectangle((0, y1 - 4, W, y1), fill=(226, 51, 73))
+    return y0, y1
+
+
+def main():
+    src_dir = sys.argv[1] if len(sys.argv) > 1 else "."
+    os.makedirs(OUT_DIR, exist_ok=True)
+    manifest = {"sexy": [], "chair": []}
+    MIN_STRIP = 96
+    for src, (kind, out, eye) in ASSETS.items():
+        p = os.path.join(src_dir, src)
+        if not os.path.exists(p):
+            print("MISSING source:", p)
+            continue
+        img, s, ih, oy = fit(p)
+        ey0 = int(eye[0] * ih * s - oy)
+        ey1 = int(eye[1] * ih * s - oy)
+        # guarantee a minimum strip height (room for the caption text)
+        if ey1 - ey0 < MIN_STRIP:
+            c = (ey0 + ey1) // 2
+            ey0, ey1 = c - MIN_STRIP // 2, c + MIN_STRIP // 2
+        y0, y1 = bake_strip(img, ey0 - 10, ey1 + 10)
+        img.save(os.path.join(OUT_DIR, out), quality=90)
+        manifest[kind].append({"file": out, "stripY0": y0, "stripY1": y1})
+        print(f"baked {out}  kind={kind}  strip={y0}-{y1}px")
+    with open(os.path.join(OUT_DIR, "reveal-library.json"), "w") as f:
+        json.dump(manifest, f, indent=2)
+    print("wrote reveal-library.json:", {k: len(v) for k, v in manifest.items()})
+
+
+if __name__ == "__main__":
+    main()

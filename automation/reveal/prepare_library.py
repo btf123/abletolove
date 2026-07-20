@@ -54,8 +54,9 @@ CLOSECROP = {
     # face centred, top of the seat back reads as a normal chair; joystick,
     # wheels and motor all fall below/left of the box.
     "pink-gig.jpg": [0.41, 0.16, 0.81, 0.58],
-    # everything above the joystick (bottom-left): head + studded shoulders.
-    "neon-studs.jpg": [0.0, 0.0, 1.0, 0.72],
+    # (neon-studs pulled from rotation: the joystick is too subtle in the full
+    # frame — Brogan: "you can't even see the wheelchair" — so the reveal
+    # doesn't land. The base stays in the library for other card uses.)
 }
 
 

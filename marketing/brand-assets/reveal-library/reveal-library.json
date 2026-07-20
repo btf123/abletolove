@@ -1,0 +1,26 @@
+{
+  "sexy": [
+    {
+      "file": "sequins.jpg",
+      "stripY0": 179,
+      "stripY1": 300
+    },
+    {
+      "file": "stage.jpg",
+      "stripY0": 152,
+      "stripY1": 361
+    }
+  ],
+  "chair": [
+    {
+      "file": "chair-cafe.jpg",
+      "stripY0": 261,
+      "stripY1": 541
+    },
+    {
+      "file": "chair-headset.jpg",
+      "stripY0": 168,
+      "stripY1": 375
+    }
+  ]
+}

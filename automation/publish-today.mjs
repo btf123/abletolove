@@ -27,7 +27,7 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { postToX } from './lib/x-post.mjs';
-import { postToInstagram } from './lib/ig-post.mjs';
+import { postToInstagram, postCarouselToInstagram } from './lib/ig-post.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const QUEUE = path.join(ROOT, 'content-queue');
@@ -103,13 +103,18 @@ async function main() {
   }
   if (day.x.length > 280) fail(`X text for ${key} is ${day.x.length} chars (max 280); not posting.`);
 
-  const cardUrl = `${RAW_BASE}/content-queue/${weekDir}/${day.card}`;
+  // A reveal day carries a carousel (2 slides) instead of a single card.
+  const isCarousel = Array.isArray(day.carousel) && day.carousel.length >= 2;
+  const carouselUrls = isCarousel
+    ? day.carousel.map((f) => `${RAW_BASE}/content-queue/${weekDir}/${f}`)
+    : [];
+  const cardUrl = isCarousel ? carouselUrls[0] : `${RAW_BASE}/content-queue/${weekDir}/${day.card}`;
 
   if (dryRun) {
-    console.log(`DRY RUN. Would post ${key}:`);
+    console.log(`DRY RUN. Would post ${key}${isCarousel ? ' (carousel)' : ''}:`);
     console.log(`  X (${day.x.length} chars): ${day.x.slice(0, 80)}...`);
     console.log(`  IG: ${day.instagram.slice(0, 80)}...`);
-    console.log(`  image: ${cardUrl}`);
+    console.log(isCarousel ? `  images: ${carouselUrls.join(', ')}` : `  image: ${cardUrl}`);
     return;
   }
 
@@ -151,10 +156,12 @@ async function main() {
     console.log('X keys not set; skipping X.');
   }
 
-  // Instagram (image by public URL).
+  // Instagram (image by public URL). Reveal days post as a swipe carousel.
   if (hasIG) {
     try {
-      results.instagram = await postToInstagram({ imageUrl: cardUrl, caption: day.instagram });
+      results.instagram = isCarousel
+        ? await postCarouselToInstagram({ imageUrls: carouselUrls, caption: day.instagram })
+        : await postToInstagram({ imageUrl: cardUrl, caption: day.instagram });
       console.log(`Instagram posted: ${results.instagram}`);
     } catch (e) {
       results.instagram = `FAILED: ${e.message}`;

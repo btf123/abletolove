@@ -23,6 +23,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderCards } from './lib/render-cards.mjs';
+import { buildReveal } from './reveal/build-reveal.mjs';
 import { generateText } from './lib/llm.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 import { STATS_POOL, hasStats } from './lib/stats-pool.mjs';
@@ -439,6 +440,16 @@ async function main() {
   console.log(`Card mix: ${cardItems.map((c) => c.type).join(', ')}`);
   const cardFiles = await renderCards(cardItems, weekDir); // card-01.png ... in weekDir
 
+  // One "sexy reveal" carousel per week (~1 in 5 posts). Best-effort: a failure
+  // here must never break the rest of the week.
+  let reveal = null;
+  try {
+    reveal = await buildReveal(weekNo, weekDir);
+    console.log(`Reveal carousel: ${reveal.copy.aLabel} -> ${reveal.copy.bLabel}`);
+  } catch (e) {
+    console.warn(`Reveal carousel skipped: ${e.message.slice(0, 160)}`);
+  }
+
   const lines = [];
   lines.push(`# Able2Love week: ${stamp} (Instagram + X, in tandem)`);
   lines.push('');
@@ -464,6 +475,26 @@ async function main() {
     lines.push(`**Alt text:** ${altFor(d)}`);
     lines.push('');
   });
+  if (reveal) {
+    lines.push(`## Reveal carousel — ${reveal.angle}`);
+    lines.push('');
+    lines.push('_Instagram carousel (swipe): slide 1 baits a reaction, slide 2 reveals. Face de-identified (eyes covered)._');
+    lines.push('');
+    reveal.carousel.forEach((img, k) => {
+      lines.push(`![Reveal slide ${k + 1}](${REPO_RAW}/content-queue/week-${stamp}/${img})`);
+      lines.push('');
+    });
+    lines.push('**Instagram caption:**');
+    lines.push('');
+    lines.push(quoteBlock(reveal.instagram));
+    lines.push('');
+    lines.push('**X post:**');
+    lines.push('');
+    lines.push(quoteBlock(reveal.x));
+    lines.push('');
+    lines.push(`**Alt text:** ${reveal.alt}`);
+    lines.push('');
+  }
   lines.push('---');
   lines.push(`App link for bios and plugs: ${PLAY_LINK}`);
   lines.push('');
@@ -475,19 +506,32 @@ async function main() {
   // approved:false is the weekly veto: nothing from this batch posts until the
   // founder reviews it and runs the "Approve this week" workflow (or edits this
   // flag). Older batches with no `approved` field keep posting, for safety.
+  const days = approved.map((d, i) => ({
+    day: i + 1,
+    angle: d.angle,
+    card: path.basename(cardFiles[i]),
+    x: d.x,
+    instagram: `${d.caption}\n\n${d.hashtags.map((h) => '#' + h).join(' ')}`,
+    alt: altFor(d),
+    hold: false, // set true on a day to keep the publisher's hands off it
+  }));
+  if (reveal) {
+    days.push({
+      day: days.length + 1,
+      type: 'reveal',
+      angle: reveal.angle,
+      carousel: reveal.carousel, // [slide1.jpg, slide2.jpg] -> IG carousel
+      x: reveal.x,
+      instagram: reveal.instagram,
+      alt: reveal.alt,
+      hold: false,
+    });
+  }
   const weekJson = {
     start: stamp, // day 1 posts on this date
     approved: false,
     theme,
-    days: approved.map((d, i) => ({
-      day: i + 1,
-      angle: d.angle,
-      card: path.basename(cardFiles[i]),
-      x: d.x,
-      instagram: `${d.caption}\n\n${d.hashtags.map((h) => '#' + h).join(' ')}`,
-      alt: altFor(d),
-      hold: false, // set true on a day to keep the publisher's hands off it
-    })),
+    days,
   };
   await writeFile(path.join(weekDir, 'week.json'), JSON.stringify(weekJson, null, 2));
   console.log(`Wrote ${approved.length} aligned days (IG + X) with cards to ${path.relative(ROOT, weekDir)}`);

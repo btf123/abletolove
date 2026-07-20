@@ -36,13 +36,7 @@
     {
       "file": "neon-studs.jpg",
       "stripY0": 354,
-      "stripY1": 482,
-      "closeCrop": [
-        0.0,
-        0.0,
-        1.0,
-        0.72
-      ]
+      "stripY1": 482
     }
   ]
 }

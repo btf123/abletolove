@@ -118,6 +118,12 @@
 </section>
 
 <section>
+  <h2><span class="dot"></span>Who to follow on X — one tap, you post it yourself</h2>
+  <p class="hint">Real accounts found today talking about disability dating. There is deliberately NO auto-follow bot here: mass automated following is one of the most ban-prone things on X. Tap Follow, X asks you to confirm, done as a real human.</p>
+  <div id="followsug" class="loading">Loading today's suggestions…</div>
+</section>
+
+<section>
   <h2><span class="dot"></span>Needs your eyes (approve before it goes out)</h2>
   <p class="hint">Today's outreach is approved with the ✓/✗ buttons at the top of this page, not here. This box is only for weekly post batches and anything else waiting on a decision. If it says "All clear", you have nothing outstanding here.</p>
   <div id="issues" class="loading">Loading review queue…</div>
@@ -341,11 +347,29 @@ box.appendChild(reset);
     const files=(Array.isArray(list)?list:[]).filter(f=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f=>f.name).sort();
     if(!files.length) throw new Error('none');
     return fetch(`${RAWBASE}/${files[files.length-1]}`).then(r=>r.json());
-  }).then(render).catch(()=>{box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';});
+  }).then(render).catch(()=>{
+    box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';
+    document.getElementById('followsug').innerHTML='<div class="card"><div class="meta">No brief yet, so no suggestions either.</div></div>';
+  });
+
+  function renderFollows(data){
+    const fbox=document.getElementById('followsug');
+    const sug=(data.follow_suggestions||[]);
+    if(!sug.length){fbox.innerHTML='<div class="card"><div class="meta">No new accounts found today. The scout tries again tomorrow.</div></div>';return;}
+    fbox.innerHTML='';
+    sug.forEach(f=>{
+      const el=document.createElement('div');el.className='card conv';
+      el.innerHTML=`<div class="meta">@${esc(f.author)} · <a target="_blank" rel="noopener" href="${esc(f.url)}">their profile</a></div>
+        <div class="meta" style="margin:6px 0;color:var(--muted)">${esc(f.why||'')}</div>
+        <div class="yn"><a class="btn replybtn" target="_blank" rel="noopener" href="${esc(f.followUrl)}">Follow ↗</a></div>`;
+      fbox.appendChild(el);
+    });
+  }
 
   function render(data){
     document.getElementById('outreach-actions').style.display='block';
     setupTeach(data);
+    renderFollows(data);
     const cands=(data.x_candidates||[]).slice();
     box.innerHTML='';
     if(!cands.length){

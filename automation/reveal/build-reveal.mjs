@@ -37,9 +37,10 @@ export async function buildReveal(weekNo, weekDir) {
   const plan = {
     slides: [
       { base: sexy.file, stripY0: sexy.stripY0, stripY1: sexy.stripY1, num: '1 / 2',
-        label: pair.aLabel, big: pair.aQ, swipe: true },
+        prompt: pair.aPrompt },
       { base: chair.file, stripY0: chair.stripY0, stripY1: chair.stripY1, num: '2 / 2',
-        label: pair.bLabel, kicker: pair.dare, big: pair.bQ, pill: 'Able2Love · Inclusive dating' },
+        prompt: pair.bPrompt, sub: pair.bSub, kicker: pair.dare,
+        cta: 'Able2Love · free on Google Play' },
     ],
     out: outPrefix,
   };
@@ -47,7 +48,7 @@ export async function buildReveal(weekNo, weekDir) {
   await renderReveal(plan);
 
   // X can't carousel the same way; lead with slide 1's hook + a swipe nudge.
-  const xText = `${pair.aQ} 👀 (swipe on IG for the reveal) — Able2Love, inclusive dating, free on Google Play. #dating #disability`;
+  const xText = `${pair.aPrompt} 👀 (swipe on IG for the twist) — Able2Love, inclusive dating, free on Google Play. #dating #disability`;
 
   return {
     type: 'reveal',

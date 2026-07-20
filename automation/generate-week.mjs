@@ -445,7 +445,7 @@ async function main() {
   let reveal = null;
   try {
     reveal = await buildReveal(weekNo, weekDir);
-    console.log(`Reveal carousel: ${reveal.copy.aLabel} -> ${reveal.copy.bLabel}`);
+    console.log(`Reveal carousel: ${reveal.copy.aPrompt} -> ${reveal.copy.bPrompt}`);
   } catch (e) {
     console.warn(`Reveal carousel skipped: ${e.message.slice(0, 160)}`);
   }

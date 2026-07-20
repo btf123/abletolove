@@ -1,29 +1,31 @@
 #!/usr/bin/env python3
 """
-Render reveal carousels from a plan JSON.
+Render reveal carousels that RESEMBLE a dating-app profile card, so the viewer's
+thumb itches to swipe — then slide 2 reveals the person is disabled.
 
-The heavy lifting (de-identifying the face) already happened in
-prepare_library.py — the committed base images have the eye-strip baked in.
-This step just lays the ROTATING copy on top: the tongue-in-cheek label on the
-baked strip, and the engagement-bait question / dare / app CTA at the bottom.
+De-identification already happened in prepare_library.py (an opaque strip is
+baked over the eyes in the committed bases). This step lays on:
+  - a generic dating-app swipe UI (rewind / nope ✕ / super-like ★ / like ♥ /
+    boost ⚡ buttons) — deliberately NOT any real app's logo or wordmark,
+  - a blunt binary prompt ("Smash or pass?", "Hot or not?"),
+  - on slide 2, the reveal line + a small Able2Love CTA.
 
-Plan JSON:
+Plan JSON (one object or a list):
 {
-  "slides": [
+  "slides":[
     {"base":"sequins.jpg","stripY0":179,"stripY1":300,"num":"1 / 2",
-     "label":"RATE THEM. 1-10.","big":"How fit is this person? Give me a number.","swipe":true},
+     "prompt":"Smash or pass?"},
     {"base":"chair-cafe.jpg","stripY0":261,"stripY1":541,"num":"2 / 2",
-     "label":"PLOT TWIST","kicker":"comment your number - i dare you to change it",
-     "big":"Still a 10? Or did your thumb just hesitate?","pill":"Able2Love - Inclusive dating"}
+     "prompt":"Smash or pass now?","sub":"They use a wheelchair. Same person.",
+     "kicker":"swipe left. i dare you.","cta":"Able2Love · free on Google Play"}
   ],
   "out":"/abs/prefix"          # writes prefix_1.jpg, prefix_2.jpg
 }
-
-Usage: python3 render_reveal.py plan.json   (or pipe the JSON on stdin)
 """
 import os
 import sys
 import json
+import math
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 1080, 1350
@@ -53,57 +55,142 @@ def wrap(d, text, f, maxw):
     return out
 
 
-def label_on_strip(img, y0, y1, label):
+# ---------- dating-app swipe buttons (generic, not any real app's marks) ----
+def _heart(d, cx, cy, s, col):
+    pts = []
+    for i in range(0, 361, 12):
+        t = math.radians(i)
+        x = 16 * math.sin(t) ** 3
+        y = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
+        pts.append((cx + x * s / 16, cy - y * s / 16))
+    d.polygon(pts, fill=col)
+
+
+def _star(d, cx, cy, s, col):
+    pts = []
+    for i in range(10):
+        ang = math.radians(-90 + i * 36)
+        r = s if i % 2 == 0 else s * 0.42
+        pts.append((cx + r * math.cos(ang), cy + r * math.sin(ang)))
+    d.polygon(pts, fill=col)
+
+
+def _x(d, cx, cy, s, col):
+    w = max(4, int(s * 0.34))
+    d.line((cx - s, cy - s, cx + s, cy + s), fill=col, width=w)
+    d.line((cx - s, cy + s, cx + s, cy - s), fill=col, width=w)
+
+
+def _rewind(d, cx, cy, s, col):
+    w = max(4, int(s * 0.32))
+    bbox = (cx - s, cy - s, cx + s, cy + s)
+    d.arc(bbox, 110, 20, fill=col, width=w)
+    # arrowhead at the arc start (~110 deg)
+    a = math.radians(110)
+    ax, ay = cx + s * math.cos(a), cy + s * math.sin(a)
+    d.polygon([(ax, ay - s * 0.5), (ax - s * 0.5, ay + s * 0.05), (ax + s * 0.35, ay + s * 0.4)], fill=col)
+
+
+def _bolt(d, cx, cy, s, col):
+    d.polygon([(cx + .1 * s, cy - s), (cx - .5 * s, cy + .15 * s), (cx - .02 * s, cy + .15 * s),
+               (cx - .1 * s, cy + s), (cx + .5 * s, cy - .15 * s), (cx + .02 * s, cy - .15 * s)], fill=col)
+
+
+def swipe_bar(img, y):
+    """Generic dating-app action row centred at vertical y."""
     d = ImageDraw.Draw(img)
-    f = font(40)
-    # shrink to fit if the label is long
-    while d.textlength(label, font=f) > W - 80 and f.size > 22:
-        f = font(f.size - 2)
+    # button specs: (offset_x_fraction, radius, icon, colour)
+    specs = [
+        (-0.34, 40, "rewind", (247, 181, 49)),
+        (-0.17, 60, "x", (255, 74, 96)),
+        (0.0, 46, "star", (32, 160, 243)),
+        (0.17, 60, "heart", (67, 212, 119)),
+        (0.34, 40, "bolt", (166, 77, 255)),
+    ]
+    for fx, r, icon, col in specs:
+        cx = int(W / 2 + fx * W)
+        # soft shadow + white disc
+        d.ellipse((cx - r, y - r + 6, cx + r, y + r + 6), fill=(0, 0, 0))
+        d.ellipse((cx - r, y - r, cx + r, y + r), fill=(255, 255, 255))
+        s = r * 0.5
+        if icon == "heart":
+            _heart(d, cx, y, r * 0.62, col)
+        elif icon == "star":
+            _star(d, cx, y, r * 0.6, col)
+        elif icon == "x":
+            _x(d, cx, y, s, col)
+        elif icon == "rewind":
+            _rewind(d, cx, y, s, col)
+        elif icon == "bolt":
+            _bolt(d, cx, y, r * 0.6, col)
+
+
+def eye_bar(img, y0, y1, label="able2love"):
+    """Keep the identity strip, styled as a low-key brand bar."""
+    y0, y1 = max(0, y0), min(H, y1)
+    band = Image.new("RGB", (W, y1 - y0))
+    px = band.load()
+    for x in range(W):
+        t = x / W
+        px_col = (int(18 + 6 * t), 11, int(16 + 10 * t))
+        for yy in range(y1 - y0):
+            px[x, yy] = px_col
+    img.paste(band, (0, y0))
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, y0, W, y0 + 3), fill=(226, 51, 73))
+    d.rectangle((0, y1 - 3, W, y1), fill=(226, 51, 73))
+    f = font(24)
     tw = d.textlength(label, font=f)
-    d.text(((W - tw) / 2, (y0 + y1) / 2 - f.size / 2 - 2), label, font=f, fill=(255, 255, 255))
+    if y1 - y0 > 40:
+        d.text(((W - tw) / 2, (y0 + y1) / 2 - 15), label, font=f, fill=(150, 120, 135))
 
 
-def bottom(img, big, kicker=None, sub=None, pill=None, swipe=False):
+def bottom_scrim(img):
     grad = Image.new("L", (1, H), 0)
     for y in range(H):
-        t = (y / H - 0.5) / 0.5
-        grad.putpixel((0, y), int(max(0, min(1, t)) ** 1.25 * 245))
-    img.paste(Image.new("RGB", (W, H), (10, 5, 10)), (0, 0), grad.resize((W, H)))
+        t = (y / H - 0.42) / 0.58
+        grad.putpixel((0, y), int(max(0, min(1, t)) ** 1.3 * 250))
+    img.paste(Image.new("RGB", (W, H), (8, 4, 9)), (0, 0), grad.resize((W, H)))
+
+
+def top_dots(img, num):
+    # two segmented bars like a dating-app photo counter
     d = ImageDraw.Draw(img)
-    y = H - 300
-    if kicker:
-        d.text((60, y), str(kicker).upper(), font=font(25), fill=(255, 200, 90)); y += 40
-    for ln in wrap(d, big, font(64), W - 120):
-        d.text((60, y), ln, font=font(64), fill=(255, 255, 255)); y += 72
-    if sub:
-        for ln in wrap(d, sub, font(34), W - 120):
-            d.text((60, y + 6), ln, font=font(34), fill=(245, 210, 220)); y += 42
-    if swipe:
-        d.text((60, y + 10), "swipe  →", font=font(34), fill=(255, 200, 214))
-    if pill:
-        pf = font(26); tw = d.textlength(pill, font=pf)
-        d.rounded_rectangle((60, y + 18, 60 + tw + 44, y + 18 + 52), radius=26, fill=(226, 51, 73))
-        d.text((82, y + 31), pill, font=pf, fill=(255, 255, 255))
-        d.text((60, y + 84), "Free on Google Play", font=font(26), fill=(255, 255, 255))
-
-
-def top_num(img, txt):
     g = Image.new("L", (1, H), 0)
     for y in range(H):
-        g.putpixel((0, y), int(max(0, 1 - y / 170) * 140))
+        g.putpixel((0, y), int(max(0, 1 - y / 150) * 120))
     img.paste(Image.new("RGB", (W, H), (0, 0, 0)), (0, 0), g.resize((W, H)))
-    ImageDraw.Draw(img).text((60, 48), txt, font=font(28), fill=(255, 255, 255))
+    d = ImageDraw.Draw(img)
+    active = 0 if str(num).strip().startswith("1") else 1
+    seg_w = (W - 120) // 2
+    for i in range(2):
+        x0 = 60 + i * (seg_w + 12)
+        col = (255, 255, 255) if i == active else (255, 255, 255, 90)
+        d.rounded_rectangle((x0, 30, x0 + seg_w - 12, 38), radius=4,
+                            fill=(255, 255, 255) if i == active else (120, 110, 118))
 
 
 def render_slide(slide):
-    base = os.path.join(LIB, slide["base"])
-    img = Image.open(base).convert("RGB")
+    img = Image.open(os.path.join(LIB, slide["base"])).convert("RGB")
     if img.size != (W, H):
         img = img.resize((W, H))
-    top_num(img, slide.get("num", ""))
-    label_on_strip(img, slide["stripY0"], slide["stripY1"], slide.get("label", ""))
-    bottom(img, slide["big"], kicker=slide.get("kicker"), sub=slide.get("sub"),
-           pill=slide.get("pill"), swipe=slide.get("swipe", False))
+    top_dots(img, slide.get("num", "1"))
+    eye_bar(img, slide["stripY0"], slide["stripY1"], slide.get("barlabel", "able2love"))
+    bottom_scrim(img)
+    d = ImageDraw.Draw(img)
+    # text block sits ABOVE the swipe bar
+    y = H - 372
+    if slide.get("kicker"):
+        d.text((60, y), str(slide["kicker"]).upper(), font=font(24), fill=(255, 200, 90)); y += 36
+    for ln in wrap(d, slide["prompt"], font(72), W - 120):
+        d.text((60, y), ln, font=font(72), fill=(255, 255, 255)); y += 78
+    if slide.get("sub"):
+        for ln in wrap(d, slide["sub"], font(34), W - 120):
+            d.text((60, y + 2), ln, font=font(34), fill=(245, 210, 220)); y += 42
+    if slide.get("cta"):
+        d.text((60, y + 8), slide["cta"], font=font(28), fill=(255, 157, 176))
+    # the generic swipe buttons
+    swipe_bar(img, H - 128)
     return img
 
 
@@ -112,18 +199,15 @@ def render_plan(plan):
     os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
     paths = []
     for i, slide in enumerate(plan["slides"], 1):
-        img = render_slide(slide)
-        p = f"{out}_{i}.jpg"
-        img.save(p, quality=90)
-        paths.append(p)
+        render_slide(slide).save(f"{out}_{i}.jpg", quality=90)
+        paths.append(f"{out}_{i}.jpg")
     return paths
 
 
 def main():
     raw = open(sys.argv[1]).read() if len(sys.argv) > 1 else sys.stdin.read()
     plan = json.loads(raw)
-    plans = plan if isinstance(plan, list) else [plan]
-    for pl in plans:
+    for pl in (plan if isinstance(plan, list) else [plan]):
         for p in render_plan(pl):
             print("wrote", p)
 

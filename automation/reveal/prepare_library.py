@@ -48,6 +48,12 @@ ASSETS = {
     # Black-outfit studio upright: boots up on the seat, legs over the armrest,
     # full powerchair on seamless white.
     "305A0312_result.jpg": ("chair", "studio-black-0312.jpg", (0.095, 0.135)),
+    # Black lounge: legs over the armrest, chin lifted — the most conventionally
+    # sexy frame of the black set.
+    "305A0304.jpg": ("chair", "studio-black-0304.jpg", (0.263, 0.295)),
+    # Pink jacket open, bare torso, direct gaze; joystick + both armrests
+    # visible in the full frame.
+    "305A0440.jpg": ("chair", "studio-pink-0440.jpg", (0.20, 0.24)),
 }
 
 # For chair images where a tight head+torso crop hides the wheelchair (so
@@ -66,6 +72,10 @@ CLOSECROP = {
     # head + shoulders + top of the seat back (reads as an ordinary chair);
     # boots, wheels and frame all fall outside.
     "studio-black-0312.jpg": [0.50, 0.02, 0.90, 0.35],
+    # face + shoulders + black tee; armrest/joystick (left, below y~0.40) out.
+    "studio-black-0304.jpg": [0.455, 0.10, 0.795, 0.44],
+    # face + open jacket chest; joystick and armrests (below y~0.5, sides) out.
+    "studio-pink-0440.jpg": [0.29, 0.04, 0.75, 0.50],
     # (neon-studs pulled from rotation: the joystick is too subtle in the full
     # frame — Brogan: "you can't even see the wheelchair" — so the reveal
     # doesn't land. The base stays in the library for other card uses.)

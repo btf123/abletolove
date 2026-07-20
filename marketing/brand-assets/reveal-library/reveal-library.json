@@ -59,6 +59,28 @@
         0.9,
         0.35
       ]
+    },
+    {
+      "file": "studio-black-0304.jpg",
+      "stripY0": 278,
+      "stripY1": 354,
+      "closeCrop": [
+        0.455,
+        0.1,
+        0.795,
+        0.44
+      ]
+    },
+    {
+      "file": "studio-pink-0440.jpg",
+      "stripY0": 178,
+      "stripY1": 263,
+      "closeCrop": [
+        0.29,
+        0.04,
+        0.75,
+        0.5
+      ]
     }
   ]
 }

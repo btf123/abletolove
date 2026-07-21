@@ -75,6 +75,18 @@ Last updated: 2026-07-21.
 - Copy is rhetorical / engagement-bait (comments, arguments), not a tidy lesson.
 - Rotates images + copy weekly so it never repeats. ~1 in every 4–5 posts.
 
+## 3a. VARY the visuals — not every post is the gradient reveal (added 2026-07-21)
+- The brand-gradient short-bar reveal is ONE look, not the only look. Do NOT
+  make every image like this. Mix it up: reveals (~1 in 5), stat/testimony
+  cards, statement cards, barrier photos, with-people shots, split-screen, etc.
+- Even within reveals, vary the treatment over time (backgrounds, crops, copy)
+  so the feed never looks samey.
+
+## 3b. Twitter/X reveal = auto-play video (built 2026-07-21)
+- Every reveal now also renders `reveal_x.mp4`: holds on the bait, swipe-left
+  transition, reveals the full frame + wheelchair, holds. Auto-plays in the X
+  feed to recreate the swipe. (make_video.py via a full ffmpeg.)
+
 ## 4. "Sexy reveal" strand
 - ~40% of visual imagery = this sexy imagery of Brogan (in or out of chair,
   looking incredible). Pick the most conventionally attractive frames.

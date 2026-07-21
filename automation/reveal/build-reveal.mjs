@@ -65,6 +65,12 @@ export async function buildReveal(weekNo, weekDir) {
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };
   await renderReveal(plan);
+  // X has no swipe: build an auto-play MP4 that recreates the reveal.
+  let xVideo = null;
+  try {
+    await makeVideo(`${outPrefix}_1.jpg`, `${outPrefix}_2.jpg`, path.join(weekDir, 'reveal_x.mp4'));
+    xVideo = 'reveal_x.mp4';
+  } catch (e) { console.warn(`X reveal video skipped: ${e.message.slice(0,120)}`); }
 
   // X can't carousel the same way; lead with slide 1's hook + a swipe nudge.
   const xText = `${pair.aPrompt} 👀 (swipe on IG to see the full picture) — Able2Love, inclusive dating, first of its kind, free on Google Play. #dating #disability`;
@@ -74,12 +80,21 @@ export async function buildReveal(weekNo, weekDir) {
     type: 'reveal',
     angle: 'sexy reveal — same photo: crop hides the chair, swipe shows the full picture',
     carousel: ['reveal_1.jpg', 'reveal_2.jpg'],
+    xVideo,
     instagram: dedash(igCaption),
     x: dedash(xText).slice(0, 280),
     alt: 'Two-slide dating-app-style carousel: a striking photo framed like a swipe card (eyes covered) with a blunt "smash or pass" prompt, then the reveal that the person is a wheelchair user, for Able2Love, an inclusive dating app.',
     copy: pair,
     mode,
   };
+}
+
+function makeVideo(s1, s2, out) {
+  return new Promise((resolve, reject) => {
+    const py = spawn('python3', [path.join(HERE, 'make_video.py'), s1, s2, out], { stdio: ['ignore', 'inherit', 'inherit'] });
+    py.on('error', reject);
+    py.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`make_video.py exited ${code}`))));
+  });
 }
 
 function renderReveal(plan) {

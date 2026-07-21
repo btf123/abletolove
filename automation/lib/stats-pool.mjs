@@ -34,11 +34,45 @@ export const STATS_POOL = [
     context: 'Awkwardness is why so many never even say hello.',
     source: 'Source: Scope, "End the Awkward" research (UK, 2014)',
   },
+  {
+    id: 'ons-lonely-14',
+    eyebrow: 'Nearly four times as lonely',
+    stat: '13.9%',
+    claim: 'of disabled people feel lonely often or always, against 3.8% of non-disabled people.',
+    context: 'Almost four times the rate.',
+    source: 'Source: ONS, Outcomes for Disabled People in the UK, 2020 (data to March 2019)',
+  },
+  {
+    id: 'sense-chronic-61',
+    eyebrow: 'Loneliness is the rule, not the exception',
+    stat: '61%',
+    claim: 'of disabled people are chronically lonely.',
+    context: 'It climbs to 70% of disabled 16 to 24 year olds.',
+    source: 'Source: Sense (UK)',
+  },
+  {
+    id: 'sense-complex-53',
+    eyebrow: 'Double the loneliness',
+    stat: '53%',
+    claim: 'of people with complex disabilities feel lonely, against 25% of the general population.',
+    context: 'More than twice as likely.',
+    source: 'Source: Sense, 2023 (UK)',
+  },
+  {
+    id: 'abbott-attractive-32',
+    eyebrow: 'Written off on sight',
+    stat: '32%',
+    claim: 'of Brits see people with a health condition as less attractive.',
+    context: 'Nearly a third. Before a single word is exchanged.',
+    source: 'Source: Abbott, Discrimidating survey (UK)',
+  },
   // More real, sourced stats go here as they are verified. Candidates worth
   // sourcing properly (Scope, ONS, Sense, Leonard Cheshire publish these):
-  // disabled-adult loneliness rates, share of people who would not date a
-  // disabled person, dating-app accessibility gaps. Do NOT add until the exact
-  // figure and source are confirmed.
+  // share of people who would not date a disabled person, dating-app
+  // accessibility gaps. Do NOT add until the exact figure and source are
+  // confirmed. Pending firmer primary-source confirmation: a Tinder survey of
+  // 18 to 25 year olds reportedly found only ~50% would consider dating someone
+  // disabled or neurodivergent (seen via Scope; confirm before adding).
 ];
 
 export function statById(id) {

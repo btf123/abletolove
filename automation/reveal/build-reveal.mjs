@@ -39,16 +39,28 @@ export async function buildReveal(weekNo, weekDir) {
   // the chair is out of shot (or reads as an ordinary seat); slide 2 is the
   // FULL frame of that exact photo — chair and all. The zoom-out is the proof:
   // same person, same moment, nothing changed but what you can see.
-  const croppable = manifest.chair.filter((c) => Array.isArray(c.closeCrop));
+  // SOLO shots only: an image with extra baked bars (background people) would
+  // show two bars, which breaks the one-person dating-profile look. Those
+  // with-people photos are a different post format, not the swipe card.
+  const croppable = manifest.chair.filter((c) => Array.isArray(c.closeCrop) && !c.extraStrips);
+  // Fake, identity-safe profile identities (never Brogan's real name).
+  const PROFILES = [
+    { name: 'Alex, 26', place: 'Manchester \u00b7 2 miles away' },
+    { name: 'Jamie, 24', place: 'Manchester \u00b7 just now online' },
+    { name: 'Robin, 28', place: 'Salford \u00b7 3 miles away' },
+    { name: 'Sam, 25', place: 'Manchester \u00b7 5 miles away' },
+    { name: 'Frankie, 27', place: 'Manchester \u00b7 online now' },
+  ];
+  const profile = PROFILES[((weekNo % PROFILES.length) + PROFILES.length) % PROFILES.length];
   if (!croppable.length) throw new Error('no reveal-library images have a closeCrop');
   const shot = pick(croppable, weekNo);
   const mode = 'zoom';
   const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: dedash(pair.aPrompt),
                    stripY0: shot.stripY0, stripY1: shot.stripY1,
-                   barlabel: dedash((pair.aBar || 'BE HONEST') + ' | swipe to answer on Able2Love') };
+                   barlabel: dedash((pair.aBar || 'BE HONEST') + ' | swipe to answer on Able2Love'), profile: profile.name, place: profile.place };
   const slide2 = { base: shot.file, stripY0: shot.stripY0, stripY1: shot.stripY1, num: '2 / 2',
                    prompt: dedash(pair.bPrompt), sub: dedash(revealSub), kicker: dedash(pair.dare), cta: CTA,
-                   barlabel: dedash((pair.bBar || 'SAME PERSON') + ' | meet them on Able2Love') };
+                   barlabel: dedash((pair.bBar || 'SAME PERSON') + ' | meet them on Able2Love'), profile: profile.name, place: profile.place };
 
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };

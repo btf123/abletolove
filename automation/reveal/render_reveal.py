@@ -226,31 +226,34 @@ def render_slide(slide):
     else:
         by0, by1 = slide["stripY0"], slide["stripY1"]
     top_dots(img, slide.get("num", "1"))
-    # The bars are never empty: every slide carries copy on its strip.
+    # ONE bar per person; the question lives IN the bar (the "test").
     bar_label(img, by0, by1, slide.get("barlabel", "able2love"))
     bottom_scrim(img)
     d = ImageDraw.Draw(img)
 
-    # Build the text block bottom-up so it always sits ABOVE the swipe bar
-    # (buttons centred at H-96 occupy roughly H-156..H-36).
+    # Make it read like a real dating profile: a (fake, identity-safe) name +
+    # age, a location line, then the swipe buttons. On the reveal slide, the
+    # dare + reveal line + app CTA sit above the name. Buttons ALWAYS at bottom.
     BTN_Y = H - 96
     block = []  # (font, colour, gap_after, line)
     if slide.get("kicker"):
-        block.append((font(24), (255, 200, 90), 12, str(slide["kicker"]).upper()))
-    pf = font(62)
-    for ln in wrap(d, slide["prompt"], pf, W - 120):
-        block.append((pf, (255, 255, 255), 6, ln))
-    block[-1] = (block[-1][0], block[-1][1], 14, block[-1][3])
+        block.append((font(24), (255, 200, 90), 10, str(slide["kicker"]).upper()))
     if slide.get("sub"):
         sf = font(32)
         for ln in wrap(d, slide["sub"], sf, W - 120):
             block.append((sf, (245, 210, 220), 4, ln))
-        block[-1] = (block[-1][0], block[-1][1], 12, block[-1][3])
+        block[-1] = (block[-1][0], block[-1][1], 16, block[-1][3])
+    # the profile identity line (fake name + age)
+    name = slide.get("profile") or "Alex, 26"
+    block.append((font(66), (255, 255, 255), 4, name))
+    place = slide.get("place")
+    if place:
+        block.append((font(28), (235, 220, 228), 2, place))
     if slide.get("cta"):
-        block.append((font(26), (255, 157, 176), 0, slide["cta"]))
+        block.append((font(25), (255, 157, 176), 0, slide["cta"]))
 
     total = sum(f.size + gap for f, _, gap, _ in block)
-    y = (BTN_Y - 62) - total  # end the text 62px above the button centres
+    y = (BTN_Y - 60) - total
     for f, col, gap, ln in block:
         d.text((60, y), ln, font=f, fill=col)
         y += f.size + gap

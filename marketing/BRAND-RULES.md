@@ -31,6 +31,27 @@ Last updated: 2026-07-21.
 - It works like a **test**: people swipe to answer "would you?", and in doing so
   they find the app. That's the mechanic on every image.
 
+## 2a. Layout rules for the swipe-reveal post (added 2026-07-21)
+- **Every post = exactly TWO images** (an Instagram carousel; the swipe is what
+  makes the reveal work, and swipe only exists on Instagram).
+- **ONE bar per image.** The swipe-reveal is a single fake dating profile, so
+  it uses SOLO photos of Brogan only (one face → one bar). Photos with other
+  people (two+ faces) are a DIFFERENT post format, not the swipe card — because
+  hiding every face there needs more than one bar.
+- **Fake dating-profile identity**: a fake name + age + location line at the
+  bottom (e.g. "Alex, 26 · Manchester · 2 miles away"), so it reads like a real
+  profile and triggers the gut reaction. Never Brogan's real name.
+- **Swipe buttons always at the bottom**, on BOTH images.
+- Don't show the full body four times — slide 1 is a portrait-style crop, slide
+  2 is the fuller reveal. Same photo, two framings.
+
+## 2b. Twitter/X (no swipe there) — how the reveal converts
+- Recommended: a short **auto-playing video** — opens on the cropped bait +
+  question, holds, then zooms out to reveal the wheelchair. Recreates the swipe
+  in-feed. (Buildable with ffmpeg.)
+- Alternatives: a two-tweet thread (bait tweet, reveal in the reply), or two
+  images in one tweet (weaker — both show at once).
+
 ## 3. The reveal carousel (same-picture swipe)
 - Two slides from the **SAME photo**. Slide 1 = tight crop that hides the
   wheelchair (reads as an ordinary portrait). Slide 2 = the full frame, chair

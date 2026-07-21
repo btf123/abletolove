@@ -159,6 +159,21 @@ def bar_label(img, y0, y1, label):
                font=f, fill=(255, 255, 255))
 
 
+def short_bar_label(img, x0, x1, y0, y1, label):
+    """Draw the fun phrase centred inside the SHORT (Cops-style) eye bar,
+    shrinking to fit the bar's width."""
+    label = _noemoji(label)
+    if not label or x1 <= x0 or y1 <= y0:
+        return
+    d = ImageDraw.Draw(img)
+    f = font(min(30, (y1 - y0) - 14))
+    while d.textlength(label, font=f) > (x1 - x0) - 20 and f.size > 13:
+        f = font(f.size - 1)
+    tw = d.textlength(label, font=f)
+    d.text(((x0 + x1) / 2 - tw / 2, (y0 + y1) / 2 - f.size * 0.62), label,
+           font=f, fill=(255, 255, 255))
+
+
 def eye_bar(img, y0, y1, label="able2love"):
     """Keep the identity strip, styled as a low-key brand bar."""
     y0, y1 = max(0, y0), min(H, y1)
@@ -210,24 +225,30 @@ def render_slide(slide):
         img = img.resize((W, H))
     # optional close-crop (fractions of the base) that hides the wheelchair,
     # cover-fitted back to the full frame.
+    ex0, ex1 = slide.get("eyeX0"), slide.get("eyeX1")
     crop = slide.get("crop")
     if crop:
         bw, bh = img.size
-        cy0 = int(crop[1] * bh)
-        c = img.crop((int(crop[0] * bw), cy0, int(crop[2] * bw), int(crop[3] * bh)))
+        cx0 = int(crop[0] * bw); cy0 = int(crop[1] * bh)
+        c = img.crop((cx0, cy0, int(crop[2] * bw), int(crop[3] * bh)))
         sc = max(W / c.width, H / c.height)
         c = c.resize((int(c.width * sc + .5), int(c.height * sc + .5)), Image.LANCZOS)
-        oy = (c.height - H) // 2
-        img = c.crop(((c.width - W) // 2, oy, (c.width - W) // 2 + W, oy + H))
-        # the baked strip travels with the pixels; transform its coords so the
-        # bar copy still lands on it
+        fox = (c.width - W) // 2; oy = (c.height - H) // 2
+        img = c.crop((fox, oy, fox + W, oy + H))
+        # transform the baked bar coords through the crop so copy still lands
         by0 = int((slide["stripY0"] - cy0) * sc - oy)
         by1 = int((slide["stripY1"] - cy0) * sc - oy)
+        if ex0 is not None:
+            ex0 = int((ex0 - cx0) * sc - fox); ex1 = int((ex1 - cx0) * sc - fox)
     else:
         by0, by1 = slide["stripY0"], slide["stripY1"]
     top_dots(img, slide.get("num", "1"))
-    # ONE bar per person; the question lives IN the bar (the "test").
-    bar_label(img, by0, by1, slide.get("barlabel", "able2love"))
+    # The question lives IN the eye bar. Studio shots have a SHORT bar (eyeX);
+    # others use the full-width bar.
+    if ex0 is not None:
+        short_bar_label(img, ex0, ex1, by0, by1, slide.get("barlabel", ""))
+    else:
+        bar_label(img, by0, by1, slide.get("barlabel", "able2love"))
     bottom_scrim(img)
     d = ImageDraw.Draw(img)
 

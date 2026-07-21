@@ -78,7 +78,7 @@ CLOSECROP = {
     # boots, wheels and frame all fall outside.
     "studio-black-0312.jpg": [0.50, 0.02, 0.90, 0.35],
     # face + shoulders + black tee; armrest/joystick (left, below y~0.40) out.
-    "studio-black-0304.jpg": [0.455, 0.10, 0.795, 0.44],
+    "studio-black-0304.jpg": [0.55, 0.06, 0.99, 0.47],
     # face + open jacket chest; joystick and armrests (below y~0.5, sides) out.
     "studio-pink-0440.jpg": [0.29, 0.04, 0.75, 0.50],
     # (neon-studs pulled from rotation: the joystick is too subtle in the full
@@ -93,11 +93,64 @@ def fit(path):
     s = max(W / iw, H / ih)
     im = im.resize((int(iw * s + .5), int(ih * s + .5)), Image.LANCZOS)
     ox, oy = (im.width - W) // 2, (im.height - H) // 2
-    return im.crop((ox, oy, ox + W, oy + H)), s, ih, oy
+    return im.crop((ox, oy, ox + W, oy + H)), s, iw, ih, ox, oy
 
 
-from PIL import ImageFont
+import numpy as np
+from PIL import ImageFont, ImageChops
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+# Studio shots on seamless WHITE. A multiply-blend brand gradient turns the
+# white background into brand colour (white x colour = colour) while leaving the
+# subject mostly intact (dark stays dark) — an on-brand look with NO cutout and
+# no halo artifacts. Brogan: "cut out the background and replace with our
+# beautiful colours."
+STUDIO = {"studio-pink-0467.jpg", "studio-black-0312.jpg",
+          "studio-black-0304.jpg", "studio-pink-0440.jpg"}
+
+# Face x-range (fractions of the SOURCE) for the SHORT Cops-style eye bar — the
+# bar only spans the face, not the whole image width.
+EYEX = {
+    "studio-pink-0467.jpg": (0.50, 0.69),
+    "studio-black-0312.jpg": (0.63, 0.79),
+    "studio-black-0304.jpg": (0.70, 0.85),
+    "studio-pink-0440.jpg": (0.39, 0.65),
+}
+
+
+def brand_multiply(img):
+    """Recolour a white studio background with the brand gradient (multiply)."""
+    w, h = img.size
+    xs = np.linspace(0, 1, w)[None, :]
+    ys = np.linspace(0, 1, h)[:, None]
+    r = (255 + (196 - 255) * xs) * np.ones((h, 1))
+    g = (128 + (74 - 128) * ((xs + ys) / 2))
+    b = (150 + (232 - 150) * xs) * np.ones((h, 1))
+    grad = np.dstack([r, g, b]).astype(np.uint8)
+    return ImageChops.multiply(img, Image.fromarray(grad, "RGB"))
+
+
+def short_bar(img, x0, x1, y0, y1):
+    """A SHORT brand-gradient eye bar (Cops-style) spanning only the face, with
+    rounded ends and a gold hairline. No baked text — the render adds the
+    rotating phrase. Returns (x0,x1,y0,y1) clamped, in canvas px."""
+    x0, x1 = max(0, int(x0)), min(W, int(x1))
+    y0, y1 = max(0, int(y0)), min(H, int(y1))
+    bw, bh = x1 - x0, y1 - y0
+    band = Image.new("RGB", (bw, bh))
+    px = band.load()
+    for x in range(bw):
+        t = x / max(1, bw)
+        col = (int(226 + (178 - 226) * t), int(51 + (58 - 51) * t), int(73 + (216 - 73) * t))
+        for yy in range(bh):
+            px[x, yy] = col
+    # rounded-rect mask
+    mask = Image.new("L", (bw, bh), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, bw - 1, bh - 1), radius=min(bh // 2, 22), fill=255)
+    img.paste(band, (x0, y0), mask)
+    d = ImageDraw.Draw(img)
+    d.rounded_rectangle((x0, y0, x1 - 1, y1 - 1), radius=min(bh // 2, 22), outline=(255, 214, 90), width=3)
+    return x0, x1, y0, y1
 
 
 def bake_strip(img, y0, y1, text=None):
@@ -162,10 +215,31 @@ def main():
         if not os.path.exists(p):
             print("MISSING source:", p)
             continue
-        img, s, ih, oy = fit(p)
-        # `eye` is one (y0,y1) band, or a LIST of bands for photos with other
-        # (explicitly consenting) people in them — every face gets a bar, same
-        # treatment as Brogan's. The FIRST band is his and carries the copy.
+        img, s, iw, ih, ox, oy = fit(p)
+
+        if out in STUDIO:
+            # brand-gradient background + SHORT eye bar (the new reveal look)
+            img = brand_multiply(img)
+            band = eye if not isinstance(eye, list) else eye[0]
+            ey0 = int(band[0] * ih * s - oy)
+            ey1 = int(band[1] * ih * s - oy)
+            if ey1 - ey0 < 46:
+                c = (ey0 + ey1) // 2; ey0, ey1 = c - 23, c + 23
+            fx0, fx1 = EYEX.get(out, (0.35, 0.65))
+            ex0 = fx0 * iw * s - ox
+            ex1 = fx1 * iw * s - ox
+            pad = (ex1 - ex0) * 0.10
+            bx0, bx1, by0, by1 = short_bar(img, ex0 - pad, ex1 + pad, ey0 - 8, ey1 + 8)
+            img.save(os.path.join(OUT_DIR, out), quality=90)
+            entry = {"file": out, "stripY0": by0, "stripY1": by1,
+                     "eyeX0": bx0, "eyeX1": bx1}
+            if out in CLOSECROP:
+                entry["closeCrop"] = CLOSECROP[out]
+            manifest[kind].append(entry)
+            print(f"baked {out}  kind={kind} STUDIO  bar x{bx0}-{bx1} y{by0}-{by1}")
+            continue
+
+        # legacy full-width worded bars (non-studio backdrops / with-people)
         bands = eye if isinstance(eye, list) else [eye]
         baked = []
         for bi, band in enumerate(bands):

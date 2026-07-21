@@ -20,12 +20,24 @@
     {
       "file": "chair-headset.jpg",
       "stripY0": 168,
-      "stripY1": 375
+      "stripY1": 375,
+      "extraStrips": [
+        [
+          0,
+          73
+        ]
+      ]
     },
     {
       "file": "pink-gig.jpg",
       "stripY0": 361,
       "stripY1": 448,
+      "extraStrips": [
+        [
+          131,
+          226
+        ]
+      ],
       "closeCrop": [
         0.41,
         0.16,
@@ -80,6 +92,30 @@
         0.04,
         0.75,
         0.5
+      ]
+    }
+  ],
+  "friends": [
+    {
+      "file": "gig-crowd-1.jpg",
+      "stripY0": 388,
+      "stripY1": 496,
+      "extraStrips": [
+        [
+          125,
+          226
+        ]
+      ]
+    },
+    {
+      "file": "gig-crowd-2.jpg",
+      "stripY0": 401,
+      "stripY1": 516,
+      "extraStrips": [
+        [
+          125,
+          226
+        ]
       ]
     }
   ]

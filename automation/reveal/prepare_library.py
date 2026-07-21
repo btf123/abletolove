@@ -34,12 +34,12 @@ ASSETS = {
     "44429804_321766475280726_2978850043601092608_n.jpg":
                     ("chair", "chair-cafe.jpg",   (0.22, 0.40)),
     "44359190_1619180541520899_4354854992830529536_n.jpg":
-                    ("chair", "chair-headset.jpg", (0.155, 0.285)),
+                    ("chair", "chair-headset.jpg", [(0.155, 0.285), (0.03, 0.075)]),
     # Same-picture reveals: chair fully visible in the full frame, but a tight
     # crop hides it (or leaves just an ordinary-chair hint). Eye bands are kept
     # TIGHT — the strip scales up with the slide-1 zoom, so extra height turns
     # into a huge bar across the face.
-    "5.png":        ("chair", "pink-gig.jpg",     (0.275, 0.325)),
+    "5.png":        ("chair", "pink-gig.jpg",     [(0.275, 0.325), (0.105, 0.16)]),
     "52326975_10218986247033688_2438881901834928128_o-sharpen-focus.png":
                     ("chair", "neon-studs.jpg",   (0.27, 0.35)),
     # Studio shoot (seamless white, open pink jacket, powerchair fully visible).
@@ -54,6 +54,11 @@ ASSETS = {
     # Pink jacket open, bare torso, direct gaze; joystick + both armrests
     # visible in the full frame.
     "305A0440.jpg": ("chair", "studio-pink-0440.jpg", (0.20, 0.24)),
+    # OUT AND ABOUT WITH PEOPLE (consent confirmed by Brogan for all friends
+    # shown; every face gets a worded bar). Gig night: him performing in the
+    # powerchair, crowd at the tables.
+    "2.png":        ("friends", "gig-crowd-1.jpg", [(0.295, 0.36), (0.10, 0.16)]),
+    "SnapShot.png": ("friends", "gig-crowd-2.jpg", [(0.305, 0.375), (0.10, 0.16)]),
 }
 
 # For chair images where a tight head+torso crop hides the wheelchair (so
@@ -91,8 +96,13 @@ def fit(path):
     return im.crop((ox, oy, ox + W, oy + H)), s, ih, oy
 
 
-def bake_strip(img, y0, y1):
-    """Opaque near-black strip with brand-red edges. Returns (y0,y1) clamped."""
+from PIL import ImageFont
+FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+
+def bake_strip(img, y0, y1, text=None):
+    """Opaque near-black strip with brand-red edges; optionally bakes WORDS
+    into the bar (Brogan: bars must never be blank). Returns (y0,y1) clamped."""
     y0, y1 = max(0, y0), min(H, y1)
     band = Image.new("RGB", (W, y1 - y0))
     px = band.load()
@@ -105,13 +115,29 @@ def bake_strip(img, y0, y1):
     d = ImageDraw.Draw(img)
     d.rectangle((0, y0, W, y0 + 4), fill=(226, 51, 73))
     d.rectangle((0, y1 - 4, W, y1), fill=(226, 51, 73))
+    if text and y1 - y0 >= 34:
+        f = ImageFont.truetype(FONT_PATH, min(30, y1 - y0 - 16))
+        while d.textlength(text, font=f) > W - 70 and f.size > 14:
+            f = ImageFont.truetype(FONT_PATH, f.size - 2)
+        tw = d.textlength(text, font=f)
+        d.text(((W - tw) / 2, (y0 + y1) / 2 - f.size * 0.58), text, font=f, fill=(235, 225, 232))
     return y0, y1
+
+
+# Words baked into bars. Index 0 lands on Brogan's band in "friends" photos;
+# later entries land on the other (consenting, barred) people's bands.
+BAR_WORDS = [
+    "IDENTITY PROTECTED · ABLE2LOVE",
+    "FACES REDACTED. FRIENDSHIP ISN'T.",
+    "EVERYONE'S IN. NO ONE'S EXPOSED.",
+    "GOOD NIGHTS DON'T NEED NAMES.",
+]
 
 
 def main():
     src_dir = sys.argv[1] if len(sys.argv) > 1 else "."
     os.makedirs(OUT_DIR, exist_ok=True)
-    manifest = {"sexy": [], "chair": []}
+    manifest = {"sexy": [], "chair": [], "friends": []}
     MIN_STRIP = 56  # just enough to kill the eye line; big text no longer sits on the strip
     for src, (kind, out, eye) in ASSETS.items():
         p = os.path.join(src_dir, src)
@@ -124,13 +150,14 @@ def main():
         # treatment as Brogan's. The FIRST band is his and carries the copy.
         bands = eye if isinstance(eye, list) else [eye]
         baked = []
-        for band in bands:
+        for bi, band in enumerate(bands):
+            words = BAR_WORDS[bi % len(BAR_WORDS)] if (kind == "friends" or bi > 0 or out not in CLOSECROP) else None
             ey0 = int(band[0] * ih * s - oy)
             ey1 = int(band[1] * ih * s - oy)
             if ey1 - ey0 < MIN_STRIP:
                 c = (ey0 + ey1) // 2
                 ey0, ey1 = c - MIN_STRIP // 2, c + MIN_STRIP // 2
-            baked.append(bake_strip(img, ey0 - 10, ey1 + 10))
+            baked.append(bake_strip(img, ey0 - 10, ey1 + 10, text=words))
         y0, y1 = baked[0]
         img.save(os.path.join(OUT_DIR, out), quality=90)
         entry = {"file": out, "stripY0": y0, "stripY1": y1}

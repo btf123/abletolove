@@ -45,10 +45,10 @@ export async function buildReveal(weekNo, weekDir) {
   const mode = 'zoom';
   const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: dedash(pair.aPrompt),
                    stripY0: shot.stripY0, stripY1: shot.stripY1,
-                   barlabel: dedash(pair.aBar || 'EYES CENSORED. OPINIONS ARENT.') };
+                   barlabel: dedash((pair.aBar || 'BE HONEST') + ' | swipe to answer on Able2Love') };
   const slide2 = { base: shot.file, stripY0: shot.stripY0, stripY1: shot.stripY1, num: '2 / 2',
                    prompt: dedash(pair.bPrompt), sub: dedash(revealSub), kicker: dedash(pair.dare), cta: CTA,
-                   barlabel: dedash(pair.bBar || 'SAME PERSON. KEEP UP.') };
+                   barlabel: dedash((pair.bBar || 'SAME PERSON') + ' | meet them on Able2Love') };
 
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };

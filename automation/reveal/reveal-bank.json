@@ -29,7 +29,7 @@
       "aPrompt": "Left or right?",
       "bPrompt": "Still swiping right?",
       "bSub": "They're disabled. Bet your thumb didn't move.",
-      "dare": "prove me wrong 👇",
+      "dare": "prove me wrong",
       "aBar": "YOU DON'T NEED THE EYES FOR THIS.",
       "bBar": "THE FULL PICTURE. AS PROMISED."
     },
@@ -58,10 +58,10 @@
       "bBar": "SAME SHOT. WIDER TRUTH."
     },
     {
-      "aPrompt": "Rate them. 🔥 or 💀?",
-      "bPrompt": "Still 🔥?",
+      "aPrompt": "Rate them out of 10.",
+      "bPrompt": "Still a 10?",
       "bSub": "Plot the twist yourself: they're disabled.",
-      "dare": "drop your emoji, no take-backs",
+      "dare": "drop your number, no take-backs",
       "aBar": "ANSWER BEFORE YOU SWIPE.",
       "bBar": "AND THERE'S THE REST OF IT."
     }

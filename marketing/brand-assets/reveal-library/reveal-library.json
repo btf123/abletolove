@@ -2,40 +2,40 @@
   "sexy": [
     {
       "file": "sequins.jpg",
-      "stripY0": 179,
-      "stripY1": 300
+      "stripY0": 182,
+      "stripY1": 297
     },
     {
       "file": "stage.jpg",
-      "stripY0": 152,
-      "stripY1": 361
+      "stripY0": 155,
+      "stripY1": 358
     }
   ],
   "chair": [
     {
       "file": "chair-cafe.jpg",
-      "stripY0": 261,
-      "stripY1": 541
+      "stripY0": 264,
+      "stripY1": 538
     },
     {
       "file": "chair-headset.jpg",
-      "stripY0": 168,
-      "stripY1": 375,
+      "stripY0": 171,
+      "stripY1": 372,
       "extraStrips": [
         [
           0,
-          73
+          70
         ]
       ]
     },
     {
       "file": "pink-gig.jpg",
-      "stripY0": 361,
-      "stripY1": 448,
+      "stripY0": 364,
+      "stripY1": 445,
       "extraStrips": [
         [
-          131,
-          226
+          134,
+          223
         ]
       ],
       "closeCrop": [
@@ -47,13 +47,13 @@
     },
     {
       "file": "neon-studs.jpg",
-      "stripY0": 354,
-      "stripY1": 482
+      "stripY0": 357,
+      "stripY1": 479
     },
     {
       "file": "studio-pink-0467.jpg",
-      "stripY0": 280,
-      "stripY1": 356,
+      "stripY0": 285,
+      "stripY1": 351,
       "closeCrop": [
         0.4,
         0.06,
@@ -63,8 +63,8 @@
     },
     {
       "file": "studio-black-0312.jpg",
-      "stripY0": 117,
-      "stripY1": 193,
+      "stripY0": 121,
+      "stripY1": 189,
       "closeCrop": [
         0.5,
         0.02,
@@ -74,8 +74,8 @@
     },
     {
       "file": "studio-black-0304.jpg",
-      "stripY0": 278,
-      "stripY1": 354,
+      "stripY0": 283,
+      "stripY1": 349,
       "closeCrop": [
         0.455,
         0.1,
@@ -85,8 +85,8 @@
     },
     {
       "file": "studio-pink-0440.jpg",
-      "stripY0": 178,
-      "stripY1": 263,
+      "stripY0": 181,
+      "stripY1": 260,
       "closeCrop": [
         0.29,
         0.04,
@@ -98,23 +98,23 @@
   "friends": [
     {
       "file": "gig-crowd-1.jpg",
-      "stripY0": 388,
-      "stripY1": 496,
+      "stripY0": 391,
+      "stripY1": 493,
       "extraStrips": [
         [
-          125,
-          226
+          128,
+          223
         ]
       ]
     },
     {
       "file": "gig-crowd-2.jpg",
-      "stripY0": 401,
-      "stripY1": 516,
+      "stripY0": 404,
+      "stripY1": 513,
       "extraStrips": [
         [
-          125,
-          226
+          128,
+          223
         ]
       ]
     }

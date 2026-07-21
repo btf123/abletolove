@@ -52,8 +52,10 @@
     },
     {
       "file": "studio-pink-0467.jpg",
-      "stripY0": 285,
-      "stripY1": 351,
+      "stripY0": 286,
+      "stripY1": 350,
+      "eyeX0": 519,
+      "eyeX1": 765,
       "closeCrop": [
         0.4,
         0.06,
@@ -63,8 +65,10 @@
     },
     {
       "file": "studio-black-0312.jpg",
-      "stripY0": 121,
-      "stripY1": 189,
+      "stripY0": 120,
+      "stripY1": 190,
+      "eyeX0": 665,
+      "eyeX1": 875,
       "closeCrop": [
         0.5,
         0.02,
@@ -74,19 +78,23 @@
     },
     {
       "file": "studio-black-0304.jpg",
-      "stripY0": 283,
-      "stripY1": 349,
+      "stripY0": 282,
+      "stripY1": 350,
+      "eyeX0": 739,
+      "eyeX1": 934,
       "closeCrop": [
-        0.455,
-        0.1,
-        0.795,
-        0.44
+        0.55,
+        0.06,
+        0.99,
+        0.47
       ]
     },
     {
       "file": "studio-pink-0440.jpg",
-      "stripY0": 181,
-      "stripY1": 260,
+      "stripY0": 180,
+      "stripY1": 261,
+      "eyeX0": 393,
+      "eyeX1": 730,
       "closeCrop": [
         0.29,
         0.04,

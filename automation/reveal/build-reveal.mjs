@@ -57,10 +57,10 @@ export async function buildReveal(weekNo, weekDir) {
   const mode = 'zoom';
   const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: dedash(pair.aPrompt),
                    stripY0: shot.stripY0, stripY1: shot.stripY1,
-                   barlabel: dedash((pair.aBar || 'BE HONEST') + ' | swipe to answer on Able2Love'), profile: profile.name, place: profile.place };
+                   barlabel: dedash(pair.barA || 'HOT OR NOT?'), eyeX0: shot.eyeX0, eyeX1: shot.eyeX1, profile: profile.name, place: profile.place };
   const slide2 = { base: shot.file, stripY0: shot.stripY0, stripY1: shot.stripY1, num: '2 / 2',
                    prompt: dedash(pair.bPrompt), sub: dedash(revealSub), kicker: dedash(pair.dare), cta: CTA,
-                   barlabel: dedash((pair.bBar || 'SAME PERSON') + ' | meet them on Able2Love'), profile: profile.name, place: profile.place };
+                   barlabel: dedash(pair.barB || 'STILL?'), eyeX0: shot.eyeX0, eyeX1: shot.eyeX1, profile: profile.name, place: profile.place };
 
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };

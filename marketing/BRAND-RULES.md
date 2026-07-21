@@ -52,6 +52,20 @@ Last updated: 2026-07-21.
 - Alternatives: a two-tweet thread (bait tweet, reveal in the reply), or two
   images in one tweet (weaker — both show at once).
 
+## 2c. Eye bar + background look (added 2026-07-21, supersedes earlier bar style)
+- **SHORT bar only** — Cops-style, spans just the face/eyes, NOT the full image
+  width. Rounded ends, brand gradient, thin gold hairline. Never black, never
+  ugly, never full-width.
+- The bar carries a **short fun flirty binary phrase**: hot or not / smash or
+  pass / fit or no / bae or no / hit or miss / left or right / yes or no.
+  Nothing severe or clinical. They all cheekily mean the same thing.
+- **Background**: white studio backgrounds are recoloured with the brand
+  gradient (multiply blend) so the white becomes brand colour — an on-brand,
+  editorial, cut-out feel WITHOUT a real cutout. (True cutout needs an AI
+  matting model the sandbox can't download yet; revisit if that changes.)
+- Take creative licence with the colours and design — but always keep the short
+  bar, the fun phrase, and every face covered.
+
 ## 3. The reveal carousel (same-picture swipe)
 - Two slides from the **SAME photo**. Slide 1 = tight crop that hides the
   wheelchair (reads as an ordinary portrait). Slide 2 = the full frame, chair

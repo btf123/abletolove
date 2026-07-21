@@ -18,6 +18,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.dirname(path.dirname(HERE));
 const LIB = path.join(ROOT, 'marketing/brand-assets/reveal-library');
 
+function dedash(x){return String(x).replace(/\s*[\u2014\u2013]\s*/g, ', ');}
 function pick(arr, seed) { return arr[((seed % arr.length) + arr.length) % arr.length]; }
 
 // Deterministic per-week choice so a re-run is reproducible and consecutive
@@ -30,7 +31,7 @@ export async function buildReveal(weekNo, weekDir) {
   }
   const pair = pick(bank.pairs, weekNo);
   const caption = pick(bank.captions, weekNo);
-  const CTA = 'Able2Love — first of its kind · free on Google Play';
+  const CTA = 'Able2Love \u00b7 first of its kind \u00b7 free on Google Play';
   const revealSub = `See the full picture. ${pair.bSub}`;
 
   // SAME PICTURE, always (Brogan: "they have to be the same picture or it
@@ -42,12 +43,12 @@ export async function buildReveal(weekNo, weekDir) {
   if (!croppable.length) throw new Error('no reveal-library images have a closeCrop');
   const shot = pick(croppable, weekNo);
   const mode = 'zoom';
-  const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: pair.aPrompt,
+  const slide1 = { base: shot.file, crop: shot.closeCrop, num: '1 / 2', prompt: dedash(pair.aPrompt),
                    stripY0: shot.stripY0, stripY1: shot.stripY1,
-                   barlabel: pair.aBar || 'EYES CENSORED. OPINIONS AREN\u2019T.' };
+                   barlabel: dedash(pair.aBar || 'EYES CENSORED. OPINIONS ARENT.') };
   const slide2 = { base: shot.file, stripY0: shot.stripY0, stripY1: shot.stripY1, num: '2 / 2',
-                   prompt: pair.bPrompt, sub: revealSub, kicker: pair.dare, cta: CTA,
-                   barlabel: pair.bBar || 'SAME PERSON. KEEP UP.' };
+                   prompt: dedash(pair.bPrompt), sub: dedash(revealSub), kicker: dedash(pair.dare), cta: CTA,
+                   barlabel: dedash(pair.bBar || 'SAME PERSON. KEEP UP.') };
 
   const outPrefix = path.join(weekDir, 'reveal');
   const plan = { slides: [slide1, slide2], out: outPrefix };
@@ -61,8 +62,8 @@ export async function buildReveal(weekNo, weekDir) {
     type: 'reveal',
     angle: 'sexy reveal — same photo: crop hides the chair, swipe shows the full picture',
     carousel: ['reveal_1.jpg', 'reveal_2.jpg'],
-    instagram: igCaption,
-    x: xText.slice(0, 280),
+    instagram: dedash(igCaption),
+    x: dedash(xText).slice(0, 280),
     alt: 'Two-slide dating-app-style carousel: a striking photo framed like a swipe card (eyes covered) with a blunt "smash or pass" prompt, then the reveal that the person is a wheelchair user, for Able2Love, an inclusive dating app.',
     copy: pair,
     mode,

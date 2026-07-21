@@ -101,41 +101,54 @@ FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 
 def bake_strip(img, y0, y1, text=None):
-    """Bar over the eyes. Worded bars get the BRAND look (red->purple gradient,
-    like the app), not a black censor block; wordless bars (reveal bases that
-    receive copy at render time) stay near-black so the render copy pops.
-    Returns (y0,y1) clamped."""
+    """The eye bar — brand iconography, not a censor block (Brogan's rule).
+    ALWAYS the brand gradient (red->magenta->purple) with a thin gold hairline,
+    never black. Thin: only over the eyes. Carries words in two tiers when given
+    a 'text' that contains ' | ' (post hook | app tag). Returns (y0,y1) clamped.
+    A wordless bar (reveal primary band, gets render-time copy) is still the
+    brand gradient so white copy pops on-brand."""
     y0, y1 = max(0, y0), min(H, y1)
     band = Image.new("RGB", (W, y1 - y0))
     px = band.load()
     for x in range(W):
         t = x / W
-        col = ((int(214 + (150 - 214) * t), int(40 + (58 - 40) * t), int(78 + (200 - 78) * t))
-               if text else (int(20 + 6 * t), 12, int(18 + 10 * t)))
+        # red (E23349) -> magenta (B23AD8) across the bar
+        col = (int(226 + (178 - 226) * t), int(51 + (58 - 51) * t), int(73 + (216 - 73) * t))
         for yy in range(y1 - y0):
             px[x, yy] = col
     img.paste(band, (0, y0))
     d = ImageDraw.Draw(img)
-    edge = (255, 214, 90) if text else (226, 51, 73)
-    d.rectangle((0, y0, W, y0 + 4), fill=edge)
-    d.rectangle((0, y1 - 4, W, y1), fill=edge)
-    if text and y1 - y0 >= 34:
-        f = ImageFont.truetype(FONT_PATH, min(30, y1 - y0 - 16))
-        while d.textlength(text, font=f) > W - 70 and f.size > 14:
-            f = ImageFont.truetype(FONT_PATH, f.size - 2)
-        tw = d.textlength(text, font=f)
-        d.text(((W - tw) / 2, (y0 + y1) / 2 - f.size * 0.58), text, font=f, fill=(235, 225, 232))
+    d.rectangle((0, y0, W, y0 + 3), fill=(255, 214, 90))
+    d.rectangle((0, y1 - 3, W, y1), fill=(255, 214, 90))
+    if text and y1 - y0 >= 30:
+        hook, _, tag = str(text).partition(" | ")
+        h = y1 - y0
+        if tag:  # two tiers: bold hook + small app tag
+            fh = ImageFont.truetype(FONT_PATH, min(30, int(h * 0.42)))
+            while d.textlength(hook, font=fh) > W - 60 and fh.size > 13:
+                fh = ImageFont.truetype(FONT_PATH, fh.size - 2)
+            ft = ImageFont.truetype(FONT_PATH, max(12, int(fh.size * 0.6)))
+            th = fh.size + ft.size + 4
+            ty = (y0 + y1) / 2 - th / 2
+            d.text(((W - d.textlength(hook, font=fh)) / 2, ty), hook, font=fh, fill=(255, 255, 255))
+            d.text(((W - d.textlength(tag, font=ft)) / 2, ty + fh.size + 3), tag, font=ft, fill=(255, 226, 236))
+        else:
+            f = ImageFont.truetype(FONT_PATH, min(28, h - 12))
+            while d.textlength(hook, font=f) > W - 60 and f.size > 13:
+                f = ImageFont.truetype(FONT_PATH, f.size - 2)
+            d.text(((W - d.textlength(hook, font=f)) / 2, (y0 + y1) / 2 - f.size * 0.6), hook,
+                   font=f, fill=(255, 255, 255))
     return y0, y1
 
 
-# Words baked into bars. Index 0 lands on Brogan's band in "friends" photos;
-# later entries land on the other (consenting, barred) people's bands.
+# Words baked into bars — the "test" (post hook | app tag), the two jobs Brogan
+# wants in the eye box: the swipe hook, plus a line connecting it to the app.
 BAR_WORDS = [
-    "SMASH OR PASS? NO PEEKING.",
-    "YES OR NO? EYES OPTIONAL.",
-    "ABLE2LOVE ♥ FIRST OF ITS KIND",
-    "10/10 NIGHT. NAMES CLASSIFIED.",
-    "WOULD YOU? DON'T OVERTHINK IT.",
+    "SMASH OR PASS? | swipe to meet them on Able2Love",
+    "YES OR NO? | Able2Love · inclusive dating",
+    "WOULD YOU? | find out on Able2Love",
+    "HOT OR NOT? | Able2Love · first of its kind",
+    "LEFT OR RIGHT? | your type is on Able2Love",
 ]
 
 
@@ -143,7 +156,7 @@ def main():
     src_dir = sys.argv[1] if len(sys.argv) > 1 else "."
     os.makedirs(OUT_DIR, exist_ok=True)
     manifest = {"sexy": [], "chair": [], "friends": []}
-    MIN_STRIP = 56  # just enough to kill the eye line; big text no longer sits on the strip
+    MIN_STRIP = 52  # thin: just the eye line, with room for two-tier bar text
     for src, (kind, out, eye) in ASSETS.items():
         p = os.path.join(src_dir, src)
         if not os.path.exists(p):
@@ -162,7 +175,7 @@ def main():
             if ey1 - ey0 < MIN_STRIP:
                 c = (ey0 + ey1) // 2
                 ey0, ey1 = c - MIN_STRIP // 2, c + MIN_STRIP // 2
-            baked.append(bake_strip(img, ey0 - 10, ey1 + 10, text=words))
+            baked.append(bake_strip(img, ey0 - 7, ey1 + 7, text=words))
         y0, y1 = baked[0]
         img.save(os.path.join(OUT_DIR, out), quality=90)
         entry = {"file": out, "stripY0": y0, "stripY1": y1}

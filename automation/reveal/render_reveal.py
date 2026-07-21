@@ -42,9 +42,14 @@ def font(s):
     return ImageFont.truetype(FP, s) if FP else ImageFont.load_default()
 
 
+import re as _re
+def _noemoji(x):
+    return _re.sub(r'[\U0001F000-\U0001FAFF\u2600-\u27BF\uFE0F\u2764]', '', str(x)).replace('  ', ' ').strip()
+
+
 def wrap(d, text, f, maxw):
     out, cur = [], ""
-    for wd in str(text).split():
+    for wd in _noemoji(text).split():
         t = (cur + " " + wd).strip()
         if d.textlength(t, font=f) <= maxw:
             cur = t
@@ -126,19 +131,32 @@ def swipe_bar(img, y):
 
 
 def bar_label(img, y0, y1, label):
-    """Draw copy on the baked strip (text only; the bar is baked into the base).
-    Shrinks to fit; clamps inside the canvas."""
+    """Draw copy on the baked (gradient) eye bar. Supports two tiers via
+    "hook | tag" so the app connection sits in the eye box too (Brogan's test)."""
+    label = _noemoji(label)
     if not label:
         return
     y0, y1 = max(0, y0), min(H, y1)
-    if y1 - y0 < 34:
+    if y1 - y0 < 30:
         return
     d = ImageDraw.Draw(img)
-    f = font(min(44, y1 - y0 - 14))
-    while d.textlength(label, font=f) > W - 90 and f.size > 20:
-        f = font(f.size - 2)
-    tw = d.textlength(label, font=f)
-    d.text(((W - tw) / 2, (y0 + y1) / 2 - f.size * 0.58), label, font=f, fill=(255, 255, 255))
+    hook, _, tag = label.partition(" | ")
+    h = y1 - y0
+    if tag and h >= 44:
+        fh = font(min(30, int(h * 0.42)))
+        while d.textlength(hook, font=fh) > W - 70 and fh.size > 14:
+            fh = font(fh.size - 2)
+        ft = font(max(12, int(fh.size * 0.6)))
+        th = fh.size + ft.size + 4
+        ty = (y0 + y1) / 2 - th / 2
+        d.text(((W - d.textlength(hook, font=fh)) / 2, ty), hook, font=fh, fill=(255, 255, 255))
+        d.text(((W - d.textlength(tag, font=ft)) / 2, ty + fh.size + 3), tag, font=ft, fill=(255, 226, 236))
+    else:
+        f = font(min(40, h - 12))
+        while d.textlength(hook, font=f) > W - 80 and f.size > 18:
+            f = font(f.size - 2)
+        d.text(((W - d.textlength(hook, font=f)) / 2, (y0 + y1) / 2 - f.size * 0.58), hook,
+               font=f, fill=(255, 255, 255))
 
 
 def eye_bar(img, y0, y1, label="able2love"):

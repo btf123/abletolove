@@ -101,20 +101,24 @@ FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 
 def bake_strip(img, y0, y1, text=None):
-    """Opaque near-black strip with brand-red edges; optionally bakes WORDS
-    into the bar (Brogan: bars must never be blank). Returns (y0,y1) clamped."""
+    """Bar over the eyes. Worded bars get the BRAND look (red->purple gradient,
+    like the app), not a black censor block; wordless bars (reveal bases that
+    receive copy at render time) stay near-black so the render copy pops.
+    Returns (y0,y1) clamped."""
     y0, y1 = max(0, y0), min(H, y1)
     band = Image.new("RGB", (W, y1 - y0))
     px = band.load()
     for x in range(W):
         t = x / W
-        col = (int(20 + 6 * t), 12, int(18 + 10 * t))
+        col = ((int(214 + (150 - 214) * t), int(40 + (58 - 40) * t), int(78 + (200 - 78) * t))
+               if text else (int(20 + 6 * t), 12, int(18 + 10 * t)))
         for yy in range(y1 - y0):
             px[x, yy] = col
     img.paste(band, (0, y0))
     d = ImageDraw.Draw(img)
-    d.rectangle((0, y0, W, y0 + 4), fill=(226, 51, 73))
-    d.rectangle((0, y1 - 4, W, y1), fill=(226, 51, 73))
+    edge = (255, 214, 90) if text else (226, 51, 73)
+    d.rectangle((0, y0, W, y0 + 4), fill=edge)
+    d.rectangle((0, y1 - 4, W, y1), fill=edge)
     if text and y1 - y0 >= 34:
         f = ImageFont.truetype(FONT_PATH, min(30, y1 - y0 - 16))
         while d.textlength(text, font=f) > W - 70 and f.size > 14:
@@ -127,10 +131,11 @@ def bake_strip(img, y0, y1, text=None):
 # Words baked into bars. Index 0 lands on Brogan's band in "friends" photos;
 # later entries land on the other (consenting, barred) people's bands.
 BAR_WORDS = [
-    "IDENTITY PROTECTED · ABLE2LOVE",
-    "FACES REDACTED. FRIENDSHIP ISN'T.",
-    "EVERYONE'S IN. NO ONE'S EXPOSED.",
-    "GOOD NIGHTS DON'T NEED NAMES.",
+    "SMASH OR PASS? NO PEEKING.",
+    "YES OR NO? EYES OPTIONAL.",
+    "ABLE2LOVE ♥ FIRST OF ITS KIND",
+    "10/10 NIGHT. NAMES CLASSIFIED.",
+    "WOULD YOU? DON'T OVERTHINK IT.",
 ]
 
 

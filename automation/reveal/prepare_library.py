@@ -98,7 +98,16 @@ def fit(path):
 
 import numpy as np
 from PIL import ImageFont, ImageChops
-FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+def _resolve_font():
+    d = os.path.join(ROOT, "marketing", "brand-assets", "fonts")
+    try:
+        for f in sorted(os.listdir(d)):
+            if f.lower().endswith((".ttf", ".otf")):
+                return os.path.join(d, f)
+    except Exception:
+        pass
+    return "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_PATH = _resolve_font()
 
 # Studio shots on seamless WHITE. A multiply-blend brand gradient turns the
 # white background into brand colour (white x colour = colour) while leaving the
@@ -144,12 +153,10 @@ def short_bar(img, x0, x1, y0, y1):
         col = (int(226 + (178 - 226) * t), int(51 + (58 - 51) * t), int(73 + (216 - 73) * t))
         for yy in range(bh):
             px[x, yy] = col
-    # rounded-rect mask
-    mask = Image.new("L", (bw, bh), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, bw - 1, bh - 1), radius=min(bh // 2, 22), fill=255)
-    img.paste(band, (x0, y0), mask)
+    # HARD-EDGED bar (Brogan: simple hard edges, no rounding), gold hairline
+    img.paste(band, (x0, y0))
     d = ImageDraw.Draw(img)
-    d.rounded_rectangle((x0, y0, x1 - 1, y1 - 1), radius=min(bh // 2, 22), outline=(255, 214, 90), width=3)
+    d.rectangle((x0, y0, x1 - 1, y1 - 1), outline=(255, 214, 90), width=3)
     return x0, x1, y0, y1
 
 
@@ -229,7 +236,7 @@ def main():
             ex0 = fx0 * iw * s - ox
             ex1 = fx1 * iw * s - ox
             pad = (ex1 - ex0) * 0.10
-            bx0, bx1, by0, by1 = short_bar(img, ex0 - pad, ex1 + pad, ey0 - 8, ey1 + 8)
+            bx0, bx1, by0, by1 = short_bar(img, ex0 - pad, ex1 + pad, ey0 - 16, ey1 + 16)
             img.save(os.path.join(OUT_DIR, out), quality=90)
             entry = {"file": out, "stripY0": by0, "stripY1": by1,
                      "eyeX0": bx0, "eyeX1": bx1}

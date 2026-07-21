@@ -31,11 +31,20 @@ from PIL import Image, ImageDraw, ImageFont
 W, H = 1080, 1350
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LIB = os.path.join(ROOT, "marketing", "brand-assets", "reveal-library")
-FONTS = [
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-]
-FP = next((f for f in FONTS if os.path.exists(f)), None)
+def _resolve_font():
+    d = os.path.join(ROOT, "marketing", "brand-assets", "fonts")
+    try:
+        for f in sorted(os.listdir(d)):
+            if f.lower().endswith((".ttf", ".otf")):
+                return os.path.join(d, f)
+    except Exception:
+        pass
+    for f in ("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+              "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"):
+        if os.path.exists(f):
+            return f
+    return None
+FP = _resolve_font()
 
 
 def font(s):
@@ -166,8 +175,8 @@ def short_bar_label(img, x0, x1, y0, y1, label):
     if not label or x1 <= x0 or y1 <= y0:
         return
     d = ImageDraw.Draw(img)
-    f = font(min(30, (y1 - y0) - 14))
-    while d.textlength(label, font=f) > (x1 - x0) - 20 and f.size > 13:
+    f = font(min(46, (y1 - y0) - 12))
+    while d.textlength(label, font=f) > (x1 - x0) - 16 and f.size > 20:
         f = font(f.size - 1)
     tw = d.textlength(label, font=f)
     d.text(((x0 + x1) / 2 - tw / 2, (y0 + y1) / 2 - f.size * 0.62), label,

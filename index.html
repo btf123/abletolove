@@ -21,6 +21,7 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
+    html,body{overflow-x:hidden}
     body{margin:0;color:var(--ink);font-family:var(--sans);line-height:1.62;font-size:17px;-webkit-font-smoothing:antialiased;
       background:
         radial-gradient(circle at 82% -4%, rgba(156,39,176,.30) 0%, rgba(156,39,176,0) 42%),
@@ -63,9 +64,20 @@
     .hero h1 .grad{background:linear-gradient(120deg,var(--red),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
     .lead{font-size:clamp(17px,2.2vw,20px);color:var(--muted);max-width:52ch;margin:0 0 28px}
     .lead em{font-style:normal;color:var(--ink)}
-    .hero-art{position:relative;display:grid;place-items:center}
-    .hero-art .glow{position:absolute;inset:8% 12%;background:radial-gradient(circle,rgba(245,121,143,.4),rgba(245,121,143,0) 68%);filter:blur(8px)}
-    .hero-art svg{width:min(300px,72vw);height:auto;position:relative;filter:drop-shadow(0 30px 50px rgba(0,0,0,.5))}
+    .hero-art{position:relative;display:flex;justify-content:center;align-items:center;min-height:480px}
+    .hero-art .glow{position:absolute;inset:6% 8%;background:radial-gradient(circle,rgba(245,121,143,.34),rgba(245,121,143,0) 70%);filter:blur(10px)}
+    .phoneframe{position:relative;width:min(288px,70vw);aspect-ratio:1000/2060;background:#0b0710;border-radius:40px;padding:10px;box-shadow:0 44px 90px -26px rgba(0,0,0,.75),inset 0 0 0 2px rgba(255,255,255,.06);transform:rotate(3deg);z-index:2}
+    .phoneframe img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:31px;display:block}
+    .statpop{position:absolute;left:0;bottom:5%;max-width:250px;background:linear-gradient(135deg,var(--red),var(--pink));color:#fff;border-radius:18px;padding:15px 18px;box-shadow:0 26px 54px -16px rgba(226,51,73,.6);transform:rotate(-3deg);z-index:4}
+    .statpop b{display:block;font-family:var(--serif);font-size:32px;line-height:1;margin-bottom:5px}
+    .statpop span{font-size:13.5px;line-height:1.34;font-weight:500;display:block}
+    .statpop small{display:block;font-size:11px;opacity:.82;margin-top:6px}
+    /* voices / testimonials */
+    .voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px}
+    .voice{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px 26px 22px;box-shadow:var(--shadow)}
+    .voice .q{font-family:var(--serif);font-size:19px;line-height:1.45;color:var(--ink)}
+    .voice .q mark{background:none;color:#FFC64D;font-style:italic;font-weight:600}
+    .voice .who{color:var(--muted);font-size:12px;margin-top:16px;letter-spacing:.06em;text-transform:uppercase}
 
     /* store button */
     .stores{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
@@ -154,7 +166,7 @@
   </header>
 
   <main id="main">
-    <section class="hero">
+    <section class="hero-sec"><div class="wrap"><div class="hero">
       <div>
         <span class="label reveal d1">Out now · Free on Google Play</span>
         <h1 class="reveal d2">Dating where you <span class="grad">belong.</span></h1>
@@ -175,17 +187,33 @@
           </div>
         </div>
       </div>
-      <div class="hero-art reveal d3" aria-hidden="true">
-        <span class="glow"></span>
-        <svg><use href="#a2l-mark"/></svg>
+      <div class="hero-art reveal d3">
+        <span class="glow" aria-hidden="true"></span>
+        <div class="phoneframe"><img loading="eager" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/src/nearby-screen.png" alt="The Able2Love app: people nearby and step-free accessible venues on a map"></div>
+        <div class="statpop"><b>16.1M</b><span>disabled people in the UK — and mainstream apps still treat us as an afterthought.</span><small>UK Family Resources Survey 2022/23</small></div>
       </div>
-    </section>
+    </div></div></section>
 
     <section class="band statband" aria-label="Why this matters">
       <div class="wrap">
         <p class="big">16.1 million</p>
         <p class="claim">people in the UK are disabled. Nearly one in four of us. Not a niche the apps can keep treating as an afterthought.</p>
         <p class="src">Source: UK Family Resources Survey 2022/23</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="voices-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="label">Why we built it</span>
+          <h2 id="voices-h">The reasons, in real voices.</h2>
+          <p>Not app reviews — real experiences disabled people shared about dating. This is what we're here to change.</p>
+        </div>
+        <div class="voices">
+          <div class="voice"><p class="q">"They'd stay for weeks, act completely into it, then <mark>disappear the moment they got what they were really after</mark>."</p><p class="who">A disabled dater</p></div>
+          <div class="voice"><p class="q">"It was never my disability, and it was never me. It's <mark>how people decide who I am the second they see the chair</mark>."</p><p class="who">A disabled dater</p></div>
+          <div class="voice"><p class="q">"I just want to be treated like a person — <mark>not someone's fetish, and not someone's good deed</mark>."</p><p class="who">A disabled dater</p></div>
+        </div>
       </div>
     </section>
 

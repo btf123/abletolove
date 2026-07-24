@@ -45,8 +45,8 @@
     .nav-cta{font-size:14px;font-weight:700;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;
       background:linear-gradient(120deg,var(--red),var(--pink));box-shadow:0 10px 24px -10px rgba(226,51,73,.7)}
     .nav-cta:active{transform:translateY(1px)}
-    .brand .wm{height:56px;width:auto;display:block}
-    footer .brand .wm{height:48px}
+    .brand .wm{height:66px;width:auto;display:block}
+    footer .brand .wm{height:52px}
     .tagline{font-family:var(--serif);font-style:italic;color:var(--pink);font-size:clamp(18px,2.4vw,23px);margin:-.1em 0 22px;font-weight:500}
     /* sourced-stat band */
     .statband .wrap{padding:56px 24px;text-align:center}
@@ -106,9 +106,18 @@
     .card h3{font-size:20px;margin-bottom:8px}
     .card p{color:var(--muted);font-size:15.5px}
 
-    .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
-    .shots figure{margin:0;background:var(--navy-2);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+    .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:26px}
+    @media(max-width:520px){.shots{grid-template-columns:1fr}}
+    .shots figure{margin:0;background:var(--navy-2);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);cursor:zoom-in;transition:transform .25s,box-shadow .25s;position:relative}
+    .shots figure:hover{transform:translateY(-4px);box-shadow:0 34px 70px -28px rgba(0,0,0,.8)}
+    .shots figure::after{content:"⤢ tap to zoom";position:absolute;top:14px;right:14px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;font-weight:600;padding:6px 11px;border-radius:100px;backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
+    .shots figure:hover::after{opacity:1}
     .shots img{width:100%;height:auto;display:block;background:var(--navy)}
+    /* lightbox */
+    .lb{position:fixed;inset:0;background:rgba(8,4,8,.93);display:none;align-items:center;justify-content:center;z-index:200;padding:22px;cursor:zoom-out}
+    .lb.open{display:flex}
+    .lb img{max-width:96vw;max-height:92vh;border-radius:16px;box-shadow:0 40px 110px rgba(0,0,0,.75)}
+    .lb .x{position:absolute;top:16px;right:24px;font-size:40px;line-height:1;color:#fff;cursor:pointer;font-weight:300}
     .shots figcaption{padding:14px 16px;font-size:14.5px;color:var(--muted)}
 
     .band{background:linear-gradient(150deg,var(--navy-2),var(--navy));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -315,7 +324,7 @@
     <section class="band" aria-label="From the founder">
       <div class="wrap">
         <span class="qmark" aria-hidden="true">&ldquo;</span>
-        <p class="quote">I got tired of dating apps treating a disability like a plot twist you break gently in the DMs. So I built <b>the one I actually wanted.</b></p>
+        <p class="quote">For over a decade I was on the dating apps, on and off, and I tried everything they had. One thing never changed: the moment my disability came into it, I was at a disadvantage. Every single time. It took me far too long to realise I couldn't be the only one living this. So I built <b>Able2Love.</b></p>
         <p class="attr">Brogan Fox, founder of Able2Love</p>
       </div>
     </section>
@@ -364,7 +373,20 @@
         <a href="#get">Download</a>
       </nav>
       <p class="note">Able2Love is free to download on Google Play. A dating app for disabled and non-disabled people, built with the disability community in Manchester.</p>
+      <p class="note" style="margin-top:14px">© 2026 Able2Love. All rights reserved.</p>
     </div>
   </footer>
+
+  <div class="lb" id="lb" role="dialog" aria-label="Enlarged screenshot"><span class="x" aria-hidden="true">×</span><img id="lbimg" src="" alt=""></div>
+  <script>
+    (function(){
+      var lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg');
+      document.querySelectorAll('.shots figure img').forEach(function(im){
+        im.addEventListener('click', function(){ lbimg.src=im.src; lbimg.alt=im.alt; lb.classList.add('open'); });
+      });
+      lb.addEventListener('click', function(){ lb.classList.remove('open'); lbimg.src=''; });
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ lb.classList.remove('open'); } });
+    })();
+  </script>
 </body>
 </html>

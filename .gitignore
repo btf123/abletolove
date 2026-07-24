@@ -1,0 +1,4 @@
+
+# local Playwright install for brand-asset rendering
+node_modules/
+automation/package-lock.json

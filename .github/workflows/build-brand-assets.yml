@@ -1,0 +1,38 @@
+name: Build brand assets (manual)
+
+# Regenerates the static brand-asset PNGs (profile picture, X banner, feature
+# cards, IG intro, etc.) from marketing/brand-assets/src/*.html. Manual only —
+# it never posts anything, it only re-renders images and commits them.
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright + Chromium
+        working-directory: automation
+        run: |
+          npm install playwright-core playwright --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Render the brand assets
+        working-directory: automation
+        run: node build-brand-assets.mjs
+      - name: Commit any changed images
+        run: |
+          git config user.name "able2love-brand-assets"
+          git config user.email "actions@github.com"
+          git add marketing/brand-assets/*.png marketing/brand-assets/src/*.html
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Regenerate brand assets [skip ci]"
+            git push
+          fi

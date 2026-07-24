@@ -39,10 +39,11 @@
 
     /* header */
     header{position:sticky;top:0;z-index:40;background:color-mix(in srgb, var(--navy) 82%, transparent);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
-    .bar{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+    .bar{display:flex;align-items:center;justify-content:center;padding:20px 0;position:relative}
+    @media(max-width:560px){.brand .wm{height:64px}.nav-cta{display:none}}
     .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink);text-decoration:none}
     .mark{width:38px;height:38px;flex:none;border-radius:10px;display:block}
-    .nav-cta{font-size:14px;font-weight:700;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;
+    .nav-cta{position:absolute;right:0;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;
       background:linear-gradient(120deg,var(--red),var(--pink));box-shadow:0 10px 24px -10px rgba(226,51,73,.7)}
     .nav-cta:active{transform:translateY(1px)}
     .brand .wm{height:84px;width:auto;display:block}
@@ -236,22 +237,22 @@
         </div>
         <div class="pillars">
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M8 11V8a4 4 0 018 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.5" fill="currentColor"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><rect x="102" y="40" width="36" height="30" rx="7" fill="#241A2E" stroke="#F5798F" stroke-width="1.5"/><rect x="113" y="50" width="14" height="11" rx="3" fill="none" stroke="#FFC64D" stroke-width="2"/><path d="M116 50v-2.5a4 4 0 018 0V50" fill="none" stroke="#FFC64D" stroke-width="2"/><rect x="102" y="82" width="36" height="6" rx="3" fill="#3A2C44"/><rect x="102" y="94" width="26" height="6" rx="3" fill="#3A2C44"/></svg></div>
             <h3>Disclosure on your terms</h3>
             <p>Your access needs go on your profile as tap-to-reveal cards, if you want them to. You decide what and when, among people who already get it.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 9h14M12 9v5m0 0l-3 6m3-6l3 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><circle cx="120" cy="50" r="7" fill="#F5798F"/><path d="M120 59v20M109 66h22M120 79l-8 15M120 79l8 15" stroke="#F5798F" stroke-width="3.2" stroke-linecap="round" fill="none"/></svg></div>
             <h3>Accessible by design</h3>
             <p>Accessibility is the foundation here, not a settings toggle you go hunting for.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20s-7-4-7-9a4 4 0 017-2.6A4 4 0 0119 11c0 5-7 9-7 9z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><circle cx="98" cy="72" r="21" fill="#241A2E" stroke="#F5798F" stroke-width="2"/><circle cx="142" cy="72" r="21" fill="#241A2E" stroke="#B23AD8" stroke-width="2"/><path d="M120 60c-6-5-13-8-13-15 0-4 3-7 7-7 3 0 5 1 6 4 1-3 3-4 6-4 4 0 7 3 7 7 0 7-7 10-13 15z" fill="#E23349"/></svg></div>
             <h3>Built with, not for</h3>
             <p>Made alongside disabled users. Disabled and non-disabled people, fancying each other, without the stigma.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><path d="M120 40c-9 0-16 7-16 16 0 12 16 28 16 28s16-16 16-28c0-9-7-16-16-16z" fill="#E23349"/><circle cx="120" cy="56" r="6" fill="#160810"/><path d="M103 108h34M103 108l11-11h13" stroke="#7FE0A0" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <h3>Plan a date you can get into</h3>
             <p>A map of people nearby and step-free venues, so nobody has to ring ahead to ask about the step.</p>
           </div>

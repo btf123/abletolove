@@ -408,8 +408,9 @@ async function main() {
     // make the founder re-trigger by hand), regenerate a few times; a fresh draft
     // almost always parses cleanly. Only give up after several honest attempts.
     const lessonsBlock = await lessonsPromptBlock();
-    const MAX_ATTEMPTS = 4;
+    const MAX_ATTEMPTS = 6;
     approved = [];
+    let best = [];
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
         const days = await generateWeekDays(niche, theme, lessonsBlock);
@@ -418,12 +419,20 @@ async function main() {
         console.warn(`Week generation attempt ${attempt} threw: ${e.message.slice(0, 140)}`);
         approved = [];
       }
+      if (approved.length > best.length) best = approved; // keep the best attempt so far
       if (approved.length >= MIN_DAYS) { console.log(`Attempt ${attempt}: ${approved.length} aligned days survived.`); break; }
       console.warn(`Attempt ${attempt}: only ${approved.length} day(s) survived the guardrails (need ${MIN_DAYS}).${attempt < MAX_ATTEMPTS ? ' Regenerating.' : ''}`);
     }
-    if (approved.length < MIN_DAYS) {
-      console.error(`Gave up after ${MAX_ATTEMPTS} attempts: only ${approved.length} aligned days survived (need ${MIN_DAYS}).`);
+    approved = best;
+    // A short week that actually ships beats a hard failure that leaves the queue
+    // empty and the founder re-triggering by hand. Only truly fail if NOTHING
+    // survived (which points to an LLM/key/quota problem, not guardrail attrition).
+    if (approved.length === 0) {
+      console.error(`Gave up after ${MAX_ATTEMPTS} attempts: no aligned days survived. This usually means the LLM was unavailable (check ANTHROPIC_API_KEY credit, or set the free GROQ_API_KEY fallback). Not shipping an empty week.`);
       process.exit(1);
+    }
+    if (approved.length < MIN_DAYS) {
+      console.warn(`Only ${approved.length} day(s) survived after ${MAX_ATTEMPTS} attempts; shipping a ${approved.length}-day week rather than failing the run. The queue stays fed and the founder can still review.`);
     }
   }
 

@@ -236,16 +236,22 @@ fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
   const box=document.getElementById('issues');
   // Outreach briefs are approved with the buttons at the top of the page, and
   // Voice feedback is internal, so neither belongs in this review box.
-  const issues=(Array.isArray(list)?list:[]).filter(i=>!i.pull_request
+  let issues=(Array.isArray(list)?list:[]).filter(i=>!i.pull_request
     && !/^outreach brief/i.test(i.title||'') && !/^voice feedback/i.test(i.title||''));
-  if(!issues.length){box.innerHTML='<div class="card"><h3>All clear ✅</h3><div class="meta">Nothing outstanding here. Today\'s outreach is approved with the buttons at the top of the page.</div></div>';return}
+  // Dedupe by title, newest first, so repeat "Review this week's posts" issues
+  // collapse to just the latest one instead of piling up.
+  issues.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  const seen=new Set(); issues=issues.filter(i=>{const t=(i.title||'').trim();if(seen.has(t))return false;seen.add(t);return true;});
+  if(!issues.length){box.innerHTML='<div class="card"><h3>All clear ✅</h3><div class="meta">Nothing outstanding here. Everything you need to read is shown in full further down this page.</div></div>';return}
   box.innerHTML='';
   for(const i of issues){
     const el=document.createElement('div');el.className='card';
     const when=new Date(i.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    // Render the whole thing inline, expanded, with images resolved — no need to
+    // leave the dashboard. The GitHub link is a small secondary "edit" only.
     el.innerHTML=`<h3>${esc(i.title)}</h3><div class="meta">Filed ${when}</div>
-      <details><summary>Read it here</summary><div class="md">${md(i.body||'(empty)')}</div></details>
-      <div class="actions"><a class="btn" target="_blank" href="${i.html_url}">Open on GitHub to edit / tick off</a></div>`;
+      <div class="md" style="margin-top:8px">${md(i.body||'(empty)')}</div>
+      <div class="actions" style="margin-top:8px"><a class="btn ghost" target="_blank" href="${i.html_url}">Edit on GitHub (optional)</a></div>`;
     box.appendChild(el);
   }
 }).catch(()=>{document.getElementById('issues').textContent='Could not load (GitHub rate limit?). Try again in a minute.'});

@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Able2Love: Dating that gets it</title>
-  <meta name="description" content="Able2Love is a dating app for disabled and non-disabled people open to dating one another. Disclosure on your terms, accessibility by design. Free on Google Play." />
-  <meta property="og:title" content="Able2Love: You belong here" />
-  <meta property="og:description" content="Dating where your access needs are just part of your profile, not a plot twist. Free on Google Play." />
+  <title>Able2Love · Able to astonish</title>
+  <meta name="description" content="The dating app built for disabled and non-disabled people to meet, because mainstream apps were never built for us. Disclosure on your terms, accessibility by design. Free on Google Play." />
+  <meta property="og:title" content="Able2Love · Able to astonish" />
+  <meta property="og:description" content="Mainstream apps treat disability as an edge case. We made it the starting point. A dating app where your access needs are part of your profile, not a plot twist. Free on Google Play." />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#16101B" />
   <link rel="icon" href="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/profile-picture-1000x1000.png" />
@@ -44,6 +44,14 @@
     .nav-cta{font-size:14px;font-weight:700;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;
       background:linear-gradient(120deg,var(--red),var(--pink));box-shadow:0 10px 24px -10px rgba(226,51,73,.7)}
     .nav-cta:active{transform:translateY(1px)}
+    .brand .wm{height:34px;width:auto;display:block}
+    footer .brand .wm{height:30px}
+    .tagline{font-family:var(--serif);font-style:italic;color:var(--pink);font-size:clamp(18px,2.4vw,23px);margin:-.1em 0 22px;font-weight:500}
+    /* sourced-stat band */
+    .statband .wrap{padding:56px 24px;text-align:center}
+    .statband .big{font-family:var(--serif);font-size:clamp(56px,11vw,104px);line-height:.95;font-weight:600;background:linear-gradient(120deg,var(--red),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;margin:0}
+    .statband .claim{font-size:clamp(18px,2.6vw,23px);max-width:27ch;margin:16px auto 0;color:var(--ink);line-height:1.4}
+    .statband .src{font-size:13px;color:var(--muted);margin-top:16px;letter-spacing:.02em}
 
     /* hero */
     .hero{padding:72px 0 40px;display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
@@ -140,7 +148,7 @@
 
   <header>
     <div class="wrap bar">
-      <a class="brand" href="#main"><svg class="mark" aria-hidden="true"><use href="#a2l-mark"/></svg>Able2Love</a>
+      <a class="brand" href="#main" aria-label="Able2Love home"><img class="wm" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/logo-wordmark.png" alt="Able2Love"></a>
       <a class="nav-cta" href="#get">Download</a>
     </div>
   </header>
@@ -150,7 +158,8 @@
       <div>
         <span class="label reveal d1">Out now · Free on Google Play</span>
         <h1 class="reveal d2">Dating where you <span class="grad">belong.</span></h1>
-        <p class="lead reveal d3">Able2Love is a dating app for disabled and non-disabled people open to dating one another. Your access needs are just part of your profile, not a plot twist. <em>No third-date reveal. No over-explaining. No pity.</em></p>
+        <p class="tagline reveal d2">Able to astonish.</p>
+        <p class="lead reveal d3">You've probably wondered if it's you. It isn't. Mainstream apps were never built for disabled people, so we built the one that is. Able2Love is for disabled and non-disabled people open to dating one another, where your access needs are just part of your profile, not a plot twist. <em>No third-date reveal. No over-explaining. No pity.</em></p>
         <div class="reveal d4">
           <div class="stores" id="get">
             <a class="store-badge" href="https://play.google.com/store/apps/details?id=com.abletolove.app" target="_blank" rel="noopener" aria-label="Get Able2Love on Google Play">
@@ -169,6 +178,14 @@
       <div class="hero-art reveal d3" aria-hidden="true">
         <span class="glow"></span>
         <svg><use href="#a2l-mark"/></svg>
+      </div>
+    </section>
+
+    <section class="band statband" aria-label="Why this matters">
+      <div class="wrap">
+        <p class="big">16.1 million</p>
+        <p class="claim">people in the UK are disabled. Nearly one in four of us. Not a niche the apps can keep treating as an afterthought.</p>
+        <p class="src">Source: UK Family Resources Survey 2022/23</p>
       </div>
     </section>
 
@@ -198,6 +215,43 @@
             <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg></div>
             <h3>Plan a date you can get into</h3>
             <p>A map of people nearby and step-free venues, so nobody has to ring ahead to ask about the step.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="meetcute-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="label">New · MeetCute</span>
+          <h2 id="meetcute-h">Ways to meet that aren't just swiping.</h2>
+          <p>Because who you are should arrive before your photo does.</p>
+        </div>
+        <div class="pillars">
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <h3>Talk To Me</h3>
+            <p>Put your phone down. The app introduces people out loud, and you browse, like and match entirely by voice — the first dating experience you can use without looking at the screen.</p>
+          </div>
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4h3l1.5 4-2 1.5a11 11 0 006 6l1.5-2 4 1.5V19a2 2 0 01-2 2A16 16 0 015 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <h3>Blind Date</h3>
+            <p>A voice call with someone compatible, photos locked and no names, until you both choose to keep talking. A first date, not a slot machine.</p>
+          </div>
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16v9H9l-4 3v-3H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <h3>The Feed</h3>
+            <p>Say your piece on the day's talking points and meet whoever makes you smile. You match over a sense of humour, not a selfie.</p>
+          </div>
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M8 8a6 6 0 000 8M16 8a6 6 0 010 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <h3>Here Now</h3>
+            <p>Same train, same café — see who's genuinely around you, only when you choose to be found. Green light means come say hi.</p>
+          </div>
+          <div class="card">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="7" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M6 10h.01M9 10h.01M12 10h.01M6 13h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <h3>Type to Speak</h3>
+            <p>In any call, type and the app speaks your words out loud — so someone who can't use their voice can still go on a voice date. As far as we know, a first.</p>
           </div>
         </div>
       </div>
@@ -270,8 +324,8 @@
 
   <footer>
     <div class="wrap">
-      <a class="brand" href="#main" style="text-decoration:none"><svg class="mark" aria-hidden="true"><use href="#a2l-mark"/></svg>Able2Love</a>
-      <p>Dating that gets it.</p>
+      <a class="brand" href="#main" style="text-decoration:none" aria-label="Able2Love home"><img class="wm" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/logo-wordmark.png" alt="Able2Love"></a>
+      <p>Able to astonish.</p>
       <nav aria-label="Footer">
         <a href="#main">Home</a>
         <a href="mailto:broganfox1@gmail.com">Contact</a>

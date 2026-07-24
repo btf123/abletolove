@@ -39,14 +39,14 @@
 
     /* header */
     header{position:sticky;top:0;z-index:40;background:color-mix(in srgb, var(--navy) 82%, transparent);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
-    .bar{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .bar{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
     .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink);text-decoration:none}
     .mark{width:38px;height:38px;flex:none;border-radius:10px;display:block}
     .nav-cta{font-size:14px;font-weight:700;color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;
       background:linear-gradient(120deg,var(--red),var(--pink));box-shadow:0 10px 24px -10px rgba(226,51,73,.7)}
     .nav-cta:active{transform:translateY(1px)}
-    .brand .wm{height:66px;width:auto;display:block}
-    footer .brand .wm{height:52px}
+    .brand .wm{height:84px;width:auto;display:block}
+    footer .brand .wm{height:58px}
     .tagline{font-family:var(--serif);font-style:italic;color:var(--pink);font-size:clamp(18px,2.4vw,23px);margin:-.1em 0 22px;font-weight:500}
     /* sourced-stat band */
     .statband .wrap{padding:56px 24px;text-align:center}
@@ -105,6 +105,8 @@
     .card .ic svg{width:24px;height:24px}
     .card h3{font-size:20px;margin-bottom:8px}
     .card p{color:var(--muted);font-size:15.5px}
+    .card .illo{height:148px;border-radius:14px;background:radial-gradient(circle at 30% 15%,rgba(226,51,73,.20),rgba(178,58,216,.10) 70%);border:1px solid var(--line);display:grid;place-items:center;margin-bottom:18px;overflow:hidden}
+    .card .illo svg{height:126px;width:auto;display:block}
 
     .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:26px}
     @media(max-width:520px){.shots{grid-template-columns:1fr}}
@@ -266,27 +268,27 @@
         </div>
         <div class="pillars">
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="97" y="22" width="46" height="106" rx="11" fill="#160810" stroke="#3A2C44" stroke-width="2"/><rect x="112" y="30" width="16" height="12" rx="3" fill="#241A2E"/><circle cx="120" cy="48" r="4" fill="#3A2C44"/><g stroke="#F5798F" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M74 60v30M56 50v50M166 60v30M184 50v50"/></g><g stroke="#B23AD8" stroke-width="4.5" stroke-linecap="round" opacity=".55"><path d="M40 66v18M200 66v18"/></g></svg></div>
             <h3>Talk To Me</h3>
             <p>Put your phone down. The app introduces people out loud, and you browse, like and match entirely by voice — the first dating experience you can use without looking at the screen.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 4h3l1.5 4-2 1.5a11 11 0 006 6l1.5-2 4 1.5V19a2 2 0 01-2 2A16 16 0 015 6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><circle cx="120" cy="52" r="17" fill="#241A2E"/><rect x="112" y="49" width="16" height="13" rx="3.5" fill="none" stroke="#FFC64D" stroke-width="2.5"/><path d="M116 49v-3a4 4 0 018 0v3" fill="none" stroke="#FFC64D" stroke-width="2.5"/><rect x="104" y="84" width="32" height="6" rx="3" fill="#3A2C44"/><rect x="104" y="96" width="22" height="6" rx="3" fill="#3A2C44"/><circle cx="120" cy="118" r="10" fill="#E23349"/><path d="M116 114a10 10 0 006 6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
             <h3>Blind Date</h3>
             <p>A voice call with someone compatible, photos locked and no names, until you both choose to keep talking. A first date, not a slot machine.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16v9H9l-4 3v-3H4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><rect x="100" y="30" width="40" height="15" rx="7.5" fill="#241A2E"/><rect x="100" y="53" width="26" height="14" rx="7" fill="#E23349"/><rect x="114" y="75" width="26" height="14" rx="7" fill="#241A2E"/><rect x="100" y="97" width="34" height="14" rx="7" fill="#B23AD8"/></svg></div>
             <h3>The Feed</h3>
             <p>Say your piece on the day's talking points and meet whoever makes you smile. You match over a sense of humour, not a selfie.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M8 8a6 6 0 000 8M16 8a6 6 0 010 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><circle cx="120" cy="75" r="30" fill="none" stroke="#7FE0A0" stroke-width="2" opacity=".35"/><circle cx="120" cy="75" r="19" fill="none" stroke="#7FE0A0" stroke-width="2" opacity=".6"/><circle cx="120" cy="75" r="8" fill="#7FE0A0"/></svg></div>
             <h3>Here Now</h3>
             <p>Same train, same café — see who's genuinely around you, only when you choose to be found. Green light means come say hi.</p>
           </div>
           <div class="card">
-            <div class="ic"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="7" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M6 10h.01M9 10h.01M12 10h.01M6 13h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M19 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><path d="M104 46h9l11-9v30l-11-9h-9z" fill="#F5798F"/><g stroke="#F5798F" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M130 46a9 9 0 010 14"/><path d="M137 40a17 17 0 010 26" opacity=".5"/></g><g fill="#3A2C44"><rect x="100" y="92" width="9" height="9" rx="2"/><rect x="113" y="92" width="9" height="9" rx="2"/><rect x="126" y="92" width="9" height="9" rx="2"/><rect x="100" y="105" width="9" height="9" rx="2"/><rect x="113" y="105" width="9" height="9" rx="2"/><rect x="126" y="105" width="9" height="9" rx="2"/></g></svg></div>
             <h3>Type to Speak</h3>
             <p>In any call, type and the app speaks your words out loud — so someone who can't use their voice can still go on a voice date. As far as we know, a first.</p>
           </div>
@@ -324,7 +326,7 @@
     <section class="band" aria-label="From the founder">
       <div class="wrap">
         <span class="qmark" aria-hidden="true">&ldquo;</span>
-        <p class="quote">For over a decade I was on the dating apps, on and off, and I tried everything they had. One thing never changed: the moment my disability came into it, I was at a disadvantage. Every single time. It took me far too long to realise I couldn't be the only one living this. So I built <b>Able2Love.</b></p>
+        <p class="quote">For over a decade I was on the dating apps, on and off, giving it everything I had. One thing never changed: the moment my disability came into it, I was at a disadvantage, every single time. It took me far too long to realise I couldn't be the only one feeling this way. So I built <b>Able2Love</b>, the place I always wished I'd had. Somewhere you're wanted, exactly as you are.</p>
         <p class="attr">Brogan Fox, founder of Able2Love</p>
       </div>
     </section>

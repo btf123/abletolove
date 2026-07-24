@@ -20,6 +20,7 @@
 
 import { chromium } from 'playwright-core';
 import { mkdir, writeFile, readFile, readdir } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { fetchPhoto } from './photos.mjs';
@@ -80,9 +81,19 @@ const WARM_BG = `background:
 const PAGE = `html,body{margin:0;padding:0}
   body{width:1080px;height:1080px;overflow:hidden;position:relative;color:#fff;box-sizing:border-box;
     font-family:"Liberation Sans","DejaVu Sans",sans-serif}`;
+// The Able2Love wordmark (Romanlovers serif, A/2/L pillars + heart bookend).
+// Baked in as a data-URI so Playwright renders it with no external fetch. Falls
+// back to the legacy heart + text if the asset is ever missing.
+const WORDMARK_B64 = (() => {
+  try { return readFileSync(path.join(ROOT, 'marketing/brand-assets/logo-wordmark.png')).toString('base64'); }
+  catch { return ''; }
+})();
 const BRANDROW = (bg = '#16101B', top = 58, left = 80) =>
-  `<div class="brandrow" style="top:${top}px;left:${left}px">${HEART(bg)}<div class="brandname">Able2Love</div></div>`;
+  WORDMARK_B64
+    ? `<div class="brandrow" style="top:${top}px;left:${left}px"><img class="wm" src="data:image/png;base64,${WORDMARK_B64}" alt="Able2Love"></div>`
+    : `<div class="brandrow" style="top:${top}px;left:${left}px">${HEART(bg)}<div class="brandname">Able2Love</div></div>`;
 const BRANDCSS = `.brandrow{position:absolute;display:flex;align-items:center;gap:15px;z-index:6}
+  .wm{height:50px;width:auto;display:block;filter:drop-shadow(0 3px 10px rgba(0,0,0,.55))}
   .mk{width:56px;height:56px}.brandname{font-size:30px;font-weight:700;letter-spacing:-.5px}`;
 
 function fontForStatement(text) {
@@ -108,7 +119,7 @@ function statementCard(it) {
       <div class="statement">${it.allowHtml ? st : esc(st)}</div>
       ${it.support ? `<div class="support">${esc(it.support)}</div>` : ''}
     </div>
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 
@@ -130,7 +141,7 @@ function founderCard(it, photoB64, mime) {
     ${it.eyebrow ? `<div class="eyebrow">${esc(it.eyebrow)}</div>` : ''}
     <div class="statement">${it.allowHtml ? st : esc(st)}</div>
     ${it.support ? `<div class="support">${esc(it.support)}</div>` : ''}
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 
@@ -215,7 +226,7 @@ function splitCard(it) {
   </style></head><body>${BRANDROW()}
     <div class="hero"><h1>${it.title ? (it.allowHtml ? it.title : esc(it.title)) : 'One conversation. <b>Both sides. No explaining.</b>'}</h1></div>
     <div class="stage">${phoneHtml(A, aRoles)}${phoneHtml(B, bRoles)}</div>
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 
@@ -246,7 +257,7 @@ function flagsCard(it) {
       <div class="gflabel"><span class="dot"></span>Green flags only</div>
       ${greens}
     </div>
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 
@@ -275,7 +286,7 @@ function featureCard(it, shotB64) {
       <div class="k">${esc(it.bubble?.label || 'Tap to reveal')}</div>
       <div class="h">${esc(it.bubble?.h || '')}</div><div class="s">${esc(it.bubble?.s || '')}</div>
     </div></div>
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 
@@ -295,7 +306,7 @@ function photoCard(it, photo) {
     <div class="wash"></div>${BRANDROW()}
     ${it.eyebrow ? `<div class="eyebrow">${esc(it.eyebrow)}</div>` : ''}
     <div class="caption">${it.allowHtml ? it.caption : esc(it.caption)}</div>
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
     ${it.tag ? `<div class="tag">${esc(it.tag)}</div>` : ''}
   </body></html>`;
 }
@@ -318,7 +329,7 @@ function photoAppCard(it, photo, shotB64) {
     <div class="phone"><img src="data:image/png;base64,${shotB64}" alt=""></div>
     ${it.eyebrow ? `<div class="eyebrow">${esc(it.eyebrow)}</div>` : ''}
     <div class="caption">${it.allowHtml ? it.caption : esc(it.caption)}</div>
-    <div class="foot">Able2Love<small>Free on Google Play</small></div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 

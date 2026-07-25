@@ -121,6 +121,13 @@
     .lb.open{display:flex}
     .lb img{max-width:96vw;max-height:92vh;border-radius:16px;box-shadow:0 40px 110px rgba(0,0,0,.75)}
     .lb .x{position:absolute;top:16px;right:24px;font-size:40px;line-height:1;color:#fff;cursor:pointer;font-weight:300}
+    /* who's here profiles */
+    .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+    .person{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow)}
+    .person img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+    .person figcaption{padding:13px 15px}
+    .person b{display:block;font-size:16px}
+    .person span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
     .shots figcaption{padding:14px 16px;font-size:14.5px;color:var(--muted)}
 
     .band{background:linear-gradient(150deg,var(--navy-2),var(--navy));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -293,6 +300,23 @@
             <h3>Familiar Faces</h3>
             <p>The app quietly notices when someone's path keeps crossing yours — same place, same sort of time, different days. When fate needs a hand, they show up here.</p>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="people-h">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="label">Say hello</span>
+          <h2 id="people-h">People you could meet.</h2>
+          <p>A glimpse of the community on Able2Love.</p>
+        </div>
+        <div class="people">
+          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/p1.jpg" alt="Danny, 28"><figcaption><b>Danny, 28</b><span>Live music and late-night chats</span></figcaption></figure>
+          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/p2.jpg" alt="Robin, 25"><figcaption><b>Robin, 25</b><span>Artist, tea over coffee, always</span></figcaption></figure>
+          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/p3.jpg" alt="Sofia, 31"><figcaption><b>Sofia, 31</b><span>Dresses up for no reason at all</span></figcaption></figure>
+          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/p4.jpg" alt="Kai, 24"><figcaption><b>Kai, 24</b><span>Quiet until you get him talking</span></figcaption></figure>
+          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/p5.jpg" alt="Elle, 29"><figcaption><b>Elle, 29</b><span>Will out-dance you, don't test it</span></figcaption></figure>
         </div>
       </div>
     </section>

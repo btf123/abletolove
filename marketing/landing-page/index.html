@@ -108,6 +108,11 @@
     .card p{color:var(--muted);font-size:15.5px}
     .card .illo{height:148px;border-radius:14px;background:radial-gradient(circle at 30% 15%,rgba(226,51,73,.20),rgba(178,58,216,.10) 70%);border:1px solid var(--line);display:grid;place-items:center;margin-bottom:18px;overflow:hidden}
     .card .illo svg{height:126px;width:auto;display:block}
+    .card .shot{width:min(224px,68%);aspect-ratio:1440/3120;margin:0 auto 20px;background:#0d0812;border:1px solid var(--line);border-radius:20px;overflow:hidden;position:relative;cursor:zoom-in;box-shadow:0 18px 40px -22px rgba(0,0,0,.8);transition:transform .25s,box-shadow .25s}
+    .card .shot:hover{transform:translateY(-4px);box-shadow:0 30px 60px -24px rgba(0,0,0,.85)}
+    .card .shot img{width:100%;height:100%;object-fit:cover;display:block}
+    .card .shot::after{content:"⤢ tap to zoom";position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);color:#fff;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:100px;backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
+    .card .shot:hover::after{opacity:1}
 
     .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:26px}
     @media(max-width:520px){.shots{grid-template-columns:1fr}}
@@ -136,6 +141,11 @@
     .quote{font-family:var(--serif);font-size:clamp(22px,3.3vw,32px);line-height:1.34;max-width:24ch;margin:0 auto;font-weight:500}
     .quote b{color:var(--pink);font-weight:500;font-style:italic}
     .attr{color:var(--muted);margin-top:20px;font-size:15px}
+    .band .wrap.founder{display:grid;grid-template-columns:minmax(240px,340px) 1fr;gap:46px;align-items:center;text-align:left}
+    .founder-photo img{width:100%;height:auto;display:block;border-radius:20px;border:1px solid var(--line);background:#f4f2f5;box-shadow:var(--shadow)}
+    .founder-words .qmark{height:24px}
+    .founder-words .quote{margin:0;max-width:36ch}
+    @media(max-width:720px){.founder{grid-template-columns:1fr;gap:26px;text-align:center}.founder-photo{max-width:300px;margin:0 auto}.founder-words .quote{margin:0 auto;max-width:26ch}}
 
     .faq{display:grid;gap:12px;max-width:760px}
     .faq details{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:2px 20px}
@@ -276,46 +286,30 @@
         </div>
         <div class="pillars">
           <div class="card">
-            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><path d="M133 44a16 16 0 10-1 26 13 13 0 011-26z" fill="#FFC64D"/><g fill="#F5798F"><circle cx="106" cy="102" r="6"/><circle cx="120" cy="106" r="6"/><circle cx="134" cy="102" r="6"/></g></svg></div>
+            <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-tonight.png" alt="The Able2Love Tonight screen: Doors open at 8pm, one open room every night."></div>
             <h3>Tonight</h3>
             <p>Every night, 8 till 10, one open room where everyone's welcome and it's just people talking. No swiping, no pressure. Come as you are.</p>
           </div>
           <div class="card">
-            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><circle cx="120" cy="75" r="30" fill="none" stroke="#7FE0A0" stroke-width="2" opacity=".35"/><circle cx="120" cy="75" r="19" fill="none" stroke="#7FE0A0" stroke-width="2" opacity=".6"/><circle cx="120" cy="75" r="8" fill="#7FE0A0"/></svg></div>
+            <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-here-now.png" alt="The Able2Love Here Now screen: meet the people around you, visible only when you choose."></div>
             <h3>Here Now</h3>
             <p>Same train, same café, same gig. Go visible and see who's genuinely around you, only when you choose to be found. Green light means come say hi.</p>
           </div>
           <div class="card">
-            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="97" y="22" width="46" height="106" rx="11" fill="#160810" stroke="#3A2C44" stroke-width="2"/><rect x="112" y="30" width="16" height="12" rx="3" fill="#241A2E"/><circle cx="120" cy="48" r="4" fill="#3A2C44"/><g stroke="#F5798F" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M74 60v30M56 50v50M166 60v30M184 50v50"/></g><g stroke="#B23AD8" stroke-width="4.5" stroke-linecap="round" opacity=".55"><path d="M40 66v18M200 66v18"/></g></svg></div>
+            <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-talk-to-me.png" alt="The Able2Love Talk To Me screen: someone being introduced out loud, browse and match by voice."></div>
             <h3>Talk To Me</h3>
             <p>Put your phone down. The app introduces people out loud, and you browse, like and match entirely by voice — the first dating experience you can use without looking at the screen.</p>
           </div>
           <div class="card">
-            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><circle cx="120" cy="52" r="17" fill="#241A2E"/><rect x="112" y="49" width="16" height="13" rx="3.5" fill="none" stroke="#FFC64D" stroke-width="2.5"/><path d="M116 49v-3a4 4 0 018 0v3" fill="none" stroke="#FFC64D" stroke-width="2.5"/><rect x="104" y="84" width="32" height="6" rx="3" fill="#3A2C44"/><rect x="104" y="96" width="22" height="6" rx="3" fill="#3A2C44"/><circle cx="120" cy="118" r="10" fill="#E23349"/><path d="M116 114a10 10 0 006 6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-blind-date.png" alt="The Able2Love Blind Date screen: meet a voice, not a photo — photos locked, no names."></div>
             <h3>Blind Date</h3>
             <p>A voice call with someone compatible, photos locked and no names. Talk for a few minutes, and if you both say keep talking, it becomes a match.</p>
           </div>
           <div class="card">
-            <div class="illo"><svg viewBox="0 0 240 150" aria-hidden="true"><rect x="90" y="16" width="60" height="118" rx="13" fill="#160810" stroke="#3A2C44" stroke-width="2"/><path d="M100 112 Q120 58 140 112" stroke="#B23AD8" stroke-width="2.5" fill="none" opacity=".6"/><path d="M100 58 Q120 112 140 58" stroke="#F5798F" stroke-width="2.5" fill="none" opacity=".6"/><path d="M120 76l3.2 7.3 7.3 3.2-7.3 3.2-3.2 7.3-3.2-7.3-7.3-3.2 7.3-3.2z" fill="#FFC64D"/></svg></div>
+            <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-familiar-faces.png" alt="The Able2Love Familiar Faces screen: people whose paths keep crossing yours."></div>
             <h3>Familiar Faces</h3>
             <p>The app quietly notices when someone's path keeps crossing yours — same place, same sort of time, different days. When fate needs a hand, they show up here.</p>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section aria-labelledby="people-h">
-      <div class="wrap">
-        <div class="sec-head">
-          <span class="label">Say hello</span>
-          <h2 id="people-h">People you could meet.</h2>
-          <p>A glimpse of the community on Able2Love.</p>
-        </div>
-        <div class="people">
-          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/c1.jpg" alt="Jamie, 27"><figcaption><b>Jamie, 27</b><span>Gig-goer, tea addict, terrible at pool</span></figcaption></figure>
-          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/a1.jpg" alt="Robin, 25"><figcaption><b>Robin, 25</b><span>Artist, tea over coffee, always</span></figcaption></figure>
-          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/c2.jpg" alt="Alex, 30"><figcaption><b>Alex, 30</b><span>Will happily lose an argument to you</span></figcaption></figure>
-          <figure class="person"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/brand-assets/faces/a2.jpg" alt="Sofia, 31"><figcaption><b>Sofia, 31</b><span>Dresses up for no reason at all</span></figcaption></figure>
         </div>
       </div>
     </section>
@@ -348,10 +342,15 @@
     </section>
 
     <section class="band" aria-label="From the founder">
-      <div class="wrap">
-        <span class="qmark" aria-hidden="true">&ldquo;</span>
-        <p class="quote">For over a decade I was on the dating apps, on and off, giving it everything I had. One thing never changed: the moment my disability came into it, I was at a disadvantage, every single time. It took me far too long to realise I couldn't be the only one feeling this way. So I built <b>Able2Love</b>, the place I always wished I'd had. Somewhere you're wanted, exactly as you are.</p>
-        <p class="attr">Brogan Fox, founder of Able2Love</p>
+      <div class="wrap founder">
+        <div class="founder-photo">
+          <img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/founder-brogan.jpg" alt="Brogan Fox, founder of Able2Love, in a powerchair.">
+        </div>
+        <div class="founder-words">
+          <span class="qmark" aria-hidden="true">&ldquo;</span>
+          <p class="quote">For over a decade I was on the dating apps, on and off, giving it everything I had. One thing never changed: the moment my disability came into it, I was at a disadvantage, every single time. It took me far too long to realise I couldn't be the only one feeling this way. So I built <b>Able2Love</b>, the place I always wished I'd had. Somewhere you're wanted, exactly as you are.</p>
+          <p class="attr">Brogan Fox, founder of Able2Love</p>
+        </div>
       </div>
     </section>
 
@@ -407,7 +406,7 @@
   <script>
     (function(){
       var lb=document.getElementById('lb'), lbimg=document.getElementById('lbimg');
-      document.querySelectorAll('.shots figure img').forEach(function(im){
+      document.querySelectorAll('.shots figure img, .card .shot img').forEach(function(im){
         im.addEventListener('click', function(){ lbimg.src=im.src; lbimg.alt=im.alt; lb.classList.add('open'); });
       });
       lb.addEventListener('click', function(){ lb.classList.remove('open'); lbimg.src=''; });

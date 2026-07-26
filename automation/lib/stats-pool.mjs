@@ -10,14 +10,9 @@
 // When in doubt, leave it out. One bad number can burn a young app's trust.
 
 export const STATS_POOL = [
-  {
-    id: 'disclosure-58',
-    eyebrow: 'The disclosure dread is real',
-    stat: '58%',
-    claim: 'of dating-app users with a health condition won\'t disclose it.',
-    context: '26% fear being stigmatised, 25% fear discrimination.',
-    source: 'Source: Abbott, "Discrimidating" survey (UK)',
-  },
+  // REMOVED (2026-07-26): the 58% "Discrimidating" disclosure stat. Its exact
+  // figure and provenance could not be verified to source, and this pool's whole
+  // job is to be verified-only. Do not re-add without a primary citation.
   {
     id: 'scope-asked-5',
     eyebrow: 'The numbers are grim',

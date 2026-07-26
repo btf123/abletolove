@@ -27,6 +27,7 @@ import { buildReveal } from './reveal/build-reveal.mjs';
 import { generateText } from './lib/llm.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 import { STATS_POOL, hasStats } from './lib/stats-pool.mjs';
+import { socialVoices } from './lib/voices-pool.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NICHE_FILE = path.join(ROOT, 'social-media-bot/config/abletolove.niche.json');
@@ -157,6 +158,9 @@ Rules for ALL text:
 - Never pity or inspiration framing. Never use: ${banned}.
 
 VARIETY, NON-NEGOTIABLE: EVERY caption must OPEN differently. Do not reuse a sentence frame across the week. These frames are banned outright, do not use ANY of them even once: "The real story is...", "The test is not about...", "It is not about X, it's about Y", "part of this movement", "a more inclusive community", "a more inclusive world", "game-changer", "let's make it happen", "let's break it". Also retired: "testimony", "the evidence", "warning label", "plot twist", "door policy", "all the right words", "vanishing act", "it's not you, it's me", "good deed", "feel-good story", "the gap". Open each day a different way: a blunt line, a joke, a specific gripe, a flat statement of fact, a bit of anger. The belief stays; the wording and the shape never repeat.
+
+REAL VOICES TO DRAW FROM (anonymised and reworded from things real disabled people said about dating, gathered from public threads). Use these as the EMOTIONAL TRUTH behind an angle or a caption. You MUST reword them in your own voice: never paste one verbatim, never wrap one in quotation marks as if quoting a named person, never attribute it to anyone, and NEVER present a feeling as a statistic. They are grounding, not copy:
+${socialVoices().slice(0, 12).map((v) => `- ${v.who}: ${v.voice}`).join('\n')}
 
 Return ONLY a JSON array of ${DAYS_PER_WEEK} day objects with keys angle, headline, x, caption, hashtags, image_query. No markdown, no commentary.`;
 }

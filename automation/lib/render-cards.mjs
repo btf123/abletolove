@@ -40,14 +40,17 @@ const FOUNDER_DIR = path.join(ROOT, 'marketing/brand-assets/founder-photos');
 const REVEAL_LIB = path.join(ROOT, 'marketing/brand-assets/reveal-library');
 let founderPhotoDir = FOUNDER_DIR;
 async function listFounderPhotos() {
+  // ONLY the curated founder-photos dir (deliberately empty of any photo in which
+  // Brogan is recognisable). We deliberately do NOT fall back to the
+  // reveal-library: those are bases for the separate "smash or pass -> reveal"
+  // carousel, they show an identifiable face and carry that framing, and must
+  // never back an auto-posted manifesto card. With founder-photos empty, statement
+  // and founder cards render the clean warm gradient, which is the safe default.
   try {
     const own = (await readdir(FOUNDER_DIR)).filter((f) => /\.(jpe?g|png)$/i.test(f)).sort();
     if (own.length) { founderPhotoDir = FOUNDER_DIR; return own; }
   } catch { /* fall through */ }
-  try {
-    founderPhotoDir = REVEAL_LIB;
-    return (await readdir(REVEAL_LIB)).filter((f) => /\.jpe?g$/i.test(f)).sort();
-  } catch { return []; }
+  return [];
 }
 
 // Feature key -> real app screenshot file.

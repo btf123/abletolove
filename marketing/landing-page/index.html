@@ -101,6 +101,8 @@
     .sec-head p{color:var(--muted);font-size:18px}
 
     .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+    /* MeetCute has 5 phone cards — keep them on one clean row on desktop (no empty cells) */
+    @media(min-width:900px){#meetcute-h ~ .pillars,section[aria-labelledby="meetcute-h"] .pillars{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}}
     .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--shadow)}
     .card .ic{width:46px;height:46px;border-radius:13px;background:linear-gradient(140deg,rgba(226,51,73,.25),rgba(245,121,143,.18));display:grid;place-items:center;margin-bottom:16px;color:var(--pink)}
     .card .ic svg{width:24px;height:24px}

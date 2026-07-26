@@ -111,6 +111,8 @@
     .card .shot{width:min(224px,68%);aspect-ratio:1440/3120;margin:0 auto 20px;background:#0d0812;border:1px solid var(--line);border-radius:20px;overflow:hidden;position:relative;cursor:zoom-in;box-shadow:0 18px 40px -22px rgba(0,0,0,.8);transition:transform .25s,box-shadow .25s}
     .card .shot:hover{transform:translateY(-4px);box-shadow:0 30px 60px -24px rgba(0,0,0,.85)}
     .card .shot img{width:100%;height:100%;object-fit:cover;display:block}
+    .card .annot{font-size:13.5px;color:var(--muted);margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+    .card .annot em{color:var(--pink);font-style:italic}
     .card .shot::after{content:"⤢ tap to zoom";position:absolute;top:12px;right:12px;background:rgba(0,0,0,.55);color:#fff;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:100px;backdrop-filter:blur(4px);opacity:0;transition:opacity .25s}
     .card .shot:hover::after{opacity:1}
 
@@ -304,6 +306,7 @@
             <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-blind-date.png" alt="The Able2Love Blind Date screen: meet a voice, not a photo — photos locked, no names."></div>
             <h3>Blind Date</h3>
             <p>A voice call with someone compatible, photos locked and no names. Talk for a few minutes, and if you both say keep talking, it becomes a match.</p>
+            <p class="annot">☝️ Exactly what greets you when you open Blind Date: <em>“Meet a voice, not a photo.”</em></p>
           </div>
           <div class="card">
             <div class="shot"><img loading="lazy" src="https://raw.githubusercontent.com/btf123/abletolove/main/marketing/landing-page/screens/app-familiar-faces.png" alt="The Able2Love Familiar Faces screen: people whose paths keep crossing yours."></div>

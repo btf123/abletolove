@@ -1,8 +1,14 @@
 name: Content brain (weekly posts)
 
 on:
-  schedule:
-    - cron: '0 6 * * 1' # every Monday 06:00 UTC, well before the 09:00 publisher
+  # SCHEDULE PAUSED 2026-07-28: the weekly auto-generator produced the old
+  # stock-image direction, which kept superseding Brogan's new hand-made
+  # direction (newer week folder = "latest") and filling the dashboard's
+  # "Needs your eyes" with review issues. Re-enable this cron only once the
+  # generator is updated to the new formats/photos. Manual runs still work via
+  # the "Run workflow" button (workflow_dispatch) below.
+  # schedule:
+  #   - cron: '0 6 * * 1' # every Monday 06:00 UTC, well before the 09:00 publisher
   workflow_dispatch: {}
 
 permissions:

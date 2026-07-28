@@ -20,11 +20,11 @@ export function hasPexels() {
 // Fetch one photo for a query. `pick` rotates the choice so repeated queries in
 // one week don't all return the identical top result. Returns
 // { b64, mime, photographer, url } or null.
-export async function fetchPhoto(query, { orientation = '', pick = 0 } = {}) {
+export async function fetchPhoto(query, { orientation = '', pick = 0, exclude = [], prefer = [] } = {}) {
   const key = process.env.PEXELS_API_KEY;
   if (!key) return null;
   try {
-    const perPage = 30;
+    const perPage = 40;
     // Only constrain orientation when explicitly asked. Niche, high-signal
     // queries (e.g. "deaf couple sign language") have far fewer photos, and the
     // card crops with object-fit anyway, so an unconstrained search finds a
@@ -33,8 +33,25 @@ export async function fetchPhoto(query, { orientation = '', pick = 0 } = {}) {
     const res = await fetch(url, { headers: { Authorization: key } });
     if (!res.ok) { console.warn(`Pexels HTTP ${res.status} for "${query}"`); return null; }
     const data = await res.json();
-    const photos = Array.isArray(data.photos) ? data.photos : [];
+    let photos = Array.isArray(data.photos) ? data.photos : [];
     if (!photos.length) { console.warn(`Pexels: no photos for "${query}"`); return null; }
+
+    // Content-aware selection. Each Pexels photo carries an `alt` description and
+    // a slug in `url`; we read both so a query like "modern bar steps" can't
+    // return a temple. First drop any result whose text hits an `exclude` term,
+    // then rank the survivors by how many `prefer` terms they hit — so the most
+    // on-topic image wins instead of whatever Pexels happened to rank first.
+    const textOf = (p) => `${p.alt || ''} ${p.url || ''}`.toLowerCase();
+    if (exclude.length) {
+      const kept = photos.filter((p) => !exclude.some((t) => textOf(p).includes(t)));
+      // Never empty the pool: an off-term photo still beats no card at all.
+      if (kept.length) photos = kept;
+      else console.warn(`Pexels: every result for "${query}" hit an exclude term; using unfiltered`);
+    }
+    if (prefer.length) {
+      const score = (p) => prefer.reduce((n, t) => n + (textOf(p).includes(t) ? 1 : 0), 0);
+      photos = [...photos].sort((a, b) => score(b) - score(a)); // stable: ties keep Pexels order
+    }
     const chosen = photos[pick % photos.length];
     const src = chosen.src?.large2x || chosen.src?.large || chosen.src?.original;
     if (!src) return null;

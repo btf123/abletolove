@@ -144,7 +144,7 @@ For each day return an object with:
 - "hashtags": 6 to 8 lowercase hashtags (no # symbol). Always include "able2love". Good: disabilitydating, datingwithadisability, accessibledating, disabilitycommunity, disabilitypride, chronicillness, spoonie, invisibledisability, neurodivergent, actuallyautistic, deafcommunity, accessibility, wheelchairlife, inclusion. NEVER fetish or model-bait tags (wheelchairgirl, wheelchairmodel).
 - "image_query": a short, literal stock-photo search phrase (3 to 6 words) for a REAL photo that MATCHES this day's subject, so the picture actually illustrates the post. Show the real scene or thing:
     * people connecting, dating, a couple, honesty between two people: feature disabled and non-disabled people together, e.g. "wheelchair user couple laughing cafe".
-    * a barrier or a place (inaccessible venue, nightclub with steps, bar with no ramp): show the BARRIER itself, kept GENERIC, e.g. "steep staircase entrance", "steps at a doorway", "bar with steps no ramp", "narrow doorway". NEVER a named, famous or recognisable venue: we illustrate the problem, we never call out a real place.
+    * a barrier or a place (inaccessible venue, nightclub with steps, bar with no ramp): show a MODERN, URBAN, PRESENT-DAY venue barrier in a city setting, e.g. "modern bar entrance with steps", "nightclub door steps at night", "city restaurant steps street", "narrow shop doorway", "steps up to a pub". Keep it generic (never a named or famous place). NEVER a grand, heritage, scenic or outdoor staircase: no temple, church, cathedral, monument, castle, palace, ancient ruins, stately home, museum, park or garden steps. It must read as a night out someone got shut out of, not a tourist landmark.
     * a feeling or a person on their own (energy limits, disclosure nerves): show that, e.g. "tired woman resting on sofa", "person nervous looking at phone".
   Concrete and searchable, no abstract words, and it must obviously relate to the caption. Do NOT default to "happy couple on phone" unless the post is genuinely about that.
 
@@ -178,6 +178,8 @@ function parseDays(raw) {
 const SAMPLE_WEEK = [
   { angle: 'why we built it', x: 'We got tired of dating apps that treat a disability like a plot twist. So we built one that does not. Able2Love is live, free on Google Play. Tag someone who has given up on the apps. #disabilitydating #able2love', headline: 'Dating apps were not built for us. So we built one.', caption: 'We got tired of dating apps that treat a disability like a plot twist you break gently in the DMs. So we built the one we actually wanted. Tag someone who has given up on the apps, this one is different. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'inclusivedating', 'disabilitycommunity', 'disabilitypride', 'datingwithadisability'], image_query: 'wheelchair user couple laughing together' },
   { angle: 'disclosure', x: 'Your disability should not be a speech you rehearse in the DMs. On Able2Love it is a card on your profile. Set it out once, done. What do you wish people just knew? #disabilitydating #able2love', headline: 'Your access needs. On a card, not a confession.', caption: 'On most apps your disability is a speech you rehearse in the DMs. On Able2Love it is a card on your profile. You set it out once, done. What do you wish people just knew so you did not have to explain it every time? Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'disabilitycommunity', 'invisibledisability', 'chronicillness', 'accessibility'], image_query: 'person looking at phone thoughtful' },
+  { angle: 'nightclub stairs', x: 'Loads of venues have a ramp at the front and then nothing: stairs to the bar, stairs to the loo, no route back. A night out needs the whole route sorted, not just the door. #accessibledating #disabilitydating', headline: 'Ramp at the front. Steps to everything that matters.', caption: 'A ramp at the entrance and then stairs to the bar, stairs to the toilets, no way round. That is not access, that is a photo op. On Able2Love people compare notes on the places that actually work end to end. Free on Google Play, link in bio.', hashtags: ['able2love', 'accessibledating', 'disabilitydating', 'wheelchairlife', 'disabilitycommunity', 'inclusion'], image_query: 'modern nightclub entrance with steps at night' },
+  { angle: 'ghosting', x: 'They stay for weeks, act completely into it, then vanish the second they get what they were really after. That is not you. That is them running into the wrong person. #disabilitydating #able2love', headline: 'They stayed for weeks. Then the profile just vanished.', caption: 'The situationship that runs hot then disappears without a word. It is a plague across all of dating, and it stings more when you are already braced for it. It is not you, it is people running into the wrong people. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'dating', 'ghosting', 'disabilitycommunity', 'situationship'], image_query: 'sad woman looking at phone alone' },
   { angle: 'bad bios', x: 'Red flag: "Love to laugh, love to travel, no drama." A personality, or an airport? Worst bio cliche you have seen? I will start. #disabilitydating #able2love', headline: '"Love to laugh, love to travel, no drama." A personality, or an airport?', caption: 'Green flags only: asks instead of assumes, does not treat access needs like a favour, knows a wheelchair is freedom not a tragedy. Worst bio cliche you have seen? I will start. Write a better bio. Free on Google Play, link in bio.', hashtags: ['able2love', 'disabilitydating', 'dating', 'greenflags', 'disabilitycommunity', 'neurodivergent'], image_query: 'airport departure board crowd' },
 ];
 
@@ -291,6 +293,18 @@ Return STRICT JSON: {"take":"<the take, under 150 characters>"}. Never use: ${ba
 
 // Build a typed card item for day i. Best-effort extras; on any failure or
 // guardrail trip, fall back to a warm statement card from the day's headline.
+// Ghosting / disappearing-act days are an APP CONCEPT, not a mood photo — route
+// them to the bespoke ghost card (a vanished profile + unanswered messages).
+const GHOST_RE = /\b(ghost(ed|ing)?|disappear(ed|s)?|vanish(ed|es)?|left on read|stopped replying|went quiet|unmatch(ed)?|blocked me|no reply|never replied)\b/i;
+// Barrier photo days must read as a modern urban night-out barrier. Pexels can't
+// do negative keywords, so photos.mjs filters results by these terms.
+const BARRIER_EXCLUDE = ['temple', 'church', 'cathedral', 'monument', 'castle', 'palace', 'ancient',
+  'ruin', 'heritage', 'historic', 'shrine', 'mosque', 'pagoda', 'stately', 'mansion', 'museum',
+  'garden', 'park', 'blossom', 'flower', 'mountain', 'forest', 'beach', 'waterfall', 'cliff',
+  'nature', 'scenic', 'tourist', 'landmark', 'memorial', 'statue'];
+const BARRIER_PREFER = ['bar', 'pub', 'club', 'nightclub', 'entrance', 'door', 'doorway', 'building',
+  'city', 'urban', 'street', 'shop', 'restaurant', 'venue', 'steps', 'stairs', 'brick', 'neon', 'night'];
+
 async function buildCard(day, i, theme, weekNo, banned, dryRun) {
   let type = TYPE_ROTA[i % TYPE_ROTA.length];
   // A post about a physical barrier or venue should SHOW that barrier, not land
@@ -299,6 +313,8 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
   const barrier = /\b(venue|nightclub|night club|club|nightlife|stair|stairs|step|steps|ramp|inaccessible|entrance|doorway|building|toilet|lift|pub|bar|dancefloor|dance floor)\b/i.test(`${day.angle} ${day.imageQuery} ${day.headline}`);
   if (barrier && day.imageQuery && day.imageQuery.length >= 4 && type !== 'photoApp') type = 'photo';
   const headline = scrubText(day.headline);
+  // Ghosting-type days: bespoke app-concept card, never a mood-stock person.
+  if (GHOST_RE.test(`${day.angle} ${day.headline}`)) return { type: 'ghost', headline, eyebrow: null };
   const fallback = { type: 'statement', eyebrow: 'Able2Love', statement: headline, photoPick: weekNo };
   try {
     if (type === 'photo' || type === 'photoApp') {
@@ -306,6 +322,8 @@ async function buildCard(day, i, theme, weekNo, banned, dryRun) {
       // actual post; the fixed representation list is only a last-resort fallback.
       const q = (day.imageQuery && day.imageQuery.length >= 4) ? day.imageQuery : PHOTO_QUERIES[i % PHOTO_QUERIES.length];
       const item = { type, caption: headline, imageQuery: q, eyebrow: null, tag: '#Able2Love', photoPick: weekNo };
+      // Barrier days: steer stock selection to modern urban venue steps (no temples).
+      if (barrier) { item.imageExclude = BARRIER_EXCLUDE; item.imagePrefer = BARRIER_PREFER; }
       if (type === 'photoApp') item.feature = APP_FEATURES[i % APP_FEATURES.length];
       return item;
     }
@@ -452,6 +470,15 @@ async function main() {
     approved[i].cardType = cardItems[i].type;
   }
   console.log(`Card mix: ${cardItems.map((c) => c.type).join(', ')}`);
+  if (dryRun) {
+    console.log('\n=== DRY RUN — card routing & image queries (nothing committed) ===');
+    cardItems.forEach((c, i) => {
+      const q = c.imageQuery ? `  photo query: "${c.imageQuery}"` : '';
+      const filt = c.imageExclude ? `  [barrier filter: excludes heritage/temple, prefers urban venue]` : '';
+      console.log(`Day ${i + 1} · "${approved[i].angle}"  ->  ${c.type}${q}${filt}`);
+    });
+    console.log('=== end dry run ===\n');
+  }
   const cardFiles = await renderCards(cardItems, weekDir); // card-01.png ... in weekDir
 
   // One "sexy reveal" carousel per week (~1 in 5 posts). Best-effort: a failure

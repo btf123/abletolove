@@ -81,9 +81,18 @@ const WARM_BG = `background:
   radial-gradient(circle at 78% 96%, #FF8FA6 0%, rgba(255,143,166,0) 50%),
   linear-gradient(150deg, #2E1224 0%, #160810 100%);`;
 
+// Subtle repeating heart, tiled behind non-photo cards so no card ever ships with
+// a big dead gradient. Very low opacity: it reads as brand texture, not clutter.
+const HEART_TILE = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cpath%20d='M75%20112C47%2088%2026%2071%2026%2050c0-13%2010-23%2023-23%2010%200%2018%206%2026%2018%208-12%2016-18%2026-18%2013%200%2023%2010%2023%2023%200%2021-21%2038-49%2062z'%20fill='%23FF8FA6'/%3E%3C/svg%3E";
 const PAGE = `html,body{margin:0;padding:0}
   body{width:1080px;height:1080px;overflow:hidden;position:relative;color:#fff;box-sizing:border-box;
-    font-family:"Liberation Sans","DejaVu Sans",sans-serif}`;
+    font-family:"Liberation Sans","DejaVu Sans",sans-serif}
+  /* GENERAL RULE: no card ships with large empty areas. Photo cards fill with the
+     photo; every other type gets this faint heart tile so gradient never reads as blank. */
+  .wmtile{position:absolute;inset:0;z-index:0;opacity:.05;pointer-events:none;
+    background-image:url("${HEART_TILE}");background-repeat:repeat;background-size:150px 150px;background-position:-18px -12px}`;
+// Drop-in watermark layer for the gradient card types (statement/statTake/flags/ghost).
+const WATERMARK = '<div class="wmtile"></div>';
 // The Able2Love wordmark (Romanlovers serif, A/2/L pillars + heart bookend).
 // Baked in as a data-URI so Playwright renders it with no external fetch. Falls
 // back to the legacy heart + text if the asset is ever missing.
@@ -116,7 +125,7 @@ function statementCard(it) {
     .support{font-size:33px;font-weight:600;line-height:1.4;color:#F3E4EA;margin-top:34px;max-width:22ch}
     .foot{position:absolute;bottom:58px;left:80px;font-size:27px;font-weight:700;color:#fff}
     .foot small{color:#F5C6D2;font-weight:500;margin-left:6px}
-  </style></head><body>${BRANDROW()}
+  </style></head><body>${WATERMARK}${BRANDROW()}
     <div class="wrap">
       ${it.kicker ? `<span class="kicker">${esc(it.kicker)}</span>` : (it.eyebrow ? `<div class="eyebrow">${esc(it.eyebrow)}</div>` : '')}
       <div class="statement">${it.allowHtml ? st : esc(st)}</div>
@@ -163,7 +172,7 @@ function statTakeCard(it) {
     .take .lbl{font-size:21px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#FF8FA6;margin-bottom:10px}
     .take .txt{font-size:${takeFs}px;font-weight:600;line-height:1.32}
     .source{position:absolute;bottom:54px;left:80px;font-size:20px;color:#C9A9B6;font-weight:500}
-  </style></head><body>${BRANDROW()}
+  </style></head><body>${WATERMARK}${BRANDROW()}
     <div class="wrap">
       <div class="eyebrow">${esc(it.eyebrow)}</div>
       <div class="stat">${esc(it.stat)}</div>
@@ -171,6 +180,41 @@ function statTakeCard(it) {
       <div class="take"><div class="lbl">My take</div><div class="txt">${esc(it.take)}</div></div>
     </div>
     <div class="source">${esc(it.source)}</div>
+  </body></html>`;
+}
+
+// --- GHOST (app concept: a conversation whose other half vanished) ---
+// For "ghosting" and similar app-behaviour days. Never a mood-stock person: it
+// literally shows a dating-app chat where the other profile has gone blank and
+// the messages went unanswered.
+function ghostCard(it) {
+  const head = it.headline || it.statement || 'They vanished mid-conversation.';
+  const fs = head.length <= 48 ? 60 : head.length <= 90 ? 50 : 42;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE} html{${WARM_BG}}${BRANDCSS}
+    .wrap{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:0 80px;z-index:1}
+    .eyebrow{font-size:24px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#FF9DB0;margin-bottom:14px}
+    .ghosthead{font-size:${fs}px;font-weight:800;line-height:1.08;letter-spacing:-1.4px;max-width:18ch;margin-bottom:38px}
+    .chat{background:rgba(10,5,10,.5);border:1px solid rgba(255,255,255,.08);border-radius:28px;padding:24px 26px 28px;max-width:660px}
+    .chead{display:flex;align-items:center;gap:16px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:20px}
+    .cav{width:66px;height:66px;border-radius:50%;background:#241a2a;display:flex;align-items:center;justify-content:center;font-size:30px;color:#6d5f72;flex:none;border:2px dashed #4a3d52}
+    .cname{font-size:25px;font-weight:800;color:#B9A4C2}.csub{font-size:17px;color:#7d6d86;margin-top:3px}
+    .msg{margin-left:auto;max-width:80%;background:linear-gradient(135deg,#E23349,#F5798F);color:#fff;border-radius:22px;border-bottom-right-radius:7px;padding:13px 20px;font-size:22px;font-weight:500;margin-bottom:12px}
+    .seen{text-align:right;font-size:17px;color:#7d6d86;margin-bottom:22px}
+    .gone{display:flex;align-items:center;gap:10px;justify-content:center;font-size:21px;font-weight:700;color:#9a86a3;background:rgba(255,255,255,.03);border:1px dashed #4a3d52;border-radius:16px;padding:14px}
+    .foot{position:absolute;bottom:58px;left:80px;font-size:27px;font-weight:700;z-index:1}.foot small{color:#F5C6D2;font-weight:500;margin-left:6px}
+  </style></head><body>${WATERMARK}${BRANDROW()}
+    <div class="wrap">
+      <div class="eyebrow">${it.eyebrow ? esc(it.eyebrow) : 'The vanishing act'}</div>
+      <div class="ghosthead">${it.allowHtml ? head : esc(head)}</div>
+      <div class="chat">
+        <div class="chead"><div class="cav">?</div><div><div class="cname">Profile no longer available</div><div class="csub">This person left the conversation</div></div></div>
+        <div class="msg">So when are we getting that coffee? 😊</div>
+        <div class="msg">Still on for Thursday?</div>
+        <div class="seen">Delivered · never opened</div>
+        <div class="gone">👻 They ghosted. No reply, no reason.</div>
+      </div>
+    </div>
+    <div class="foot">Able to astonish<small>Free on Google Play</small></div>
   </body></html>`;
 }
 
@@ -226,7 +270,7 @@ function splitCard(it) {
     .msg.out{align-self:flex-end;background:linear-gradient(135deg,#E23349,#F5798F);color:#fff;border-bottom-right-radius:7px}
     .foot{position:absolute;bottom:50px;left:0;right:0;text-align:center;font-size:26px;font-weight:700;z-index:8}
     .foot small{display:block;color:#F5C6D2;font-weight:500;font-size:21px;margin-top:4px}
-  </style></head><body>${BRANDROW()}
+  </style></head><body>${WATERMARK}${BRANDROW()}
     <div class="hero"><h1>${it.title ? (it.allowHtml ? it.title : esc(it.title)) : 'One conversation. <b>Both sides. No explaining.</b>'}</h1></div>
     <div class="stage">${phoneHtml(A, aRoles)}${phoneHtml(B, bRoles)}</div>
     <div class="foot">Able to astonish<small>Free on Google Play</small></div>
@@ -250,7 +294,7 @@ function flagsCard(it) {
     .flag svg{width:44px;height:44px;flex:none;margin-top:2px}.flag span{font-size:37px;font-weight:600;line-height:1.25}
     .foot{position:absolute;bottom:58px;left:84px;font-size:27px;font-weight:700;color:#fff}
     .foot small{color:#F5C6D2;font-weight:500;margin-left:6px}
-  </style></head><body>${BRANDROW()}
+  </style></head><body>${WATERMARK}${BRANDROW()}
     <div class="wrap">
       <div class="redcard">
         <div class="rflabel"><svg viewBox="0 0 24 28" fill="none"><path d="M4 2v24" stroke="#FF8A8A" stroke-width="2.5" stroke-linecap="round"/><path d="M4 3h15l-3 5 3 5H4z" fill="#FF8A8A"/></svg>Red flag</div>
@@ -346,7 +390,8 @@ async function shot(feature) {
 async function itemToHtml(it, index) {
   const type = it.type || 'headline';
   if (type === 'photo' || type === 'photoApp') {
-    const photo = await fetchPhoto(it.imageQuery || 'interabled couple smiling', { pick: (it.photoPick || 0) + index });
+    const photo = await fetchPhoto(it.imageQuery || 'interabled couple smiling', {
+      pick: (it.photoPick || 0) + index, exclude: it.imageExclude || [], prefer: it.imagePrefer || [] });
     if (!photo) {
       // Graceful fallback: no photo -> a warm statement card carrying the caption.
       return statementCard({ eyebrow: it.eyebrow, statement: it.caption, allowHtml: it.allowHtml });
@@ -355,6 +400,7 @@ async function itemToHtml(it, index) {
     return photoCard(it, photo);
   }
   if (type === 'feature') return featureCard(it, await shot(it.feature));
+  if (type === 'ghost') return ghostCard(it);
   if (type === 'statTake') return statTakeCard(it);
   if (type === 'split') return splitCard(it);
   if (type === 'flags') return flagsCard(it);

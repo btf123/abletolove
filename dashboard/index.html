@@ -237,7 +237,10 @@ fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
   // Outreach briefs are approved with the buttons at the top of the page, and
   // Voice feedback is internal, so neither belongs in this review box.
   let issues=(Array.isArray(list)?list:[]).filter(i=>!i.pull_request
-    && !/^outreach brief/i.test(i.title||'') && !/^voice feedback/i.test(i.title||''));
+    && !/^outreach brief/i.test(i.title||'') && !/^voice feedback/i.test(i.title||'')
+    // Defunct: the paused auto-generator's weekly review issues. The current week
+    // is reviewed and released from the schedule box below, not from here.
+    && !/review this week/i.test(i.title||''));
   // Dedupe by title, newest first, so repeat "Review this week's posts" issues
   // collapse to just the latest one instead of piling up.
   issues.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));

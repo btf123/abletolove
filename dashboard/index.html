@@ -257,13 +257,13 @@ fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
 }).catch(()=>{document.getElementById('issues').textContent='Could not load (GitHub rate limit?). Try again in a minute.'});
 
 // ---------- this week's schedule: every post, in full, with its status ----------
-fetch(`${API}/contents/content-queue`).then(r=>r.json()).then(items=>{
+fetch(`${API}/contents/content-queue?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.json()).then(items=>{
   const weeks=(Array.isArray(items)?items:[]).filter(x=>x.type==='dir'&&x.name.startsWith('week-')).map(x=>x.name).sort();
   if(!weeks.length)throw new Error('none');
   const latest=weeks[weeks.length-1];
   return Promise.all([
-    fetch(`${RAW}/content-queue/${latest}/week.json`).then(r=>r.ok?r.json():null),
-    fetch(`${RAW}/content-queue/posted-log.json`).then(r=>r.ok?r.json():[]).catch(()=>[])
+    fetch(`${RAW}/content-queue/${latest}/week.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null),
+    fetch(`${RAW}/content-queue/posted-log.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():[]).catch(()=>[])
   ]).then(([week,log])=>({latest,week,log}));
 }).then(({latest,week,log})=>{
   const box=document.getElementById('week');
@@ -281,7 +281,7 @@ fetch(`${API}/contents/content-queue`).then(r=>r.json()).then(items=>{
     const key=`${latest}/day-${d.day}`;
     const status=posted.has(key)?'<span class="pill ok">Posted ✓</span>':d.hold?'<span class="pill bad">Held (will not post)</span>':released?'<span class="pill wait">Queued</span>':'<span class="pill wait">Awaiting release</span>';
     html+=`<details style="margin-top:10px"${posted.has(key)?'':' open'}><summary><b>Day ${d.day}</b> · ${date} · ${esc(d.angle||'')} ${status}</summary>
-      <img src="${RAW}/content-queue/${latest}/${d.card}" alt="post card" style="max-width:260px;border-radius:10px;margin:8px 0;display:block">
+      <img src="${RAW}/content-queue/${latest}/${d.card}?_=${Date.now()}" alt="post card" style="max-width:260px;border-radius:10px;margin:8px 0;display:block">
       <div class="meta" style="white-space:pre-wrap"><b>X:</b> ${esc(d.x||'')}</div>
       <div class="meta" style="white-space:pre-wrap;margin-top:6px"><b>Instagram:</b> ${esc(d.instagram||'')}</div>
     </details>`;

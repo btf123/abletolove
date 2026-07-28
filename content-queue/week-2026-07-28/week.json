@@ -65,6 +65,20 @@
       "instagram": "To the open minded, and you know who you are: disabled people are not a lesson or a good deed. We are funny, romantic, and absolutely worth your time.\n\nAble to Love is not only for disabled people. It is for anyone open enough to meet a person before a label. Come and be astonished by who you find.\n\nFree on Google Play, link in bio.\n\n#disabilitydating #datingwithadisability #openminded #disabilitycommunity #able2love #disabled",
       "alt": "Able2Love card addressed to open minded people: disabled people are funny, romantic and worth your time.",
       "hold": false
+    },
+    {
+      "day": 8,
+      "type": "reveal",
+      "angle": "the swipe reveal",
+      "card": "reveal_1.png",
+      "carousel": [
+        "reveal_1.png",
+        "reveal_2.png"
+      ],
+      "x": "You already swiped right in your head. Then the chair appeared. Did your attraction actually change, or only what you would admit? Swipe on Instagram for the whole picture. #disabilitydating #able2love",
+      "instagram": "You already swiped right in your head. Then the chair appeared, and suddenly it felt complicated.\n\nIt is not. Nothing about them changed between the first slide and the second. Only what you let yourself admit did. Able to Love is for people who see the whole picture and still say yes.\n\nFree on Google Play, link in bio.\n\n#disabilitydating #datingwithadisability #disabilitypride #inclusion #able2love #disabled",
+      "alt": "A two-slide swipe post: a striking cropped photo framed like a dating-app card asking your type, then the reveal that the person is a wheelchair user, for Able2Love, an inclusive dating app.",
+      "hold": false
     }
   ]
 }

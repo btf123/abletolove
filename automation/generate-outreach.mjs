@@ -196,13 +196,14 @@ function buildHitlistPrompt(lessonsBlock = '') {
 
 ${VOICE}${lessonsBlock}
 
-Produce 6 suggestions. Mix these two kinds:
-- Creators/communities to check: pick from disability, dating, accessibility and Manchester-scene creators and community accounts (for example the kinds of people who post about interabled relationships, disabled dating, access wins and fails). Describe WHO to look for by kind, do not invent a specific @handle or claim what their latest post says.
-- Hashtags to browse: from ${IG_HASHTAGS.join(', ')}. Say what kind of recent post to look for under it (someone venting about mainstream apps, an access-fail story, an access win to celebrate).
+Produce 6 to 8 suggestions covering POSTS, PHOTOS and REELS (short videos). Mix these kinds:
+- Creators/communities to check (their posts AND reels): disability, dating, accessibility, interabled-relationship and Manchester-scene creators and community accounts. Describe WHO to look for by kind, do not invent a specific @handle or claim what their latest post says.
+- Hashtags to browse for posts, photos and reels: from ${IG_HASHTAGS.join(', ')}. Say what kind of recent post or reel to look for (someone venting about mainstream apps, an access-fail story, an access win to celebrate, an interabled couple, a disability-pride reel).
+- Reels specifically: short videos on disabled dating, interabled love, access wins or fails, disability pride, worth a like, a warm comment, or, only if it genuinely fits Able2Love and the creator would clearly be glad, a reshare to Brogan's story.
 
-For each, write a short genuine COMMENT in the voice above that Brogan can adapt to the actual post: warm when someone gets access right, dry when something is absurd, backing them up with the shared position. Never make disability the punchline. Never invent facts.
+For each, decide the lowest-effort ACTION that fits: "like" (just tap like), "comment" (like + drop the comment), or "reshare to story" (share to story with the line as caption). Only pick reshare when it truly suits the brand. Write a short genuine COMMENT in the voice above that Brogan can adapt to the actual post (also used as the reshare caption): warm when someone gets access right, dry when something is absurd, backing them up. Never make disability the punchline. Never invent facts.
 
-Return STRICT JSON only: {"instagram_hitlist":[{"who":"<who to check / which hashtag and what to look for>","why":"<one short line on why it fits>","comment":"<a drafted comment, 1 to 2 sentences, in voice>"}]}.`;
+Return STRICT JSON only: {"instagram_hitlist":[{"who":"<who to check / which hashtag and what to look for, note if it is a reel>","why":"<one short line on why it fits>","action":"like | comment | reshare to story","comment":"<a drafted comment / reshare caption, 1 to 2 sentences, in voice>"}]}.`;
 }
 
 // The daily engagement mission: ONE block the founder pastes into his Claude
@@ -213,7 +214,7 @@ Return STRICT JSON only: {"instagram_hitlist":[{"who":"<who to check / which has
 // The scout's news finds become adaptable ammo lines, not reply targets.
 function buildMission(data, target, dateStr) {
   const ammo = (data.conversations || []).map((c) => `- ${c.reply}`).join('\n');
-  const hitlist = (data.instagram_hitlist || []).map((h) => `- ${h.who}\n  Seed comment: ${h.comment}`).join('\n');
+  const hitlist = (data.instagram_hitlist || []).map((h) => `- [${(h.action || 'comment').toUpperCase()}] ${h.who}\n  Line: ${h.comment}`).join('\n');
   return `Task: today's Able2Love engagement round (${dateStr}). You are working in my logged-in browser as the app's accounts: @Able2LoveApp on X, @able2loveapp on Instagram.
 
 APPROVAL RULE, NEVER BREAK IT: before posting anything, show me the post you found and your drafted reply, and wait for my yes. Never post without a yes for that specific item. If I say no or skip, find a replacement candidate so we still hit today's targets.
@@ -300,12 +301,14 @@ function renderMarkdown(dateStr, data, warnings) {
     });
   }
   if ((data.instagram_hitlist || []).length) {
-    lines.push('## Instagram hit-list (open these, leave a genuine comment)');
+    lines.push('## Instagram posts, photos & reels to boost (one tap each)');
     lines.push('');
-    lines.push('Spaced out through the day, a few at a time, not all at once. The comment is a starting point, tweak it to fit the actual post.');
+    lines.push('Spaced out through the day, a few at a time, not all at once. Each says the lowest-effort action: LIKE (just tap the heart), COMMENT (like + drop the line), or RESHARE TO STORY (share it with the line as the caption). Tweak the line to fit the actual post. All done by hand as yourself, never automated.');
     lines.push('');
+    const ACTION_LABEL = { 'like': '❤️ LIKE', 'comment': '💬 COMMENT', 'reshare to story': '🔁 RESHARE TO STORY' };
     data.instagram_hitlist.forEach((h, i) => {
-      lines.push(`**${i + 1}. ${h.who}**`);
+      const badge = ACTION_LABEL[h.action] || '💬 COMMENT';
+      lines.push(`**${i + 1}. ${badge} — ${h.who}**`);
       if (h.why) lines.push(`_${h.why}_`);
       lines.push(`> ${h.comment}`);
       lines.push('');
@@ -485,6 +488,7 @@ async function main() {
       const hl = await generateJson(buildHitlistPrompt(lessonsBlock), { temperature: 0.8 });
       data.instagram_hitlist = (hl.instagram_hitlist || []).slice(0, 8).map((h) => ({
         who: scrub(h.who), why: scrub(h.why), comment: scrub(h.comment),
+        action: (h.action || 'comment').toString().toLowerCase().trim(),
       })).filter((h) => h.who && h.comment);
       console.log(`Instagram hit-list: ${data.instagram_hitlist.length} suggestions.`);
     } catch (e) {

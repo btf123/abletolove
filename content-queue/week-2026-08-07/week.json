@@ -1,0 +1,65 @@
+{
+  "start": "2026-08-07",
+  "approved": false,
+  "theme": "the relief of not having to explain yourself on a dating app",
+  "days": [
+    {
+      "day": 1,
+      "angle": "disclosure woes",
+      "card": "card-01.png",
+      "x": "tired of the silence after disclosing. is it me or the disability? #disabilitydating #able2love",
+      "instagram": "The worst part of disclosing a disability on dating apps isn't the disclosure itself, but the silence that follows. It's like, you're waiting to see if that's the end of it. Some venues get it right, like the step-free club I went to last week, where everyone was dancing together, no fuss. Able2Love is free on Google Play, link in bio\n\n",
+      "alt": "A branded Able2Love card that reads: \"Disclosure anxiety\"",
+      "hold": false
+    },
+    {
+      "day": 2,
+      "angle": "ghosting and disability",
+      "card": "card-02.png",
+      "x": "ghosting isn't about me, it's about people running into the wrong people. still stings though #ghosting #disabilitydating",
+      "instagram": "Ghosting isn't fun for anyone, but when you're disabled, it can feel like it's because of your disability. I've been there, and it's not true. People are just running into the wrong people, but it still hurts. That's why Able2Love exists, to make a change. Link in bio\n\n",
+      "alt": "A branded Able2Love card that reads: \"Ghosted, again\"",
+      "hold": false
+    },
+    {
+      "day": 3,
+      "angle": "dealbreaker or not",
+      "card": "card-03.png",
+      "x": "my disability isn't a dealbreaker. it's people's attitudes that are #disabilitydating #able2love",
+      "instagram": "I used to think my disability was a dealbreaker, but it's not. It's people's attitudes that are. I've met some great people through Able2Love, and they don't see my disability as a dealbreaker. Link in bio\n\n",
+      "alt": "A branded Able2Love photo card. Caption: \"Not a dealbreaker\"",
+      "hold": false
+    },
+    {
+      "day": 4,
+      "angle": "disclosure moments",
+      "card": "card-04.png",
+      "x": "when disclosure goes well, it's a win. let's make that the norm #disabilitydating #able2love",
+      "instagram": "Disclosure can be tough, but when it goes well, it's a win. I've had some great experiences with Able2Love, where people have been understanding and supportive. Let's make that the norm. Free on Google Play\n\n",
+      "alt": "An Able2Love card showing two phones side by side with a friendly dating-app conversation, one profile noting an access need.",
+      "hold": false
+    },
+    {
+      "day": 5,
+      "angle": "choice and disability",
+      "card": "card-05.png",
+      "x": "a visible disability takes away your choice of when to disclose. let's change that #disabilitydating #able2love",
+      "instagram": "As a wheelchair user, I don't get to choose when to disclose my disability. It's decided for me the moment someone looks up. That's why Able2Love is important, it gives people a chance to be themselves, without the pressure of disclosure. Link in bio\n\n",
+      "alt": "An Able2Love red-flag versus green-flags card about respectful dating. Headline: \"Choosing when to disclose\"",
+      "hold": false
+    },
+    {
+      "day": 6,
+      "type": "reveal",
+      "angle": "sexy reveal — same photo: crop hides the chair, swipe shows the full picture",
+      "carousel": [
+        "reveal_1.jpg",
+        "reveal_2.jpg"
+      ],
+      "x": "Smash or pass? 👀 (swipe on IG to see the full picture), Able2Love, inclusive dating, first of its kind, free on Google Play. #dating #disability",
+      "instagram": "Smash or pass? Answer in the comments before you scroll, then swipe. 👀\n\nAble2Love: dating for everyone, disabled or not. Free on Google Play.\n\n#dating #disability #inclusion #datingapp #swiperight\n\nSee the full picture, Able2Love, the first-of-its-kind inclusive dating app.",
+      "alt": "Two-slide dating-app-style carousel: a striking photo framed like a swipe card (eyes covered) with a blunt \"smash or pass\" prompt, then the reveal that the person is a wheelchair user, for Able2Love, an inclusive dating app.",
+      "hold": false
+    }
+  ]
+}

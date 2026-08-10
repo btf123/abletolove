@@ -32,3 +32,4 @@ or superseded lessons get merged or dropped by the distiller.
 - Use testimony from disabled people as the basis for every argument, not abstract reasoning about product design or features.
 - Avoid filing away problems without acting on them; always point to what changed or must change next.
 - Never let the payoff of a reply be a pitch for the app's own features or design brief.
+- Prioritize outreach and suggest new approaches when previous ones are insufficient.

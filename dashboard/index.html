@@ -98,6 +98,8 @@
   .conv .yn button{border:1px solid var(--line);background:transparent;color:var(--text);padding:8px 16px;border-radius:9px;font-weight:700;cursor:pointer;font-size:14px}
   .conv .yesbtn:hover{border-color:var(--green);color:var(--green)}
   .conv .nobtn:hover{border-color:#FF8B9C}
+  .conv .copybtn{cursor:pointer}
+  .conv .copybtn:hover{border-color:var(--green);color:var(--green)}
   .conv.is-yes{border-color:var(--green)}
   .conv.is-yes .yesbtn{background:rgba(92,224,138,.15);color:var(--green);border-color:var(--green)}
   .conv.is-no{opacity:.5}
@@ -106,6 +108,7 @@
 <section>
   <h2><span class="dot"></span>Today's outreach on X — tap to reply as yourself</h2>
   <p class="hint">Real X posts the scout found, each with a reply drafted in your voice. Tap <b>Reply on X</b> and the tweet opens with your reply already typed in, you just read it and press Post. You are posting as you, a real person, so it is safe and never looks like a bot. Tap <b>Swap</b> to trade one for a fresh draft. Nothing goes out until you post it yourself.</p>
+  <div style="margin:0 0 10px"><button class="btn ghost" id="refreshOutreach">↻ Refresh today's list</button></div>
   <div id="outreach" class="loading">Loading today's replies…</div>
   <div id="outreach-actions" style="margin-top:14px;display:none">
     <span id="approvedCount" class="meta"></span>
@@ -115,6 +118,12 @@
       <div class="meta" style="margin-top:6px">Files your note as feedback. Tomorrow's replies learn from it automatically.</div>
     </div>
   </div>
+</section>
+
+<section>
+  <h2><span class="dot"></span>Today's outreach on Instagram — find a post, paste your reply</h2>
+  <p class="hint">Instagram has no link that can pre-fill a comment, so this works a little differently from X. For each one: tap <b>Open on Instagram</b> to jump straight to the right hashtag or feed, find a post that fits, then tap <b>Copy reply</b> and paste it as your comment. You are commenting as yourself, a real person, so it stays ban-safe. Spread them through the day, never all in one burst.</p>
+  <div id="ig-outreach" class="loading">Loading today's Instagram list…</div>
 </section>
 
 <section>
@@ -352,14 +361,54 @@ box.appendChild(reset);
   // ban-safe, and no token needed anywhere.
   const intentUrl=(c)=>`https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(c.id)}&text=${encodeURIComponent(c.reply||'')}`;
 
-  fetch(`${API}/contents/content-queue/outreach`).then(r=>r.json()).then(list=>{
-    const files=(Array.isArray(list)?list:[]).filter(f=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f=>f.name).sort();
-    if(!files.length) throw new Error('none');
-    return fetch(`${RAWBASE}/${files[files.length-1]}`).then(r=>r.json());
-  }).then(render).catch(()=>{
-    box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';
-    document.getElementById('followsug').innerHTML='<div class="card"><div class="meta">No brief yet, so no suggestions either.</div></div>';
-  });
+  function load(){
+    box.className='loading'; box.textContent='Loading today’s replies…';
+    // cache-bust so Refresh always pulls the freshest brief, never a stale cached copy
+    fetch(`${API}/contents/content-queue/outreach?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json()).then(list=>{
+      const files=(Array.isArray(list)?list:[]).filter(f=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f=>f.name).sort();
+      if(!files.length) throw new Error('none');
+      return fetch(`${RAWBASE}/${files[files.length-1]}?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json());
+    }).then(render).catch(()=>{
+      box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';
+      document.getElementById('followsug').innerHTML='<div class="card"><div class="meta">No brief yet, so no suggestions either.</div></div>';
+      document.getElementById('ig-outreach').innerHTML='<div class="card"><div class="meta">No brief yet, so no Instagram list either.</div></div>';
+    });
+  }
+  const refreshBtn=document.getElementById('refreshOutreach');
+  if(refreshBtn) refreshBtn.onclick=load;
+  load();
+
+  function renderInstagram(data){
+    const ig=document.getElementById('ig-outreach'); if(!ig) return;
+    const list=(data.instagram_hitlist||[]);
+    if(!list.length){ ig.innerHTML='<div class="card"><div class="meta">No Instagram suggestions today. The scout tries again tomorrow.</div></div>'; return; }
+    ig.innerHTML='';
+    list.forEach(item=>{
+      const who=item.who||'';
+      // If the "where to look" names a #hashtag, deep-link straight to that feed;
+      // otherwise fall back to Instagram's explore page.
+      const tag=(who.match(/#([A-Za-z0-9_]+)/)||[])[1];
+      const openUrl= tag ? `https://www.instagram.com/explore/tags/${tag}/` : 'https://www.instagram.com/explore/';
+      const openLabel= tag ? `Open #${tag} on Instagram ↗` : 'Open Instagram ↗';
+      const el=document.createElement('div'); el.className='card conv';
+      el.innerHTML=`<div class="meta">Where to look: ${esc(who)}</div>
+        <div class="meta" style="margin:6px 0;color:var(--muted)">${esc(item.why||'')}</div>
+        <div class="reply">${esc(item.comment||'')}</div>
+        <div class="yn"><a class="btn replybtn" target="_blank" rel="noopener" href="${esc(openUrl)}">${openLabel}</a><button class="copybtn">⧉ Copy reply</button></div>`;
+      const copy=el.querySelector('.copybtn');
+      copy.onclick=()=>{
+        const txt=item.comment||'';
+        const ok=()=>{ copy.textContent='✓ Copied'; setTimeout(()=>copy.textContent='⧉ Copy reply',1500); };
+        if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(ok).catch(()=>fallbackCopy(txt,ok)); }
+        else fallbackCopy(txt,ok);
+      };
+      ig.appendChild(el);
+    });
+  }
+  function fallbackCopy(txt,ok){
+    try{ const t=document.createElement('textarea'); t.value=txt; t.style.position='fixed'; t.style.opacity='0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); ok(); }
+    catch(e){ /* clipboard blocked; user can still select the text manually */ }
+  }
 
   function renderFollows(data){
     const fbox=document.getElementById('followsug');
@@ -379,6 +428,7 @@ box.appendChild(reset);
     document.getElementById('outreach-actions').style.display='block';
     setupTeach(data);
     renderFollows(data);
+    renderInstagram(data);
     const cands=(data.x_candidates||[]).slice();
     box.innerHTML='';
     if(!cands.length){
@@ -409,7 +459,21 @@ box.appendChild(reset);
         // we mark it done here so you can see what you've handled. It never posts
         // for you, X does not open unless you press Post there.
         if(rep) rep.onclick=()=>{ posted.add(c.id); setTimeout(()=>{count();draw();},600); };
-        if(no) no.onclick=()=>{ posted.delete(c.id); slots[i]= cursor<cands.length ? cands[cursor++] : null; draw(); };
+        // Swap: bring in a DIFFERENT candidate that isn't already on screen, wrapping
+        // around the whole pool so a slot is never left blank. Only if every candidate
+        // is already showing (a tiny pool) do we keep the current card as-is.
+        if(no) no.onclick=()=>{
+          posted.delete(c.id);
+          const shown=new Set(slots.filter(Boolean).map(x=>x.id));
+          let next=null;
+          for(let k=1;k<=cands.length;k++){
+            const cand=cands[(cursor+k)%cands.length];
+            if(cand && !shown.has(cand.id)){ next=cand; cursor=(cursor+k)%cands.length; break; }
+          }
+          if(next){ slots[i]=next; }
+          else { box.querySelectorAll('.conv')[i]?.animate?.([{opacity:.4},{opacity:1}],{duration:400}); }
+          draw();
+        };
       });
       count();
     }

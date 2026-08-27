@@ -351,6 +351,7 @@ function loadWeek(){
 }
 
 function manImg(id){ return (PHOTOS&&PHOTOS.images&&PHOTOS.images[id])||(PHOTOS&&PHOTOS.mine&&PHOTOS.mine[id])||null; }
+function isMine(id){ return !!(PHOTOS&&PHOTOS.mine&&PHOTOS.mine[id]); }
 function altsFor(day){
   // Theme-matched swap options: the licensed stock cast (photos.json.images) plus Brogan's own
   // curated frames (photos.json.mine, marked ★) whose roles include this day's theme.
@@ -387,7 +388,7 @@ function drawWeek(log){
       const cur=d.bg; const curM=manImg(cur);
       const thumbs=[];
       // current first, then stock options, then Brogan's own frames (★)
-      if(curM) thumbs.push({id:cur,file:curM.file,sel:true,mine:!!curM.who});
+      if(curM) thumbs.push({id:cur,file:curM.file,sel:true,mine:isMine(cur)});
       alts.forEach(a=>{if(a.id!==cur)thumbs.push({id:a.id,file:a.file,sel:false,mine:a.mine});});
       const curFile=curM?curM.file:'';
       const anyMine=thumbs.some(t=>t.mine);

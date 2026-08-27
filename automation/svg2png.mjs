@@ -1,0 +1,13 @@
+import { chromium } from 'playwright-core';
+import { readFileSync } from 'node:fs';
+const svg = readFileSync(process.argv[2], 'utf8');
+const bg = process.argv[4] || '#faf7f3';
+const exe = process.env.PLAYWRIGHT_EXECUTABLE_PATH;
+const b = await chromium.launch(exe ? { executablePath: exe, args: ['--no-sandbox'] } : { args: ['--no-sandbox'] });
+const p = await b.newPage({ viewport: { width: 1600, height: 500 }, deviceScaleFactor: 2 });
+const sized = svg.replace('<svg', '<svg style="height:220px;width:auto"');
+await p.setContent(`<div id="w" style="background:${bg};padding:40px;display:inline-block">${sized}</div>`, { waitUntil: 'networkidle' });
+const el = await p.$('#w');
+await el.screenshot({ path: process.argv[3] });
+await b.close();
+console.log('rendered', process.argv[3]);

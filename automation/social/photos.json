@@ -1,0 +1,201 @@
+{
+  "generated_from": "store-diversity (licensed, LICENCES.md)",
+  "images": {
+    "ds-man-redtie": {
+      "file": "ds-man-redtie.jpg",
+      "roles": [
+        "tue-stat",
+        "mon-feature",
+        "thu-feature",
+        "sat-poll-disabled"
+      ],
+      "label": "Man, red tie, confident",
+      "who": "disabled"
+    },
+    "ds-man-coffee": {
+      "file": "ds-man-coffee.jpg",
+      "roles": [
+        "tue-stat",
+        "thu-feature",
+        "sat-poll-disabled"
+      ],
+      "label": "Man with coffee, relaxed",
+      "who": "disabled"
+    },
+    "ds-woman-boxing": {
+      "file": "ds-woman-boxing.jpg",
+      "roles": [
+        "sat-poll-disabled",
+        "tue-stat",
+        "mon-feature"
+      ],
+      "label": "Woman boxing, strong",
+      "who": "disabled"
+    },
+    "ds-woman-seaside": {
+      "file": "ds-woman-seaside.jpg",
+      "roles": [
+        "thu-feature",
+        "mon-feature",
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Woman at the seaside",
+      "who": "disabled"
+    },
+    "ds-woman-warm": {
+      "file": "ds-woman-warm.jpg",
+      "roles": [
+        "wed-testimony",
+        "mon-feature",
+        "sat-poll-disabled"
+      ],
+      "label": "Woman, warm smile",
+      "who": "disabled"
+    },
+    "asian-man-whitecane": {
+      "file": "asian-man-whitecane.jpg",
+      "roles": [
+        "tue-stat",
+        "thu-feature",
+        "sat-poll-disabled"
+      ],
+      "label": "Man with white cane",
+      "who": "disabled"
+    },
+    "black-man-whitecane": {
+      "file": "black-man-whitecane.jpg",
+      "roles": [
+        "mon-feature",
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Man with white cane",
+      "who": "disabled"
+    },
+    "southasian-man-hearingaid": {
+      "file": "southasian-man-hearingaid.jpg",
+      "roles": [
+        "thu-feature",
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Man with hearing aid",
+      "who": "disabled"
+    },
+    "senior-asian-man-hearingaid": {
+      "file": "senior-asian-man-hearingaid.jpg",
+      "roles": [
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Senior man, hearing aid",
+      "who": "disabled"
+    },
+    "older-man-powerchair-reading": {
+      "file": "older-man-powerchair-reading.jpg",
+      "roles": [
+        "thu-feature",
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Man reading in a powerchair",
+      "who": "disabled"
+    },
+    "older-man-wheelchair-flowers": {
+      "file": "older-man-wheelchair-flowers.jpg",
+      "roles": [
+        "wed-testimony",
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Man with flowers",
+      "who": "disabled"
+    },
+    "older-woman-wheelchair": {
+      "file": "older-woman-wheelchair.jpg",
+      "roles": [
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Older woman, wheelchair",
+      "who": "disabled"
+    },
+    "senior-man-wheelchair-street": {
+      "file": "senior-man-wheelchair-street.jpg",
+      "roles": [
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Senior man on the street",
+      "who": "disabled"
+    },
+    "woman-wheelchair-phone-park": {
+      "file": "woman-wheelchair-phone-park.jpg",
+      "roles": [
+        "thu-feature",
+        "mon-feature",
+        "tue-stat",
+        "sat-poll-disabled"
+      ],
+      "label": "Woman on her phone, park",
+      "who": "disabled"
+    },
+    "black-woman-wheelchair-red": {
+      "file": "black-woman-wheelchair-red.jpg",
+      "roles": [
+        "fri-reveal"
+      ],
+      "label": "Woman in red, wheelchair",
+      "who": "disabled"
+    },
+    "asian-woman-wheelchair-window": {
+      "file": "asian-woman-wheelchair-window.jpg",
+      "roles": [
+        "fri-reveal"
+      ],
+      "label": "Woman by a window",
+      "who": "disabled"
+    },
+    "man-wheelchair-phonecall-cafe": {
+      "file": "man-wheelchair-phonecall-cafe.jpg",
+      "roles": [
+        "fri-reveal"
+      ],
+      "label": "Man on a call, cafe",
+      "who": "disabled"
+    },
+    "older-blackman-wheelchair-market": {
+      "file": "older-blackman-wheelchair-market.jpg",
+      "roles": [
+        "fri-reveal"
+      ],
+      "label": "Man at a market",
+      "who": "disabled"
+    },
+    "couple-bench-phone": {
+      "file": "couple-bench-phone.jpg",
+      "roles": [
+        "wed-testimony"
+      ],
+      "label": "Couple on a bench",
+      "who": "couple"
+    },
+    "couple-park-dandelion": {
+      "file": "couple-park-dandelion.jpg",
+      "roles": [
+        "wed-testimony"
+      ],
+      "label": "Couple in a park",
+      "who": "couple"
+    },
+    "man-laughing-phone-park": {
+      "file": "man-laughing-phone-park.jpg",
+      "roles": [
+        "sun-poll-able"
+      ],
+      "label": "Man laughing at his phone",
+      "who": "able"
+    }
+  }
+}

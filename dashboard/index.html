@@ -63,6 +63,29 @@
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   @media(max-width:700px){.grid2{grid-template-columns:1fr}}
   footer{color:var(--muted);font-size:12.5px;text-align:center;margin-top:26px}
+  /* --- themed week + image swap --- */
+  .day{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+  .day .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .day .theme{font-weight:800;font-size:15px}
+  .day .when{color:var(--muted);font-size:12.5px}
+  .day .lay{display:grid;grid-template-columns:200px 1fr;gap:16px;margin-top:12px}
+  @media(max-width:640px){.day .lay{grid-template-columns:1fr}}
+  .day .cardimg{width:100%;border-radius:10px;display:block;border:1px solid var(--line)}
+  .swap{margin-top:10px}
+  .swap .lbl{color:var(--muted);font-size:12px;margin-bottom:6px}
+  .swap .strip{display:flex;gap:8px;flex-wrap:wrap}
+  .swap .strip img{width:56px;height:70px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent;opacity:.75}
+  .swap .strip img:hover{opacity:1}
+  .swap .strip img.sel{border-color:var(--pink);opacity:1}
+  .edit label{display:block;color:var(--muted);font-size:12px;margin:10px 0 4px}
+  .edit textarea{width:100%;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);
+    padding:9px 11px;font-size:13.5px;font-family:inherit;line-height:1.45;resize:vertical}
+  .edit .row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  .edit .count{color:var(--muted);font-size:12px}
+  .edit .count.over{color:#FF8B9C;font-weight:700}
+  .saved{color:var(--green);font-size:12.5px}
+  .connectbar .card{margin:0}
+  .tok{background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 11px;font-size:13px;width:100%;max-width:420px}
 </style>
 </head>
 <body>
@@ -139,11 +162,12 @@
 </section>
 
 <section>
-  <h2><span class="dot"></span>This week's posts (what's going out)</h2>
-  <p class="hint">These post THEMSELVES: one a day to X and Instagram, same theme and image on both, no clicks needed. Each new week's batch waits for your say-so first: read it below, and if a day is wrong edit or hold it on GitHub, then press Release. Nothing from a new batch posts until you release it.</p>
-  <div id="week" class="loading">Loading schedule…</div>
-  <div class="actions" style="margin-top:10px">
-    <a class="btn" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/approve-week.yml">Release this week's batch (Run workflow there)</a>
+  <h2><span class="dot"></span>This week's posts — imagery &amp; themes</h2>
+  <p class="hint">Your seven days, one theme each: <b>Mon</b> a flagship feature, <b>Tue</b> a stat, <b>Wed</b> a win, <b>Thu</b> how it works, <b>Fri</b> the reveal, <b>Sat</b> and <b>Sun</b> the community polls. Every card leads with a real person now, never the old gradient. Don't like a photo? Tap a different one under the card and it swaps on the spot. Fix the words right here. Nothing posts until you press Release.</p>
+  <div id="connectbar" style="margin:0 0 12px"></div>
+  <div id="week" class="loading">Loading this week…</div>
+  <div class="actions" style="margin-top:12px">
+    <a class="btn" target="_blank" href="https://github.com/btf123/abletolove/actions/workflows/approve-week.yml">Release this week's batch</a>
   </div>
 </section>
 
@@ -268,41 +292,162 @@ fetch(`${API}/issues?state=open&per_page=15`).then(r=>r.json()).then(list=>{
   }
 }).catch(()=>{document.getElementById('issues').textContent='Could not load (GitHub rate limit?). Try again in a minute.'});
 
-// ---------- this week's schedule: every post, in full, with its status ----------
-fetch(`${API}/contents/content-queue?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.json()).then(items=>{
-  const weeks=(Array.isArray(items)?items:[]).filter(x=>x.type==='dir'&&x.name.startsWith('week-')).map(x=>x.name).sort();
-  if(!weeks.length)throw new Error('none');
-  const latest=weeks[weeks.length-1];
-  return Promise.all([
-    fetch(`${RAW}/content-queue/${latest}/week.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null),
-    fetch(`${RAW}/content-queue/posted-log.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():[]).catch(()=>[])
-  ]).then(([week,log])=>({latest,week,log}));
-}).then(({latest,week,log})=>{
-  const box=document.getElementById('week');
-  if(!week){
-    box.innerHTML=`<div class="card"><h3>${latest}</h3><div class="meta">This batch has no week.json yet.</div>
-      <div class="actions"><a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/tree/main/content-queue/${latest}">Open folder on GitHub</a></div></div>`;
-    return;
-  }
-  const posted=new Set((Array.isArray(log)?log:[]).map(e=>e.key));
-  const released=week.approved!==false;
-  const state=released?'<span class="pill ok">Released: these post one a day</span>':'<span class="pill wait">Waiting for your Release, nothing posts yet</span>';
-  let html=`<div class="card"><h3>${latest}</h3><div class="meta">${state}${week.theme?' · theme: '+esc(week.theme):''}</div>`;
-  (week.days||[]).forEach((d,i)=>{
-    const date=new Date(Date.parse(week.start)+i*86400000).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    const key=`${latest}/day-${d.day}`;
-    const status=posted.has(key)?'<span class="pill ok">Posted ✓</span>':d.hold?'<span class="pill bad">Held (will not post)</span>':released?'<span class="pill wait">Queued</span>':'<span class="pill wait">Awaiting release</span>';
-    html+=`<details style="margin-top:10px"${posted.has(key)?'':' open'}><summary><b>Day ${d.day}</b> · ${date} · ${esc(d.angle||'')} ${status}</summary>
-      <img src="${RAW}/content-queue/${latest}/${d.card}?_=${Date.now()}" alt="post card" style="max-width:260px;border-radius:10px;margin:8px 0;display:block">
-      <div class="meta" style="white-space:pre-wrap"><b>X:</b> ${esc(d.x||'')}</div>
-      <div class="meta" style="white-space:pre-wrap;margin-top:6px"><b>Instagram:</b> ${esc(d.instagram||'')}</div>
-    </details>`;
+// ---------- this week: themed cards, in-place image swap + copy edit, saved back to the repo ----------
+const THEME_LABEL={
+  'mon-feature':'Monday · Flagship feature','tue-stat':'Tuesday · The stat','wed-testimony':'Wednesday · A win',
+  'thu-feature':'Thursday · How it works','fri-reveal':'Friday · The reveal',
+  'sat-poll-disabled':'Saturday · Community poll','sun-poll-able':'Sunday · Community poll'
+};
+const TOKEN_KEY='a2l-gh-token';
+function ghToken(){return localStorage.getItem(TOKEN_KEY)||''}
+
+// A fine-grained token, pasted once, lets a Save write straight back to the repo so nothing
+// posts the old photo or the old words. With no token everything still previews live; Save
+// then hands you the one line to paste, so you are never stuck.
+function renderConnectBar(){
+  const bar=document.getElementById('connectbar');const has=!!ghToken();
+  bar.className='connectbar';
+  bar.innerHTML=has
+    ? `<div class="card"><div class="meta"><span class="pill ok">Connected</span> Saves write straight to the repo. <a href="#" id="tokclear">Disconnect</a></div></div>`
+    : `<div class="card"><div class="meta">Swapping a photo or fixing the words below previews instantly. To make a change <b>stick</b> (so the right one actually posts), connect once with a GitHub token. <a href="#" id="tokshow">Connect</a></div>
+        <div id="tokform" style="display:none;margin-top:8px">
+          <input class="tok" id="tokinput" type="password" placeholder="Paste your fine-grained token (repo contents: read+write)">
+          <button class="btn" id="toksave" style="margin-left:8px">Save token</button>
+          <div class="meta" style="margin-top:6px">Stored only in this browser, on this device. Never leaves it except to talk to GitHub.</div>
+        </div>`;
+  const show=document.getElementById('tokshow');if(show)show.onclick=e=>{e.preventDefault();document.getElementById('tokform').style.display='block'};
+  const save=document.getElementById('toksave');if(save)save.onclick=()=>{const v=document.getElementById('tokinput').value.trim();if(!v){alert('Paste a token first.');return}localStorage.setItem(TOKEN_KEY,v);renderConnectBar();loadWeek();};
+  const clr=document.getElementById('tokclear');if(clr)clr.onclick=e=>{e.preventDefault();localStorage.removeItem(TOKEN_KEY);renderConnectBar();loadWeek();};
+}
+
+// Commit an updated week.json back to main via the GitHub contents API (needs the token).
+async function saveWeekJson(dir,weekObj,msg){
+  const tok=ghToken();if(!tok)throw new Error('no-token');
+  const path=`content-queue/${dir}/week.json`;
+  const cur=await fetch(`${API}/contents/${path}?_=${Date.now()}`,{headers:{Authorization:`Bearer ${tok}`},cache:'no-store'}).then(r=>r.json());
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(weekObj,null,2)+'\n')));
+  const res=await fetch(`${API}/contents/${path}`,{method:'PUT',headers:{Authorization:`Bearer ${tok}`,'Content-Type':'application/json'},
+    body:JSON.stringify({message:msg,content,sha:cur.sha,branch:'main'})});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||('HTTP '+res.status))}
+  return res.json();
+}
+
+let WEEK=null,DIR=null,PHOTOS=null;
+function loadWeek(){
+  const box=document.getElementById('week');box.className='loading';box.textContent='Loading this week…';
+  fetch(`${API}/contents/content-queue?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.json()).then(items=>{
+    const weeks=(Array.isArray(items)?items:[]).filter(x=>x.type==='dir'&&x.name.startsWith('week-')).map(x=>x.name).sort();
+    if(!weeks.length)throw new Error('none');
+    DIR=weeks[weeks.length-1];
+    return Promise.all([
+      fetch(`${RAW}/content-queue/${DIR}/week.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null),
+      fetch(`${RAW}/content-queue/posted-log.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(`${RAW}/automation/social/photos.json?_=${Date.now()}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)
+    ]).then(([week,log,photos])=>{WEEK=week;PHOTOS=photos;drawWeek(log)});
+  }).catch(()=>{box.className='';box.textContent='Could not load this week. Open content-queue/ on GitHub if it persists.'});
+}
+
+function altsFor(day){
+  // Theme-matched swap options: the pre-rendered alternates in the week folder (alt-0N-<id>.jpg)
+  // plus, when the manifest is present, any library image whose roles include this day's theme.
+  if(!PHOTOS||!day.theme)return [];
+  const out=[];
+  Object.entries(PHOTOS.images||{}).forEach(([id,m])=>{
+    if((m.roles||[]).includes(day.theme)) out.push({id,label:m.label||id});
   });
-  html+=`<div class="actions" style="margin-top:12px">
-    <a class="btn ghost" target="_blank" href="https://github.com/${OWNER}/${REPO}/edit/main/content-queue/${latest}/week.json">Edit a post / hold a day (week.json)</a>
-  </div></div>`;
-  box.innerHTML=html;
-}).catch(()=>{document.getElementById('week').textContent='Could not load the schedule. Open content-queue/ on GitHub instead.'});
+  return out;
+}
+
+function drawWeek(log){
+  const box=document.getElementById('week');box.className='';
+  const posted=new Set((Array.isArray(log)?log:[]).map(e=>e.key));
+  const released=WEEK.approved!==false;
+  const state=released?'<span class="pill ok">Released — these post one a day</span>':'<span class="pill wait">Waiting for your Release — nothing posts yet</span>';
+  box.innerHTML=`<div class="meta" style="margin-bottom:4px">${DIR} · ${state}</div>`;
+  (WEEK.days||[]).forEach((d,i)=>{
+    const date=new Date(Date.parse(WEEK.start)+i*86400000).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    const key=`${DIR}/day-${d.day}`;
+    const status=posted.has(key)?'<span class="pill ok">Posted ✓</span>':d.hold?'<span class="pill bad">Held</span>':released?'<span class="pill wait">Queued</span>':'<span class="pill wait">Awaiting release</span>';
+    const el=document.createElement('div');el.className='day';
+    const label=THEME_LABEL[d.theme]||('Day '+d.day);
+    const isReveal=d.kind==='reveal';
+    // swap strip: current bg + theme alternates (skip for reveal, which is a two-slide carousel)
+    let strip='';
+    if(!isReveal){
+      const alts=altsFor(d);
+      const cur=d.bg;
+      const thumbs=[];
+      // current first
+      if(cur&&PHOTOS&&PHOTOS.images[cur]) thumbs.push({id:cur,file:PHOTOS.images[cur].file,sel:true});
+      alts.forEach(a=>{if(a.id!==cur&&PHOTOS.images[a.id])thumbs.push({id:a.id,file:PHOTOS.images[a.id].file,sel:false});});
+      strip=`<div class="swap"><div class="lbl">Photo — tap to swap</div><div class="strip">`+
+        thumbs.map(t=>`<img data-day="${d.day}" data-bg="${t.id}" class="${t.sel?'sel':''}" src="${RAW}/automation/social/photos/${t.file}?_=${Date.now()}" title="${esc(t.id)}">`).join('')+
+        `</div></div>`;
+    }
+    el.innerHTML=`
+      <div class="top"><span class="theme">${esc(label)}</span><span class="when">${date}</span>${status}</div>
+      <div class="lay">
+        <div><img class="cardimg" id="img-${d.day}" src="${RAW}/content-queue/${DIR}/${d.card}?_=${Date.now()}" alt="${esc(d.alt||'post card')}">${strip}</div>
+        <div class="edit">
+          <label>X post (max 280)</label>
+          <textarea data-day="${d.day}" data-f="x" rows="3">${esc(d.x||'')}</textarea>
+          <label>Instagram caption + hashtags</label>
+          <textarea data-day="${d.day}" data-f="instagram" rows="7">${esc(d.instagram||'')}</textarea>
+          <div class="row">
+            <button class="btn savebtn" data-day="${d.day}">Save this day</button>
+            <span class="count" id="count-${d.day}"></span>
+            <span class="saved" id="saved-${d.day}"></span>
+          </div>
+        </div>
+      </div>`;
+    box.appendChild(el);
+  });
+  wireWeek();
+}
+
+function wireWeek(){
+  const byDay=id=>WEEK.days.find(d=>String(d.day)===String(id));
+  // live X counter
+  document.querySelectorAll('textarea[data-f="x"]').forEach(t=>{
+    const c=document.getElementById('count-'+t.dataset.day);
+    const upd=()=>{const n=t.value.length;c.textContent=n+' / 280';c.className='count'+(n>280?' over':'')};
+    t.addEventListener('input',upd);upd();
+  });
+  // instant photo swap (preview): point the card image at the pre-rendered alternate
+  document.querySelectorAll('.swap .strip img').forEach(img=>{
+    img.onclick=()=>{
+      const day=img.dataset.day,bg=img.dataset.bg,d=byDay(day);
+      const isCur=(bg===d.bg);
+      const file=isCur?d.card:`alt-${String(day).padStart(2,'0')}-${bg}.jpg`;
+      document.getElementById('img-'+day).src=`${RAW}/content-queue/${DIR}/${file}?_=${Date.now()}`;
+      img.parentElement.querySelectorAll('img').forEach(x=>x.classList.remove('sel'));img.classList.add('sel');
+      d._newbg=bg;d._newcard=file;  // staged; a Save writes it
+    };
+  });
+  // save one day back to the repo
+  document.querySelectorAll('.savebtn').forEach(b=>{
+    b.onclick=async()=>{
+      const day=b.dataset.day,d=byDay(day);const savedEl=document.getElementById('saved-'+day);
+      const x=document.querySelector(`textarea[data-day="${day}"][data-f="x"]`).value;
+      const ig=document.querySelector(`textarea[data-day="${day}"][data-f="instagram"]`).value;
+      if(x.length>280){savedEl.textContent='';alert('X post is over 280 characters, trim it first.');return}
+      d.x=x;d.instagram=ig;
+      if(d._newbg){d.bg=d._newbg;if(d._newcard)d.card=d._newcard;delete d._newbg;delete d._newcard}
+      if(!ghToken()){
+        savedEl.innerHTML='<a href="https://github.com/'+OWNER+'/'+REPO+'/edit/main/content-queue/'+DIR+'/week.json" target="_blank">Connect above to save in one tap, or edit on GitHub</a>';
+        return;
+      }
+      b.disabled=true;savedEl.textContent='Saving…';savedEl.className='saved';
+      try{
+        await saveWeekJson(DIR,WEEK,`Dashboard edit: day ${day} (${d.theme||''})`);
+        savedEl.textContent='Saved ✓ it will post the new version';
+      }catch(e){savedEl.className='count over';savedEl.textContent='Save failed: '+e.message;}
+      b.disabled=false;
+    };
+  });
+}
+renderConnectBar();
+loadWeek();
 
 // ---------- robot status ----------
 function wfStatus(file,elId){

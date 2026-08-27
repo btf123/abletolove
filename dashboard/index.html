@@ -77,6 +77,9 @@
   .swap .strip img{width:56px;height:70px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent;opacity:.75}
   .swap .strip img:hover{opacity:1}
   .swap .strip img.sel{border-color:var(--pink);opacity:1}
+  .swap .strip img.mine{box-shadow:0 0 0 2px var(--amber)}
+  .swap .dl{font-size:12px;color:var(--muted);text-decoration:none}
+  .swap .dl:hover{color:var(--pink)}
   .edit label{display:block;color:var(--muted);font-size:12px;margin:10px 0 4px}
   .edit textarea{width:100%;background:#140E19;border:1px solid var(--line);border-radius:9px;color:var(--text);
     padding:9px 11px;font-size:13.5px;font-family:inherit;line-height:1.45;resize:vertical}
@@ -347,14 +350,16 @@ function loadWeek(){
   }).catch(()=>{box.className='';box.textContent='Could not load this week. Open content-queue/ on GitHub if it persists.'});
 }
 
+function manImg(id){ return (PHOTOS&&PHOTOS.images&&PHOTOS.images[id])||(PHOTOS&&PHOTOS.mine&&PHOTOS.mine[id])||null; }
 function altsFor(day){
-  // Theme-matched swap options: the pre-rendered alternates in the week folder (alt-0N-<id>.jpg)
-  // plus, when the manifest is present, any library image whose roles include this day's theme.
+  // Theme-matched swap options: the licensed stock cast (photos.json.images) plus Brogan's own
+  // curated frames (photos.json.mine, marked ★) whose roles include this day's theme.
   if(!PHOTOS||!day.theme)return [];
   const out=[];
-  Object.entries(PHOTOS.images||{}).forEach(([id,m])=>{
-    if((m.roles||[]).includes(day.theme)) out.push({id,label:m.label||id});
+  const scan=(obj,mine)=>Object.entries(obj||{}).forEach(([id,m])=>{
+    if((m.roles||[]).includes(day.theme)) out.push({id,file:m.file,label:m.label||id,mine});
   });
+  scan(PHOTOS.images,false); scan(PHOTOS.mine,true);
   return out;
 }
 
@@ -379,14 +384,16 @@ function drawWeek(log){
         `</div></div>`;
     } else {
       const alts=altsFor(d);
-      const cur=d.bg;
+      const cur=d.bg; const curM=manImg(cur);
       const thumbs=[];
-      // current first
-      if(cur&&PHOTOS&&PHOTOS.images[cur]) thumbs.push({id:cur,file:PHOTOS.images[cur].file,sel:true});
-      alts.forEach(a=>{if(a.id!==cur&&PHOTOS.images[a.id])thumbs.push({id:a.id,file:PHOTOS.images[a.id].file,sel:false});});
-      strip=`<div class="swap"><div class="lbl">Photo — tap to swap</div><div class="strip">`+
-        thumbs.map(t=>`<img data-day="${d.day}" data-bg="${t.id}" class="${t.sel?'sel':''}" src="${RAW}/automation/social/photos/${t.file}?_=${Date.now()}" title="${esc(t.id)}">`).join('')+
-        `</div></div>`;
+      // current first, then stock options, then Brogan's own frames (★)
+      if(curM) thumbs.push({id:cur,file:curM.file,sel:true,mine:!!curM.who});
+      alts.forEach(a=>{if(a.id!==cur)thumbs.push({id:a.id,file:a.file,sel:false,mine:a.mine});});
+      const curFile=curM?curM.file:'';
+      const anyMine=thumbs.some(t=>t.mine);
+      strip=`<div class="swap"><div class="lbl">Photo — tap to swap${anyMine?', ★ = your own':''}</div><div class="strip">`+
+        thumbs.map(t=>`<img data-day="${d.day}" data-bg="${t.id}" data-file="${t.file}" data-mine="${t.mine?1:0}" class="${t.sel?'sel':''}${t.mine?' mine':''}" src="${RAW}/automation/social/photos/${t.file}?_=${Date.now()}" title="${esc(t.label||t.id)}${t.mine?' (yours)':''}">`).join('')+
+        `</div><div style="margin-top:6px"><a class="dl" id="dl-${d.day}" href="${RAW}/automation/social/photos/${curFile}" target="_blank" download>⤓ Download this photo to edit</a></div></div>`;
     }
     el.innerHTML=`
       <div class="top"><span class="theme">${esc(label)}</span><span class="when">${date}</span>${status}</div>
@@ -417,15 +424,26 @@ function wireWeek(){
     const upd=()=>{const n=t.value.length;c.textContent=n+' / 280';c.className='count'+(n>280?' over':'')};
     t.addEventListener('input',upd);upd();
   });
-  // instant photo swap (preview): point the card image at the pre-rendered alternate
+  // photo swap (preview). Stock frames have a pre-rendered card, so they swap instantly.
+  // Your own frames (★) have no pre-rendered card, so we preview the photo itself and the
+  // finished card renders automatically about a minute after you Save.
   document.querySelectorAll('.swap .strip img[data-bg]').forEach(img=>{
     img.onclick=()=>{
-      const day=img.dataset.day,bg=img.dataset.bg,d=byDay(day);
-      const isCur=(bg===d.bg);
-      const file=isCur?d.card:`alt-${String(day).padStart(2,'0')}-${bg}.jpg`;
-      document.getElementById('img-'+day).src=`${RAW}/content-queue/${DIR}/${file}?_=${Date.now()}`;
+      const day=img.dataset.day,bg=img.dataset.bg,mine=img.dataset.mine==='1',file=img.dataset.file,d=byDay(day);
+      const pad=String(day).padStart(2,'0');
+      const main=document.getElementById('img-'+day);
+      if(bg===d.bg){
+        main.src=`${RAW}/content-queue/${DIR}/${d.card}?_=${Date.now()}`;
+        d._newbg=bg; d._newcard=d.card; d._needsRender=false;
+      } else if(mine){
+        main.src=`${RAW}/automation/social/photos/${file}?_=${Date.now()}`;
+        d._newbg=bg; d._newcard=`card-${pad}.jpg`; d._needsRender=true;
+      } else {
+        main.src=`${RAW}/content-queue/${DIR}/alt-${pad}-${bg}.jpg?_=${Date.now()}`;
+        d._newbg=bg; d._newcard=`alt-${pad}-${bg}.jpg`; d._needsRender=false;
+      }
       img.parentElement.querySelectorAll('img').forEach(x=>x.classList.remove('sel'));img.classList.add('sel');
-      d._newbg=bg;d._newcard=file;  // staged; a Save writes it
+      const dl=document.getElementById('dl-'+day); if(dl&&file) dl.href=`${RAW}/automation/social/photos/${file}`;
     };
   });
   // carousel slide preview: tap a slide thumb to view it full-size (no edit, just look)
@@ -442,7 +460,8 @@ function wireWeek(){
       const ig=document.querySelector(`textarea[data-day="${day}"][data-f="instagram"]`).value;
       if(x.length>280){savedEl.textContent='';alert('X post is over 280 characters, trim it first.');return}
       d.x=x;d.instagram=ig;
-      if(d._newbg){d.bg=d._newbg;if(d._newcard)d.card=d._newcard;delete d._newbg;delete d._newcard}
+      let needsRender=false;
+      if(d._newbg){d.bg=d._newbg;if(d._newcard)d.card=d._newcard;needsRender=!!d._needsRender;delete d._newbg;delete d._newcard;delete d._needsRender}
       if(!ghToken()){
         savedEl.innerHTML='<a href="https://github.com/'+OWNER+'/'+REPO+'/edit/main/content-queue/'+DIR+'/week.json" target="_blank">Connect above to save in one tap, or edit on GitHub</a>';
         return;
@@ -450,7 +469,14 @@ function wireWeek(){
       b.disabled=true;savedEl.textContent='Saving…';savedEl.className='saved';
       try{
         await saveWeekJson(DIR,WEEK,`Dashboard edit: day ${day} (${d.theme||''})`);
-        savedEl.textContent='Saved ✓ it will post the new version';
+        if(needsRender){
+          savedEl.textContent='Saved. Your photo is rendering, about a minute…';
+          const dd=day, pad=String(day).padStart(2,'0');
+          setTimeout(()=>{const im=document.getElementById('img-'+dd);if(im)im.src=`${RAW}/content-queue/${DIR}/card-${pad}.jpg?_=${Date.now()}`;
+            const sv=document.getElementById('saved-'+dd);if(sv)sv.textContent='Saved ✓ card updated';},85000);
+        } else {
+          savedEl.textContent='Saved ✓ it will post the new version';
+        }
       }catch(e){savedEl.className='count over';savedEl.textContent='Save failed: '+e.message;}
       b.disabled=false;
     };

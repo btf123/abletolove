@@ -1,0 +1,47 @@
+name: Render week cards
+
+# When the dashboard saves a photo swap or copy edit (a commit to a week.json),
+# re-render that week's single cards from each day's chosen background and commit
+# the fresh PNGs/JPEGs back. This is what makes "pick a different photo" on the
+# dashboard actually change the card that posts, with no GitHub and no local tools.
+# Carousels (Tuesday stat, Friday reveal) are built separately and left untouched.
+
+on:
+  push:
+    paths:
+      - 'content-queue/**/week.json'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: pip install --quiet pillow
+
+      - name: Render the newest week's cards
+        run: |
+          week=$(ls -d content-queue/week-* 2>/dev/null | sort | tail -1)
+          echo "Rendering $week"
+          python automation/social/render_week.py "$week"
+
+      - name: Commit any changed cards
+        run: |
+          git config user.name "able2love-render-bot"
+          git config user.email "actions@github.com"
+          git add content-queue/
+          if git diff --cached --quiet; then
+            echo "no card changes to commit"
+          else
+            git commit -m "Render week cards from dashboard edit [skip ci]"
+            git push
+          fi

@@ -21,7 +21,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FONTS = os.path.join(HERE, "fonts")
 WORD = os.path.join(HERE, "wordmark_white.png")
 PHOTOS = os.path.join(HERE, "photos")
-MANIFEST = json.load(open(os.path.join(HERE, "photos.json"), encoding="utf-8"))["images"]
+_PJ = json.load(open(os.path.join(HERE, "photos.json"), encoding="utf-8"))
+# stock cast (role-tagged) + Brogan's own frames (the "mine" picker set) share one id space
+MANIFEST = {**_PJ.get("images", {}), **_PJ.get("mine", {})}
 
 W, H = 1080, 1350
 AUB=(24,13,28); CRIM=(196,42,70); GOLD=(245,201,92); WHITE=(255,255,255); MUTE=(214,196,208)

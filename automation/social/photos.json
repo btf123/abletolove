@@ -197,5 +197,117 @@
       "label": "Man laughing at his phone",
       "who": "able"
     }
+  },
+  "mine": {
+    "mine-reclined-hero": {
+      "file": "brogan/mine-reclined-hero.jpg",
+      "label": "Reclined hero (retouched)",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-holographic-hero": {
+      "file": "brogan/mine-holographic-hero.jpg",
+      "label": "Holographic hero",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-silver-smile": {
+      "file": "brogan/mine-silver-smile.jpg",
+      "label": "Silver sequin, big smile",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-silver-chair": {
+      "file": "brogan/mine-silver-chair.jpg",
+      "label": "Silver sequin, in the chair",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-leather-table": {
+      "file": "brogan/mine-leather-table.jpg",
+      "label": "Studded leather, at a table",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-cafe-1": {
+      "file": "brogan/mine-cafe-1.jpg",
+      "label": "Out at a cafe",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-cafe-2": {
+      "file": "brogan/mine-cafe-2.jpg",
+      "label": "Cafe, relaxed",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-rose-garden": {
+      "file": "brogan/mine-rose-garden.jpg",
+      "label": "Rose, garden, pink jacket",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-pink-portrait": {
+      "file": "brogan/mine-pink-portrait.jpg",
+      "label": "Pink jacket portrait",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    },
+    "mine-white-tee": {
+      "file": "brogan/mine-white-tee.jpg",
+      "label": "White tee, direct look",
+      "roles": [
+        "mon-feature",
+        "thu-feature",
+        "wed-testimony",
+        "sat-poll-disabled"
+      ],
+      "who": "brogan"
+    }
   }
 }

@@ -370,10 +370,14 @@ function drawWeek(log){
     const status=posted.has(key)?'<span class="pill ok">Posted ✓</span>':d.hold?'<span class="pill bad">Held</span>':released?'<span class="pill wait">Queued</span>':'<span class="pill wait">Awaiting release</span>';
     const el=document.createElement('div');el.className='day';
     const label=THEME_LABEL[d.theme]||('Day '+d.day);
-    const isReveal=d.kind==='reveal';
-    // swap strip: current bg + theme alternates (skip for reveal, which is a two-slide carousel)
+    const isCarousel=Array.isArray(d.carousel)&&d.carousel.length>1;
+    // swap strip: current bg + theme alternates (skip for carousels — reveal + stat — which are multi-slide)
     let strip='';
-    if(!isReveal){
+    if(isCarousel){
+      strip=`<div class="swap"><div class="lbl">${d.carousel.length}-slide carousel · slide 1 shown</div><div class="strip">`+
+        d.carousel.map((f,ix)=>`<img class="${ix===0?'sel':''}" data-slide="${f}" src="${RAW}/content-queue/${DIR}/${f}?_=${Date.now()}" title="slide ${ix+1}">`).join('')+
+        `</div></div>`;
+    } else {
       const alts=altsFor(d);
       const cur=d.bg;
       const thumbs=[];
@@ -414,7 +418,7 @@ function wireWeek(){
     t.addEventListener('input',upd);upd();
   });
   // instant photo swap (preview): point the card image at the pre-rendered alternate
-  document.querySelectorAll('.swap .strip img').forEach(img=>{
+  document.querySelectorAll('.swap .strip img[data-bg]').forEach(img=>{
     img.onclick=()=>{
       const day=img.dataset.day,bg=img.dataset.bg,d=byDay(day);
       const isCur=(bg===d.bg);
@@ -423,6 +427,12 @@ function wireWeek(){
       img.parentElement.querySelectorAll('img').forEach(x=>x.classList.remove('sel'));img.classList.add('sel');
       d._newbg=bg;d._newcard=file;  // staged; a Save writes it
     };
+  });
+  // carousel slide preview: tap a slide thumb to view it full-size (no edit, just look)
+  document.querySelectorAll('.swap .strip img[data-slide]').forEach(img=>{
+    const cell=img.closest('.day');const main=cell.querySelector('.cardimg');
+    img.onclick=()=>{main.src=`${RAW}/content-queue/${DIR}/${img.dataset.slide}?_=${Date.now()}`;
+      img.parentElement.querySelectorAll('img').forEach(x=>x.classList.remove('sel'));img.classList.add('sel');};
   });
   // save one day back to the repo
   document.querySelectorAll('.savebtn').forEach(b=>{

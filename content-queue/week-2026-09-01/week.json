@@ -23,17 +23,13 @@
     {
       "day": 2,
       "theme": "tue-stat",
-      "angle": "Stat Tuesday: Scope, only 5% of non-disabled people have ever asked a disabled person on a date",
+      "angle": "Stat Tuesday 4-slide carousel: Scope/Opinium 2014, 67% feel uncomfortable talking to a disabled person",
       "kind": "stat",
-      "bg": "ds-man-redtie",
-      "fy": 0.3,
-      "headline": "Only 5% of people without a disability have ever asked a disabled person on a date.",
-      "source": "Scope, End the Awkward",
-      "hsize": 60,
-      "card": "card-02.jpg",
-      "alt": "An Able2Love stat card over a man in a red tie. Headline: only 5% of people without a disability have ever asked a disabled person on a date. Source: Scope.",
-      "x": "A Scope study found only 5% of people without a disability have ever asked a disabled person on a date. Not for lack of interest, the awkwardness just gets there first. That gap is what we are closing. #endtheawkward #able2love",
-      "instagram": "Scope found that only 5% of non disabled people have ever asked a disabled person out. Read that again. Not because the interest is not there, but because the awkwardness gets in the way first. Able2Love is built to close that exact gap. Free on Google Play, link in bio.\n\nSource: Scope, End the Awkward.\n\n#dating #datingapp #disability #disabled #disabilityawareness #wheelchair #wheelchairlife #spoonie #chronicillness #inclusion #inclusivedating #disableddating #interabled #love #relationships #accessibility #disabilitycommunity #endtheawkward #findlove #onlinedating #seetheperson #representation #able2love",
+      "carousel": ["stat_1.jpg", "stat_2.jpg", "stat_3.jpg", "stat_4.jpg"],
+      "card": "stat_1.jpg",
+      "alt": "An Able2Love stat carousel. Slide one: 67% of Britons feel uncomfortable just talking to a disabled person. Source Scope and Opinium, 2014.",
+      "x": "Scope found 67% of Britons feel uncomfortable just talking to a disabled person. Not hostility, just awkwardness. Now put that on a dating app. That is the gap we are here to close. #endtheawkward #able2love",
+      "instagram": "67% of Britons feel uncomfortable just talking to a disabled person. Scope and Opinium, 2014, End the Awkward. Not hostility. Awkwardness. Now imagine that on a dating app: the swipe that never comes, the match that goes quiet after disclosure. It was never about not being wanted. Able2Love removes the awkward. Swipe through. Free on Google Play, link in bio.\n\n#dating #datingapp #disability #disabled #disabilityawareness #wheelchair #wheelchairlife #spoonie #chronicillness #inclusion #inclusivedating #disableddating #interabled #love #relationships #accessibility #disabilitycommunity #endtheawkward #findlove #onlinedating #seetheperson #representation #able2love",
       "hold": false
     },
     {

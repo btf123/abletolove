@@ -162,8 +162,8 @@ def main():
         print("re-rendered day",a.day,"on",a.bg); return
 
     for d in wk["days"]:
-        if d.get("kind")=="reveal":  # reveal cards are built by build_reveal.py (carousel)
-            print("skip reveal day",d["day"],"(built separately)"); continue
+        if d.get("carousel") or d.get("kind") in ("reveal","stat"):  # carousels built separately (build_reveal / build_stat_carousel)
+            print("skip carousel day",d["day"],"(built separately)"); continue
         out=d.get("card",f"card-{d['day']:02d}.jpg")
         render_card(d).save(os.path.join(a.week_dir,out),quality=82,optimize=True)
         print("wrote",out,"on",d.get("bg"))

@@ -25,7 +25,12 @@
       "theme": "tue-stat",
       "angle": "Stat Tuesday 4-slide carousel: Scope/Opinium 2014, 67% feel uncomfortable talking to a disabled person",
       "kind": "stat",
-      "carousel": ["stat_1.jpg", "stat_2.jpg", "stat_3.jpg", "stat_4.jpg"],
+      "carousel": [
+        "stat_1.jpg",
+        "stat_2.jpg",
+        "stat_3.jpg",
+        "stat_4.jpg"
+      ],
       "card": "stat_1.jpg",
       "alt": "An Able2Love stat carousel. Slide one: 67% of Britons feel uncomfortable just talking to a disabled person. Source Scope and Opinium, 2014.",
       "x": "Scope found 67% of Britons feel uncomfortable just talking to a disabled person. Not hostility, just awkwardness. Now put that on a dating app. That is the gap we are here to close. #endtheawkward #able2love",
@@ -70,7 +75,10 @@
       "angle": "Swipe Reveal Friday: crop hides the chair, swipe shows the full picture",
       "kind": "reveal",
       "bg": "black-woman-wheelchair-red",
-      "carousel": ["reveal_1.jpg", "reveal_2.jpg"],
+      "carousel": [
+        "reveal_1.jpg",
+        "reveal_2.jpg"
+      ],
       "card": "reveal_1.jpg",
       "alt": "An Able2Love swipe reveal. First slide crops in close, swipe to see the wheelchair and the full picture.",
       "x": "Smash or pass? 👀 Swipe on IG to see the full picture. Able2Love, dating for everyone, disabled or not. Free on Google Play. #dating #disability",
@@ -85,7 +93,11 @@
       "bg": "ds-woman-boxing",
       "fy": 0.12,
       "q": "Would a disability be a dealbreaker for you in dating? Be honest.",
-      "options": ["Yes", "No", "A little"],
+      "options": [
+        "Yes",
+        "No",
+        "A little"
+      ],
       "invite": "Vote, and tell us why below.",
       "card": "card-06.jpg",
       "alt": "An Able2Love poll card over a woman boxing. Question: would a disability be a dealbreaker for you in dating? Options yes, no, a little.",
@@ -101,7 +113,11 @@
       "bg": "man-laughing-phone-park",
       "fy": 0.2,
       "q": "Ever wanted to ask a disabled date about their condition, but felt too awkward to?",
-      "options": ["Yes", "No", "I would just ask"],
+      "options": [
+        "Yes",
+        "No",
+        "I would just ask"
+      ],
       "invite": "Vote. Then ask, or answer, below.",
       "card": "card-07.jpg",
       "alt": "An Able2Love poll card over a man laughing at his phone. Question: ever wanted to ask a disabled date about their condition but felt too awkward to?",

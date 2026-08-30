@@ -70,6 +70,11 @@
   .filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
   .filters button{font-size:.78rem;padding:5px 11px;background:transparent;color:var(--muted)}
   .filters button.on{background:var(--panel-2);color:var(--ink);border-color:var(--line-2)}
+  .filters{align-items:center}
+  #allreq{background:var(--panel);color:var(--ink);border-color:var(--line-2);font-size:.78rem;padding:5px 11px}
+  .ask{margin-top:11px;padding:11px 13px;border:1px solid var(--line-2);border-radius:10px;background:var(--panel-2)}
+  .asklab{margin:0 0 8px;font-size:.85rem;color:var(--muted)}
+  .notebox{min-height:62px;background:var(--panel);font-size:.92rem}
 </style>
 </head>
 <body>
@@ -87,6 +92,7 @@ const save = () => localStorage.setItem(LS, JSON.stringify(state));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 let filter = 'todo';
+const NL = String.fromCharCode(10);
 
 async function unlock(pass){
   const enc = new TextEncoder();
@@ -156,6 +162,7 @@ function shell(){
       '<button data-f="todo">Still to reply</button>' +
       '<button data-f="all">All</button>' +
       '<button data-f="done">Replied</button>' +
+      '<button id="allreq" style="margin-left:auto">Copy all my rewrite requests</button>' +
     '</div><div id="list"></div>' +
   '</section>' +
   '<section id="tab-mods" class="hide"></section>' +
@@ -169,9 +176,10 @@ function shell(){
     ['comments','mods','posts','fb','amps'].forEach(t =>
       document.getElementById('tab-'+t).classList.toggle('hide', t !== b.dataset.tab));
   }));
-  document.querySelectorAll('.filters button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.filters button[data-f]').forEach(b => b.addEventListener('click', () => {
     filter = b.dataset.f; renderList();
   }));
+  document.getElementById('allreq').addEventListener('click', copyAllRequests);
 }
 
 function renderList(){
@@ -206,7 +214,13 @@ function renderList(){
         '<button class="tiny primary" data-copy="' + c.id + '">Copy reply</button>' +
         '<button class="tiny" data-open="' + esc(c.link) + '">Open thread</button>' +
         '<button class="tiny" data-done="' + c.id + '">' + (st.done ? 'Undo' : 'Mark replied') + '</button>' +
+        '<button class="tiny" data-ask="' + c.id + '">' + (st.note ? 'Rewrite note \u2713' : 'Not right?') + '</button>' +
         '<span class="saved" data-saved="' + c.id + '">saved</span>' +
+      '</div>' +
+      '<div class="ask ' + (st.note ? '' : 'hide') + '" data-askbox="' + c.id + '">' +
+        '<p class="asklab">Say what is wrong with this one, or what you would rather say. Then copy the request and paste it to Claude.</p>' +
+        '<textarea class="notebox" data-n="' + c.id + '" placeholder="e.g. too soft, I would push back harder here. Or: say that I have CMT and this is exactly my experience.">' + esc(st.note || '') + '</textarea>' +
+        '<div class="acts"><button class="tiny" data-req="' + c.id + '">Copy request for Claude</button></div>' +
       '</div></div>';
   }).join('') || '<div class="card" style="text-align:center;color:var(--muted)">Nothing here.</div>';
 
@@ -227,6 +241,48 @@ function renderList(){
     state[id] = Object.assign({}, state[id], { done: !(state[id] && state[id].done) });
     save(); renderList();
   }));
+  document.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => {
+    const box = document.querySelector('[data-askbox="' + b.dataset.ask + '"]');
+    box.classList.toggle('hide');
+    if(!box.classList.contains('hide')) box.querySelector('textarea').focus();
+  }));
+  document.querySelectorAll('textarea[data-n]').forEach(ta => ta.addEventListener('input', () => {
+    const id = ta.dataset.n;
+    state[id] = Object.assign({}, state[id], { note: ta.value });
+    save();
+    const s2 = document.querySelector('[data-saved="'+id+'"]');
+    if(s2){ s2.classList.add('show'); setTimeout(()=>s2.classList.remove('show'), 900); }
+  }));
+  document.querySelectorAll('[data-req]').forEach(b => b.addEventListener('click', () => {
+    navigator.clipboard.writeText(requestFor(b.dataset.req)).then(()=>{
+      b.textContent='Copied, now paste it to Claude'; setTimeout(()=>b.textContent='Copy request for Claude',1800);
+    });
+  }));
+}
+
+function requestFor(id){
+  const c = COMMENTS.find(x => x.id === id) || {};
+  const st = state[id] || {};
+  const draft = st.text != null ? st.text : (DRAFTS[id] || '(nothing written yet)');
+  return 'Rewrite this Reddit reply for me, in my voice, following all my usual rules.' + NL + NL +
+    'COMMENT id ' + id + ', from u/' + c.author + ' in ' + c.sub + ' (' + c.score + ' points)' + NL +
+    'Thread: ' + c.thread + NL +
+    'They wrote:' + NL + c.body + NL + NL +
+    'THE DRAFT I HAVE NOW:' + NL + draft + NL + NL +
+    'WHAT IS WRONG WITH IT, OR WHAT I WOULD RATHER SAY:' + NL +
+    (st.note || '(no note written, just make it better)') + NL;
+}
+
+function copyAllRequests(){
+  const ids = COMMENTS.filter(c => (state[c.id] || {}).note).map(c => c.id);
+  if(!ids.length){ alert('You have not written a note on any of them yet. Open "Not right?" under a comment and say what you would rather say.'); return; }
+  const txt = 'Rewrite these ' + ids.length + ' Reddit replies for me, in my voice, following all my usual rules. Show them to me one at a time so I can approve each one.' + NL + NL +
+    ids.map((id,i) => '===== ' + (i+1) + ' of ' + ids.length + ' =====' + NL + requestFor(id)).join(NL);
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b = document.getElementById('allreq');
+    b.textContent = 'Copied ' + ids.length + ', now paste to Claude';
+    setTimeout(()=>{ b.textContent = 'Copy all my rewrite requests'; }, 2500);
+  });
 }
 
 function textCard(title, sub, why, body, id){

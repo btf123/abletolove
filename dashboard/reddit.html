@@ -162,7 +162,10 @@ function shell(){
     'not sound like you, copy it, then open the thread and paste. Mark it replied and it drops out of your count. ' +
     '<b>Anything going to r/CMT must be reworded in your own words first</b>, because that sub bans machine written text.' +
     '<br><br>Snapshot of your threads taken ' + SNAP + '. Reddit blocks other websites from reading it live, so this is ' +
-    'a fixed copy rather than a feed. Ask Claude to refresh it when you want it brought up to date.</div>' +
+    'a fixed copy rather than a feed. Ask Claude to refresh it when you want it brought up to date.' +
+    '<br><br><b>Posting without copying.</b> Get a draft how you want it, press Approve for posting, and carry on. ' +
+    'When you are ready, tell Claude to post the approved ones. Claude reads exactly what you approved, posts each ' +
+    'reply under the right comment from your account, spaced out so Reddit does not complain, and marks the cards replied.</div>' +
     rwSetupCard() +
     '<div class="bar"><div class="track"><div class="fill" id="fill"></div></div><div class="barlabel" id="barlabel"></div></div>' +
     '<div class="filters">' +
@@ -196,6 +199,9 @@ function renderList(){
   document.getElementById('fill').style.width = (COMMENTS.length ? done/COMMENTS.length*100 : 0) + '%';
   document.getElementById('barlabel').textContent = done + ' of ' + COMMENTS.length + ' replied';
   document.getElementById('c-comments').textContent = COMMENTS.length - done;
+  const q = COMMENTS.filter(c => state[c.id] && state[c.id].approved && !(state[c.id] && state[c.id].done)).length;
+  document.getElementById('barlabel').textContent = done + ' of ' + COMMENTS.length + ' replied'
+    + (q ? ', ' + q + ' approved and waiting for Claude to post' : '');
 
   const list = COMMENTS.filter(c => {
     const d = !!(state[c.id] && state[c.id].done);
@@ -223,6 +229,7 @@ function renderList(){
         '<button class="tiny" data-open="' + esc(c.link) + '">Open thread</button>' +
         '<button class="tiny" data-done="' + c.id + '">' + (st.done ? 'Undo' : 'Mark replied') + '</button>' +
         '<button class="tiny" data-ask="' + c.id + '">Rewrite</button>' +
+        '<button class="tiny ' + (st.approved ? 'primary' : '') + '" data-appr="' + c.id + '">' + (st.approved ? 'Approved, Claude will post it' : 'Approve for posting') + '</button>' +
         '<span class="saved" data-saved="' + c.id + '">saved</span>' +
       '</div>' +
       '<div class="ask ' + (st.note ? '' : 'hide') + '" data-askbox="' + c.id + '">' +
@@ -252,6 +259,11 @@ function renderList(){
   document.querySelectorAll('[data-done]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.done;
     state[id] = Object.assign({}, state[id], { done: !(state[id] && state[id].done) });
+    save(); renderList();
+  }));
+  document.querySelectorAll('[data-appr]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.appr;
+    state[id] = Object.assign({}, state[id], { approved: !(state[id] && state[id].approved) });
     save(); renderList();
   }));
   document.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => {

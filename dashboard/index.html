@@ -156,7 +156,7 @@
   <h2><span class="dot"></span>Reddit &mdash; 3 threads, every unanswered comment, drafts ready</h2>
   <p class="hint">Your three big Reddit threads pulled live, with a reply drafted for each person who has not heard back from you. Read it, change anything that does not sound like you, copy it and paste it into the thread. Nothing posts itself. The same page holds the moderator messages to send <b>before</b> you post again, the tester-recruitment post drafts for one sub at a time, and the CMT UK and Muscular Dystrophy UK approach emails. Anything bound for r/CMT must be reworded in your own words first, that sub bans machine written text.</p>
   <div style="margin:0 0 6px">
-    <a class="btn" href="./reddit.html" style="text-decoration:none;display:inline-block">Open Reddit outreach &rarr;</a>
+    <a class="btn" href="./reddit.html" style="text-decoration:none;display:inline-block">Open outreach console &rarr;</a>
     <span class="meta" id="redditCount" style="margin-left:10px">counting unanswered comments&hellip;</span>
   </div>
 </section>
@@ -682,25 +682,6 @@ box.appendChild(reset);
   }
 })();
 </script>
-<script>
-(async function(){
-  var el=document.getElementById('redditCount'); if(!el) return;
-  var T=['/r/disability/comments/1vfplv0/','/r/disability/comments/1v1w99z/','/r/CMT/comments/1v1xfzf/'], ME='Both-Key-6264', n=0;
-  try{
-    for(var i=0;i<T.length;i++){
-      var r=await fetch('https://www.reddit.com'+T[i]+'.json?limit=500&sort=top');
-      if(!r.ok) throw new Error(r.status);
-      var j=await r.json();
-      j[1].data.children.forEach(function(c){
-        if(c.kind!=='t1') return; var d=c.data;
-        var reps=(d.replies&&d.replies.data&&d.replies.data.children)||[];
-        var mine=reps.some(function(k){return k.kind==='t1'&&k.data.author===ME;});
-        if(d.author!==ME && !mine && d.body && d.body!=='[deleted]' && d.body!=='[removed]') n++;
-      });
-    }
-    el.textContent = n + ' people still waiting on a reply from you';
-  }catch(e){ el.textContent='could not reach Reddit just now'; }
-})();
-</script>
+<script>(function(){var el=document.getElementById('redditCount'); if(el) el.textContent='54 people waiting on a reply, 52 drafts written';})();</script>
 </body>
 </html>

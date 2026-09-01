@@ -44,6 +44,37 @@ jobs:
             git push
           fi
 
+      # A publisher that quietly posts nothing still reports success, which is
+      # how a month of silence went unnoticed in August: week-2026-08-07 was
+      # never released, so no batch covered the day and every run passed. This
+      # notices the silence instead of the crash.
+      - name: Say something if nothing has posted for days
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DAYS=$(node -e "
+            const fs = require('fs');
+            let items = [];
+            try {
+              const log = JSON.parse(fs.readFileSync('content-queue/posted-log.json', 'utf8'));
+              items = Array.isArray(log) ? log : (log.posts || log.log || []);
+            } catch { }
+            const last = items.map(e => e && e.date).filter(Boolean).sort().pop();
+            console.log(last ? Math.floor((Date.now() - Date.parse(last)) / 86400000) : 999);
+          ")
+          echo "Days since the last post went out: $DAYS"
+          if [ "$DAYS" -ge 3 ]; then
+            OPEN=$(gh issue list --state open --search "Nothing has posted in:title" --json number --jq 'length')
+            if [ "$OPEN" = "0" ]; then
+              gh issue create \
+                --title "Nothing has posted for $DAYS days" \
+                --body "The daily publisher has run and gone quiet for $DAYS days. It is not crashing, it is finding nothing to post. Almost always this means the newest week in content-queue is still waiting for Release (approved:false), or its dates have already passed. Open the dashboard and press Release on the current week: https://btf123.github.io/abletolove/dashboard/"
+            else
+              echo "Already flagged; not opening a second issue."
+            fi
+          fi
+
       - name: Raise the alarm if publishing failed
         if: failure()
         env:

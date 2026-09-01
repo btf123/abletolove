@@ -14,7 +14,19 @@
 // Free Groq key: https://console.groq.com/keys (no card) as GROQ_API_KEY.
 
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+// Preference order only. Groq retires model names without warning, and a
+// hardcoded list is exactly why the outreach brief failed every day through
+// August: both names had been decommissioned and every run 404'd. The real
+// list is fetched from the account at run time, and this is the fallback.
+const GROQ_MODELS = [
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'moonshotai/kimi-k2-instruct',
+  'qwen/qwen3-32b',
+  'gemma2-9b-it',
+];
 const GEMINI_MODELS = process.env.GEMINI_MODEL
   ? [process.env.GEMINI_MODEL]
   : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
@@ -63,7 +75,11 @@ async function callAnthropic(prompt, temperature) {
       if (res.status === 429 || res.status >= 500) {
         throw new Error(`Anthropic HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
       }
-      if (!res.ok) throw new Error(`Anthropic HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`);
+      if (!res.ok) {
+        const body = (await res.text()).slice(0, 300);
+        const hopeless = res.status === 400 || res.status === 401 || res.status === 403;
+        throw Object.assign(new Error(`Anthropic HTTP ${res.status}: ${body}`), { fatal: hopeless });
+      }
       const data = await res.json();
       const text = (data.content || []).map((b) => b.text || '').join('');
       if (!text) throw new Error('Anthropic returned no text');
@@ -72,6 +88,11 @@ async function callAnthropic(prompt, temperature) {
     } catch (error) {
       lastError = error;
       console.warn(`anthropic attempt ${attempt} failed: ${error.message.slice(0, 200)}`);
+      // No amount of waiting fixes an empty credit balance or a bad key.
+      if (error.fatal) {
+        console.warn('That is a billing or key problem, not a busy server. Going straight to the fallback.');
+        break;
+      }
       if (attempt < MAX_ATTEMPTS) {
         // 3s, 6s, 12s, 24s: ~45s of patience for a transient overload spike.
         await new Promise((r) => setTimeout(r, 3000 * 2 ** (attempt - 1)));
@@ -87,11 +108,48 @@ export function hasLiveSearch() {
   return llmProvider() === 'gemini';
 }
 
+/**
+ * What this Groq key can actually serve today, best first.
+ *
+ * Asking beats assuming: model names get retired and a fixed list silently
+ * turns into daily 404s. Chat models only, so speech and moderation models
+ * never get picked by accident.
+ */
+let groqModelsCache = null;
+async function groqModels(key) {
+  if (groqModelsCache) return groqModelsCache;
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/models', {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+    if (res.ok) {
+      const ids = ((await res.json()).data || [])
+        .map((m) => m.id)
+        .filter((id) => id && !/whisper|tts|guard|prompt-?guard|vision|embed/i.test(id));
+      const ranked = [
+        ...GROQ_MODELS.filter((m) => ids.includes(m)),
+        ...ids.filter((id) => !GROQ_MODELS.includes(id)),
+      ];
+      if (ranked.length) {
+        groqModelsCache = ranked.slice(0, 4);
+        console.log(`Groq models this key can use: ${groqModelsCache.join(', ')}`);
+        return groqModelsCache;
+      }
+    } else {
+      console.warn(`Groq model list unavailable (HTTP ${res.status}); using the built-in order.`);
+    }
+  } catch (error) {
+    console.warn(`Groq model list failed (${error.message.slice(0, 120)}); using the built-in order.`);
+  }
+  groqModelsCache = GROQ_MODELS;
+  return groqModelsCache;
+}
+
 async function callGroq(prompt, temperature) {
   const key = process.env.GROQ_API_KEY;
   const url = 'https://api.groq.com/openai/v1/chat/completions';
   let lastError;
-  for (const model of GROQ_MODELS) {
+  for (const model of await groqModels(key)) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const res = await fetch(url, {

@@ -40,16 +40,23 @@ export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'n
 // The nightlife/venue-exclusion theme is deliberately prominent: it is the
 // founder's core argument and his home turf (Manchester, Canal Street).
 const QUERIES = [
-  'disability and dating',
-  'dating app accessibility disabled people',
-  'interabled couple relationship',
-  'chronic illness dating',
-  'disabled dating UK',
-  'disability pride relationships',
-  'nightclub wheelchair accessibility UK',
+  // Greater Manchester first. The app only works at local density, so the
+  // brief should surface things happening where he actually is and can turn up.
+  'Greater Manchester disability news',
+  'Manchester disabled access venue',
+  'Salford disability community',
   'Manchester Canal Street Gay Village events',
-  'music venue accessibility disabled UK',
+  'Greater Manchester accessible events disabled people',
+  'nightclub wheelchair accessibility UK',
   'listed building disabled access refused UK',
+  'music venue accessibility disabled UK',
+  // Then the UK-wide themes.
+  'disabled dating UK',
+  'disability and dating UK',
+  'dating app accessibility disabled people UK',
+  'chronic illness dating UK',
+  'interabled couple relationship UK',
+  'disability pride relationships UK',
 ];
 
 // Hard tragedy filter. Replying to a death, disaster or grief story to plug a
@@ -77,27 +84,62 @@ function isTragedy(item) {
 // x.com/twitter.com; a status URL carries the tweet id, which is what the X API
 // needs to post a reply. Coverage of X's index varies day to day, so callers
 // must treat this as best-effort and log the count.
+// These carried no geography at all, which is why the brief kept surfacing
+// American accounts. He is in Greater Manchester and the app needs local
+// density, so the sweep is Manchester first, then UK, then a short generic
+// tail so the brief never runs dry on a quiet day.
 const X_QUERIES = [
-  'disability dating', 'dating with a disability', 'disabled dating apps',
-  'wheelchair accessible venue', 'accessible nightlife', 'chronic illness dating',
-  'disability pride dating', 'accessible date night', 'dating as a disabled person',
-  'disabled and single', 'ghosted disability dating', 'inaccessible venue date',
-  'spoonie dating', 'neurodivergent dating', 'dating apps ableism',
-  'invisible illness dating', 'wheelchair user dating', 'disabled representation dating apps',
+  'disabled Manchester', 'wheelchair Manchester', 'accessible Manchester venue',
+  'disability Greater Manchester', 'disabled Salford', 'accessible night out Manchester',
+  'disability dating UK', 'dating with a disability UK', 'disabled dating app UK',
+  'wheelchair user UK dating', 'chronic illness dating UK', 'spoonie UK',
+  'disabled and single UK', 'accessible date night UK', 'inaccessible venue UK',
+  'wheelchair accessible pub UK', 'accessible nightlife UK', 'disability pride UK',
+  'neurodivergent dating UK', 'dating apps ableism UK', 'invisible illness UK',
+  'disability dating', 'dating as a disabled person', 'ghosted disability dating',
 ];
 
-// Tavily returns a short `title` (often just the first slice of the post) plus a
-// longer `content` excerpt that overlaps it. Naive `title + content` therefore
-// reads as the same words twice with an ellipsis in the join. Prefer the fuller
-// field and strip the "Name on X:" lead-in, so the preview reads as one clean
-// quote instead of a stutter.
-function tweetText(f) {
-  const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-  let title = clean(f.title).replace(/^.*?\bon (?:X|Twitter):\s*/i, '');
-  const content = clean(f.content);
-  let text = content.length >= title.length ? content : title;
-  if (!text) text = title || content;
-  return text.replace(/^["'\s]+/, '').slice(0, 400).trim();
+// Where a post reads as being from. This ORDERS the day's list, it never bins
+// anything: Manchester first because the app needs local density and he can
+// physically turn up, then the rest of the UK, then Ireland and the other
+// English-speaking places where there is already traction. A good post from
+// anywhere still beats an empty dashboard.
+const GM = /manchester|salford|stockport|oldham|rochdale|bolton|\bbury\b|trafford|tameside|wigan|canal street|northern quarter/i;
+
+const UK = new RegExp('(' + [
+  '\\buk\\b', 'britain', 'british', 'england', 'scotland', 'wales',
+  'london', 'leeds', 'liverpool', 'birmingham', 'glasgow', 'bristol',
+  'sheffield', 'newcastle', 'nottingham', 'brighton', 'cardiff', 'edinburgh',
+  '\\bnhs\\b', '\\bpip\\b', 'motability', 'blue badge', 'disability living allowance',
+  '\\bmum\\b', 'whilst', 'colour', 'realise', 'organisation', 'apologise',
+  '\\.co\\.uk', '\u00a3',
+].join('|') + ')', 'i');
+
+// English-speaking elsewhere, including everywhere the app already has users.
+const ANGLO = new RegExp('(' + [
+  'ireland', 'irish', 'dublin', 'cork', 'belfast',
+  '\\busa\\b', '\\bus\\b', 'america', 'american', 'canada', 'canadian',
+  'australia', 'australian', 'aussie', 'new zealand', '\\bnz\\b',
+  'south africa', 'malta', 'netherlands', 'dutch', 'sweden', 'swedish',
+  'norway', 'denmark', 'germany', 'berlin',
+  '\\bada\\b', 'medicaid', 'medicare', '\\bssdi\\b', '\\bnyc\\b', 'texas', 'california',
+].join('|') + ')', 'i');
+
+// 3 = Greater Manchester, 2 = rest of the UK, 1 = English-speaking elsewhere,
+// 0 = nothing to go on. Never a filter, only a sort key.
+export function ukScore(text = '') {
+  const t = String(text);
+  if (GM.test(t)) return 3;
+  if (UK.test(t)) return 2;
+  if (ANGLO.test(t)) return 1;
+  return 0;
+}
+
+export function placeLabel(score) {
+  return score >= 3 ? 'Greater Manchester'
+    : score === 2 ? 'UK'
+    : score === 1 ? 'English speaking, outside the UK'
+    : 'Location not clear';
 }
 
 export async function findTweets() {
@@ -122,9 +164,16 @@ export async function findTweets() {
     const [, author, id] = m;
     if (seen.has(id) || author.toLowerCase() === 'able2loveapp') continue;
     seen.add(id);
-    tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text: tweetText(f) });
+    const text = tweetText(f);
+    tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text, uk: ukScore(text) });
   }
-  return tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
+  const kept = tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
+  // Greater Manchester first, then anything else that reads British, then the
+  // rest. Nothing is discarded for being foreign, it just sorts lower.
+  kept.sort((a, b) => b.uk - a.uk);
+  const n = (v) => kept.filter((t) => t.uk === v).length;
+  console.log(`Tweets found: ${kept.length} (${n(3)} Greater Manchester, ${n(2)} rest of UK, ${n(1)} English speaking elsewhere, ${n(0)} unplaced).`);
+  return kept;
 }
 
 // Gather fresh, REAL items (deduped, tragedy stripped). One query failing never

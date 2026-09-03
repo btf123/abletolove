@@ -16,7 +16,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
-import { hasTavily, gatherLiveItems, findTweets } from './lib/search.mjs';
+import { hasTavily, gatherLiveItems, findTweets, placeLabel } from './lib/search.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -46,23 +46,36 @@ const BANNED_MUSH = [
   'work towards', 'strive to', 'let us', "let's use", "let's work", 'we must', 'we need to challenge',
 ];
 
+// UK first, and Greater Manchester ahead of that, because the app only works
+// at local density and he can physically turn up to things here. The GM
+// organisations are the verified ones from the Manchester launch list, not
+// guesses. A few international names stay on the rota because they are the
+// biggest interabled audiences anywhere, but they are now the minority.
 const ROTA = [
-  'Squirmy and Grubs (Shane and Hannah Burcaw, interabled couple YouTube)',
+  // Greater Manchester, his own patch.
+  'GMCDP, Greater Manchester Coalition of Disabled People (disabled-led, GM-wide members list)',
+  'Breakthrough UK, Manchester (Community Connecting service, ending disabled social isolation)',
+  'Salford CVS and Wellbeing Matters (his home borough, social prescribing link workers)',
+  'BBC Radio Manchester (station inbox, local reach, founder story angle)',
+  'Salford City Radio (hometown hook)',
+  'Manchester Pride and Canal Street venues (accessible nightlife angle)',
+  'University of Manchester, MMU and Salford disabled students societies (Freshers window)',
+  // UK-wide.
   'Samantha Renke (UK wheelchair user, actress, The Lifestyle Pod)',
   'Jessica Kellgren-Fozard (UK deaf/disabled YouTuber, relationships content)',
   'Tasha Ghouri (UK deaf Love Island star)',
-  'Andrew Gurza (Disability After Dark podcast, disability and intimacy)',
-  'Molly Burke (blind creator, global reach)',
   'Lucy Edwards (UK blind creator)',
-  'Roll with Cole and Charisma (interabled couple)',
   'Shani Dhanda (UK disability activist and broadcaster)',
-  'Martyn Sibley (Disability Horizons co-founder, disabled entrepreneur)',
-  'Zach Anner (comedian with cerebral palsy)',
+  'Sophie Morgan (UK TV presenter, wheelchair user)',
   'Amy Pohl (UK chronic illness TikTok)',
   'Gem Hubbard, Wheels No Heels (UK wheelchair lifestyle)',
-  'Sophie Morgan (UK TV presenter, wheelchair user)',
-  'Euan’s Guide (accessible venue reviews, partnership angle)',
-  'BBC Access All podcast (press angle: Manchester comedian founder story)',
+  'Martyn Sibley (disabled entrepreneur, UK)',
+  'Euan’s Guide (UK accessible venue reviews, partnership angle)',
+  'Enable Magazine (UK disability magazine, press angle)',
+  'BBC Access All podcast (press angle: Manchester founder story)',
+  // International, kept because the interabled audience is genuinely huge.
+  'Squirmy and Grubs (Shane and Hannah Burcaw, interabled couple YouTube)',
+  'Andrew Gurza (Disability After Dark podcast, disability and intimacy)',
 ];
 
 function dayOfYear(d) {
@@ -576,7 +589,9 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
         data.follow_suggestions.push({
           author: t.author,
           url: `https://x.com/${t.author}`,
-          why: `Posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
+          // Say plainly where the account reads as being from, so a glance at
+          // the dashboard shows whether today's list is actually local.
+          why: `${placeLabel(t.uk)} \u00b7 posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
           followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
         });
         if (data.follow_suggestions.length >= 10) break;

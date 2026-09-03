@@ -539,9 +539,43 @@ async function main() {
 
     // REAL X posts to reply to, with drafted replies and spares. These power
     // the dashboard's yes/no queue: yes posts by API, no swaps in a spare.
+    // The follow list needs no model at all, so it is built FIRST and guarded
+    // separately. It used to sit inside the same try as the reply drafting,
+    // which meant one malformed JSON response from the model wiped the whole
+    // dashboard: no accounts to follow, no reasons, nothing. Never again.
+    let tweets = [];
     try {
-      const tweets = (await findTweets()).slice(0, 18);
-      console.log(`Found ${tweets.length} real X post(s) to draft replies for.`);
+      tweets = (await findTweets()).slice(0, 18);
+      console.log(`Found ${tweets.length} real X post(s) to work from.`);
+    } catch (e) {
+      console.warn(`X search failed (${e.message.slice(0, 120)}).`);
+    }
+
+      // Who to follow: real, verified accounts found by the same search (never
+      // a guessed handle). Following is a ONE-TAP link the founder clicks
+      // himself; nothing here follows on his behalf. Auto-following via API is
+      // deliberately not built: it is one of the most ban-prone things on X.
+      const seenAuthors = new Set();
+      data.follow_suggestions = [];
+      for (const t of tweets) {
+        const handle = t.author.toLowerCase();
+        if (seenAuthors.has(handle) || handle === 'able2loveapp') continue;
+        seenAuthors.add(handle);
+        data.follow_suggestions.push({
+          author: t.author,
+          url: `https://x.com/${t.author}`,
+          // Say plainly where the account reads as being from, so a glance at
+          // the dashboard shows whether today's list is actually local.
+          why: `${placeLabel(t.uk)} \u00b7 posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
+          followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
+        });
+        if (data.follow_suggestions.length >= 10) break;
+      }
+      console.log(`Follow suggestions: ${data.follow_suggestions.length} real account(s).`);
+
+    // Drafting replies is the fragile part, because it depends on the model
+    // returning strict JSON. If it fails, the follow list above still stands.
+    try {
       if (tweets.length) {
         const list = tweets.map((t, i) => `[${i}] @${t.author}: ${t.text}`).join('\n');
         const raw = await generateJson(`You are the voice of Able2Love, a live dating app for disabled and non-disabled people.
@@ -575,31 +609,10 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
         }
         console.log(`X reply queue: ${data.x_candidates.length} candidate(s) incl. spares.`);
       }
-
-      // Who to follow: real, verified accounts found by the same search (never
-      // a guessed handle). Following is a ONE-TAP link the founder clicks
-      // himself; nothing here follows on his behalf. Auto-following via API is
-      // deliberately not built: it is one of the most ban-prone things on X.
-      const seenAuthors = new Set();
-      data.follow_suggestions = [];
-      for (const t of tweets) {
-        const handle = t.author.toLowerCase();
-        if (seenAuthors.has(handle) || handle === 'able2loveapp') continue;
-        seenAuthors.add(handle);
-        data.follow_suggestions.push({
-          author: t.author,
-          url: `https://x.com/${t.author}`,
-          // Say plainly where the account reads as being from, so a glance at
-          // the dashboard shows whether today's list is actually local.
-          why: `${placeLabel(t.uk)} \u00b7 posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
-          followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
-        });
-        if (data.follow_suggestions.length >= 10) break;
-      }
-      console.log(`Follow suggestions: ${data.follow_suggestions.length} real account(s).`);
     } catch (e) {
-      console.warn(`X candidate drafting skipped (${e.message.slice(0, 120)}).`);
+      console.warn(`X reply drafting skipped (${e.message.slice(0, 120)}).`);
     }
+
   } else {
     console.log('No TAVILY_API_KEY set; outreach needs it for live search. Skipping.');
     return;

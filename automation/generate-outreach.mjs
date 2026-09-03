@@ -566,7 +566,7 @@ async function main() {
           url: `https://x.com/${t.author}`,
           // Say plainly where the account reads as being from, so a glance at
           // the dashboard shows whether today's list is actually local.
-          why: `${placeLabel(t.uk)} \u00b7 posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
+          why: `${placeLabel(t.uk)} | posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
           followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
         });
         if (data.follow_suggestions.length >= 10) break;

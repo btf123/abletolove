@@ -156,6 +156,34 @@ function tweetText(f) {
   return text.replace(/^["'\s]+/, '').slice(0, 400).trim();
 }
 
+// Searching "accessible Manchester venue" also returns Manchester United, gig
+// listings and ticket touts, and the placing regex happily tags all of it
+// Greater Manchester. So a post must ALSO be about the actual subject before
+// it can reach the follow list. Being local is not a reason to follow someone.
+const ON_TOPIC = new RegExp('(' + [
+  'disab', 'disabil', 'wheelchair', 'wheelie', 'accessib', 'inaccessib', '\\baccess\\b',
+  'crutch', 'mobility aid', 'walking stick', 'white cane', 'guide dog',
+  'deaf', 'blind', 'autis', '\\badhd\\b', 'neurodiver', 'chronic illness', 'chronically ill',
+  'spoonie', 'invisible illness', 'ableis', 'ableist', 'carer', 'care needs',
+  '\\bpip\\b', 'motability', 'blue badge', 'step free', 'stepfree', 'ramp',
+  'dating', '\\bdate\\b', '\\bdates\\b', 'relationship', 'single', 'romance', 'partner',
+  'tinder', 'hinge', 'bumble', 'ghosted', 'ghosting',
+].join('|') + ')', 'i');
+
+// Obvious noise that sails through on a place name alone.
+const OFF_TOPIC = new RegExp('(' + [
+  'man utd', 'manutd', '\\bmufc\\b', 'man city', '\\bmcfc\\b', 'premier league',
+  'transfer news', 'kick off', 'full time', 'fixture', 'match report',
+  'tickets on sale', 'tour dates', 'gig guide', 'support act', 'doors open',
+  'betting', 'odds', 'casino', 'crypto', 'giveaway',
+].join('|') + ')', 'i');
+
+export function isRelevant(text = '') {
+  const t = String(text);
+  if (OFF_TOPIC.test(t)) return false;
+  return ON_TOPIC.test(t);
+}
+
 export async function findTweets() {
   const found = [];
   for (const q of X_QUERIES) {
@@ -181,7 +209,10 @@ export async function findTweets() {
     const text = tweetText(f);
     tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text, uk: ukScore(text) });
   }
-  const kept = tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
+  const notTragedy = tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
+  const kept = notTragedy.filter((t) => isRelevant(t.text));
+  const offTopic = notTragedy.length - kept.length;
+  if (offTopic) console.log(`Dropped ${offTopic} post(s) that matched a place but were not about disability, access or dating.`);
   // Greater Manchester first, then anything else that reads British, then the
   // rest. Nothing is discarded for being foreign, it just sorts lower.
   kept.sort((a, b) => b.uk - a.uk);

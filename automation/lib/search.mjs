@@ -161,12 +161,12 @@ function tweetText(f) {
 // Greater Manchester. So a post must ALSO be about the actual subject before
 // it can reach the follow list. Being local is not a reason to follow someone.
 const ON_TOPIC = new RegExp('(' + [
-  'disab', 'disabil', 'wheelchair', 'wheelie', 'accessib', 'inaccessib', '\\baccess\\b',
+  'disab', 'disabil', 'wheelchair', 'wheelie', 'accessib', 'inaccessib',
   'crutch', 'mobility aid', 'walking stick', 'white cane', 'guide dog',
   'deaf', 'blind', 'autis', '\\badhd\\b', 'neurodiver', 'chronic illness', 'chronically ill',
   'spoonie', 'invisible illness', 'ableis', 'ableist', 'carer', 'care needs',
   '\\bpip\\b', 'motability', 'blue badge', 'step free', 'stepfree', 'ramp',
-  'dating', '\\bdate\\b', '\\bdates\\b', 'relationship', 'single', 'romance', 'partner',
+  'dating', 'relationship', 'romance', 'boyfriend', 'girlfriend', 'first date', 'a date with',
   'tinder', 'hinge', 'bumble', 'ghosted', 'ghosting',
 ].join('|') + ')', 'i');
 
@@ -176,6 +176,7 @@ const OFF_TOPIC = new RegExp('(' + [
   'transfer news', 'kick off', 'full time', 'fixture', 'match report',
   'tickets on sale', 'tour dates', 'gig guide', 'support act', 'doors open',
   'betting', 'odds', 'casino', 'crypto', 'giveaway',
+  'equities', 'stocks', 'shares', 'trading', 'investor', 'portfolio', 'nasdaq',
 ].join('|') + ')', 'i');
 
 export function isRelevant(text = '') {

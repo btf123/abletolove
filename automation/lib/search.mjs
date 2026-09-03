@@ -142,6 +142,20 @@ export function placeLabel(score) {
     : 'Location not clear';
 }
 
+// Tavily returns a short `title` (often just the first slice of the post) plus a
+// longer `content` excerpt that overlaps it. Naive `title + content` therefore
+// reads as the same words twice with an ellipsis in the join. Prefer the fuller
+// field and strip the "Name on X:" lead-in, so the preview reads as one clean
+// quote instead of a stutter.
+function tweetText(f) {
+  const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
+  let title = clean(f.title).replace(/^.*?\bon (?:X|Twitter):\s*/i, '');
+  const content = clean(f.content);
+  let text = content.length >= title.length ? content : title;
+  if (!text) text = title || content;
+  return text.replace(/^["'\s]+/, '').slice(0, 400).trim();
+}
+
 export async function findTweets() {
   const found = [];
   for (const q of X_QUERIES) {

@@ -31,9 +31,13 @@ const GROQ_MODELS = [
   'qwen/qwen3-32b',
   'gemma2-9b-it',
 ];
+// Google retires model names and locks the old ones to existing users only, so
+// a new key gets a 404 on anything stale. gemini-2.5-flash died exactly that
+// way: "no longer available to new users, please update to gemini-3.6-flash".
+// Newest first, older ones kept as a cushion for keys that still have them.
 const GEMINI_MODELS = process.env.GEMINI_MODEL
   ? [process.env.GEMINI_MODEL]
-  : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+  : ['gemini-3.6-flash', 'gemini-3.6-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 
 // GEMINI FIRST. His Anthropic balance is empty, so every run was paying the
 // cost of a failed call and then dropping to whatever weak Groq model happened

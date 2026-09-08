@@ -18,6 +18,10 @@ const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 // hardcoded list is exactly why the outreach brief failed every day through
 // August: both names had been decommissioned and every run 404'd. The real
 // list is fetched from the account at run time, and this is the fallback.
+// allam-2-7b and friends are small enough to produce unusable copy and broken
+// JSON, and the ranking used to fall through to them whenever the good models
+// were busy. Anything matching NEVER_GROQ is dropped from the usable list.
+const NEVER_GROQ = /allam|gemma2-9b|-8b-|8b-instant|compound/i;
 const GROQ_MODELS = [
   'llama-3.3-70b-versatile',
   'llama-3.1-8b-instant',
@@ -31,10 +35,15 @@ const GEMINI_MODELS = process.env.GEMINI_MODEL
   ? [process.env.GEMINI_MODEL]
   : ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
 
+// GEMINI FIRST. His Anthropic balance is empty, so every run was paying the
+// cost of a failed call and then dropping to whatever weak Groq model happened
+// to be free that minute, which is where the beige drafts came from. Google AI
+// Studio's free tier is both free and far stronger than that fallback, so when
+// a Gemini key exists it leads and everything else backs it up.
 export function llmProvider() {
+  if (process.env.GEMINI_API_KEY) return 'gemini';
   if (process.env.ANTHROPIC_API_KEY) return 'anthropic';
   if (process.env.GROQ_API_KEY) return 'groq';
-  if (process.env.GEMINI_API_KEY) return 'gemini';
   return null;
 }
 
@@ -126,9 +135,10 @@ async function groqModels(key) {
       const ids = ((await res.json()).data || [])
         .map((m) => m.id)
         .filter((id) => id && !/whisper|tts|guard|prompt-?guard|vision|embed/i.test(id));
+      const usable = ids.filter((id) => !NEVER_GROQ.test(id));
       const ranked = [
-        ...GROQ_MODELS.filter((m) => ids.includes(m)),
-        ...ids.filter((id) => !GROQ_MODELS.includes(id)),
+        ...GROQ_MODELS.filter((m) => usable.includes(m)),
+        ...usable.filter((id) => !GROQ_MODELS.includes(id)),
       ];
       if (ranked.length) {
         groqModelsCache = ranked.slice(0, 4);
@@ -225,7 +235,21 @@ export async function generateText(prompt, { temperature = 0.8, search = false }
       throw error;
     }
   }
+  if (provider === 'gemini') {
+    try {
+      return await callGemini(prompt, temperature, search);
+    } catch (error) {
+      // A daily quota or a blip must never lose the day's brief.
+      if (process.env.ANTHROPIC_API_KEY || process.env.GROQ_API_KEY) {
+        console.warn(`Gemini unavailable, falling back for this call. Reason: ${error.message.slice(0, 200)}`);
+        if (process.env.ANTHROPIC_API_KEY) {
+          try { return await callAnthropic(prompt, temperature); } catch { /* keep going */ }
+        }
+        if (process.env.GROQ_API_KEY) return callGroq(prompt, temperature);
+      }
+      throw error;
+    }
+  }
   if (provider === 'groq') return callGroq(prompt, temperature);
-  if (provider === 'gemini') return callGemini(prompt, temperature, search);
-  throw new Error('No LLM API key set. Add ANTHROPIC_API_KEY (best voice) or GROQ_API_KEY (free) as a repo secret.');
+  throw new Error('No LLM API key set. Add GEMINI_API_KEY (free, best value) or GROQ_API_KEY (free) as a repo secret.');
 }

@@ -151,11 +151,13 @@ export function placeLabel(score, code) {
     : 'Location not clear';
 }
 
-// Build the day's list at roughly 80% British, 20% everywhere else, with that
-// 20% spent in order of where the app is actually biggest. Falls back rather
+// Build the day's list at roughly 70% British, 30% everywhere else, with that
+// 30% spent in order of where the app is actually biggest. 70 not 80 because
+// Britain is only 20-23% of the audience against America's 35-39%, and because
+// British supply on these topics is thin enough that 80 could rarely be met. Falls back rather
 // than starves: if Britain cannot fill its share the rest of the world takes
 // up the slack, and the other way round.
-export function blendByReach(items, want, britishShare = 0.8) {
+export function blendByReach(items, want, britishShare = 0.7) {
   const british = items.filter((i) => i.uk >= 2);
   const abroad = items.filter((i) => i.uk === 1);
   const unplaced = items.filter((i) => i.uk === 0);

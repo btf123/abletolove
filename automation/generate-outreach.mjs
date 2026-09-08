@@ -16,7 +16,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
-import { hasTavily, gatherLiveItems, findTweets, placeLabel } from './lib/search.mjs';
+import { hasTavily, gatherLiveItems, findTweets, placeLabel, blendByReach } from './lib/search.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -499,7 +499,7 @@ async function main() {
     // Assisted Instagram hit-list. Best-effort; a failure never sinks the brief.
     try {
       const hl = await generateJson(buildHitlistPrompt(lessonsBlock), { temperature: 0.8 });
-      data.instagram_hitlist = (hl.instagram_hitlist || []).slice(0, 8).map((h) => ({
+      data.instagram_hitlist = (hl.instagram_hitlist || []).slice(0, 25).map((h) => ({
         who: scrub(h.who), why: scrub(h.why), comment: scrub(h.comment),
         action: (h.action || 'comment').toString().toLowerCase().trim(),
       })).filter((h) => h.who && h.comment);
@@ -545,7 +545,9 @@ async function main() {
     // dashboard: no accounts to follow, no reasons, nothing. Never again.
     let tweets = [];
     try {
-      tweets = (await findTweets()).slice(0, 18);
+      // 80% British, the other 20% spent on the biggest markets in order.
+      // Ask for plenty: he would rather skip past a few than run out.
+      tweets = blendByReach(await findTweets(), 30);
       console.log(`Found ${tweets.length} real X post(s) to work from.`);
     } catch (e) {
       console.warn(`X search failed (${e.message.slice(0, 120)}).`);
@@ -566,10 +568,10 @@ async function main() {
           url: `https://x.com/${t.author}`,
           // Say plainly where the account reads as being from, so a glance at
           // the dashboard shows whether today's list is actually local.
-          why: `${placeLabel(t.uk)} | posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
+          why: `${placeLabel(t.uk, t.country)} | posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
           followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
         });
-        if (data.follow_suggestions.length >= 10) break;
+        if (data.follow_suggestions.length >= 25) break;
       }
       console.log(`Follow suggestions: ${data.follow_suggestions.length} real account(s).`);
 

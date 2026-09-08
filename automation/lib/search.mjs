@@ -115,31 +115,63 @@ const UK = new RegExp('(' + [
   '\\.co\\.uk', '\u00a3',
 ].join('|') + ')', 'i');
 
-// English-speaking elsewhere, including everywhere the app already has users.
-const ANGLO = new RegExp('(' + [
-  'ireland', 'irish', 'dublin', 'cork', 'belfast',
-  '\\busa\\b', '\\bus\\b', 'america', 'american', 'canada', 'canadian',
-  'australia', 'australian', 'aussie', 'new zealand', '\\bnz\\b',
-  'south africa', 'malta', 'netherlands', 'dutch', 'sweden', 'swedish',
-  'norway', 'denmark', 'germany', 'berlin',
-  '\\bada\\b', 'medicaid', 'medicare', '\\bssdi\\b', '\\bnyc\\b', 'texas', 'california',
-].join('|') + ')', 'i');
+// Where the app actually has people, from Play's own country split over the
+// 28 days to 8 Sep 2026: United States ~35 to 39%, United Kingdom ~20 to 23%,
+// Australia ~4 to 6%, Switzerland ~2%, the rest spread thin. The 20% of the
+// sweep that is not British is spent in that order rather than at random, so
+// the second biggest market gets the most of it.
+const REACH_ORDER = [
+  { code: 'US', re: /\busa\b|\bu\.s\.|america|american|\bnyc\b|texas|california|florida|chicago|\bada\b|medicaid|medicare|\bssdi\b/i },
+  { code: 'AU', re: /australia|australian|aussie|sydney|melbourne|brisbane|\bndis\b/i },
+  { code: 'CH', re: /switzerland|swiss|zurich|geneva|basel/i },
+  { code: 'IE', re: /ireland|irish|dublin|cork|belfast/i },
+  { code: 'CA', re: /canada|canadian|toronto|vancouver|ontario/i },
+  { code: 'NZ', re: /new zealand|\bnz\b|auckland/i },
+];
 
-// 3 = Greater Manchester, 2 = rest of the UK, 1 = English-speaking elsewhere,
-// 0 = nothing to go on. Never a filter, only a sort key.
+// Which of those a post reads as, or null.
+export function reachCountry(text = '') {
+  const t = String(text);
+  for (const r of REACH_ORDER) if (r.re.test(t)) return r.code;
+  return null;
+}
+
 export function ukScore(text = '') {
   const t = String(text);
   if (GM.test(t)) return 3;
   if (UK.test(t)) return 2;
-  if (ANGLO.test(t)) return 1;
+  if (reachCountry(t)) return 1;
   return 0;
 }
 
-export function placeLabel(score) {
+export function placeLabel(score, code) {
   return score >= 3 ? 'Greater Manchester'
     : score === 2 ? 'UK'
-    : score === 1 ? 'English speaking, outside the UK'
+    : score === 1 ? (code ? 'Outside the UK: ' + code : 'Outside the UK')
     : 'Location not clear';
+}
+
+// Build the day's list at roughly 80% British, 20% everywhere else, with that
+// 20% spent in order of where the app is actually biggest. Falls back rather
+// than starves: if Britain cannot fill its share the rest of the world takes
+// up the slack, and the other way round.
+export function blendByReach(items, want, britishShare = 0.8) {
+  const british = items.filter((i) => i.uk >= 2);
+  const abroad = items.filter((i) => i.uk === 1);
+  const unplaced = items.filter((i) => i.uk === 0);
+
+  // Abroad is ordered by the reach list, so the US is spent before Australia.
+  const rank = (c) => { const n = REACH_ORDER.findIndex((r) => r.code === c); return n < 0 ? 99 : n; };
+  abroad.sort((a, b) => rank(a.country) - rank(b.country));
+
+  const wantBritish = Math.round(want * britishShare);
+  const out = [...british.slice(0, wantBritish), ...abroad.slice(0, want - wantBritish)];
+
+  // Top up from whatever is left so a thin day still fills the dashboard.
+  for (const pool of [british.slice(wantBritish), abroad.slice(want - wantBritish), unplaced]) {
+    for (const item of pool) { if (out.length >= want) break; out.push(item); }
+  }
+  return out.slice(0, want);
 }
 
 // Tavily returns a short `title` (often just the first slice of the post) plus a
@@ -208,7 +240,7 @@ export async function findTweets() {
     if (seen.has(id) || author.toLowerCase() === 'able2loveapp') continue;
     seen.add(id);
     const text = tweetText(f);
-    tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text, uk: ukScore(text) });
+    tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text, uk: ukScore(text), country: reachCountry(text) });
   }
   const notTragedy = tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
   const kept = notTragedy.filter((t) => isRelevant(t.text));
@@ -218,7 +250,7 @@ export async function findTweets() {
   // rest. Nothing is discarded for being foreign, it just sorts lower.
   kept.sort((a, b) => b.uk - a.uk);
   const n = (v) => kept.filter((t) => t.uk === v).length;
-  console.log(`Tweets found: ${kept.length} (${n(3)} Greater Manchester, ${n(2)} rest of UK, ${n(1)} English speaking elsewhere, ${n(0)} unplaced).`);
+  console.log(`Tweets found: ${kept.length} (${n(3)} Greater Manchester, ${n(2)} rest of UK, ${n(1)} abroad, ${n(0)} unplaced).`);
   return kept;
 }
 

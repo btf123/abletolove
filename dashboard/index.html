@@ -154,10 +154,13 @@
 
 <section>
   <h2><span class="dot"></span>Reddit &mdash; 3 threads, every unanswered comment, drafts ready</h2>
-  <p class="hint">Your three big Reddit threads pulled live, with a reply drafted for each person who has not heard back from you. Read it, change anything that does not sound like you, copy it and paste it into the thread. Nothing posts itself. The same page holds the moderator messages to send <b>before</b> you post again, the tester-recruitment post drafts for one sub at a time, and the CMT UK and Muscular Dystrophy UK approach emails. Anything bound for r/CMT must be reworded in your own words first, that sub bans machine written text.</p>
+  <p class="hint">Your three big Reddit threads, with a reply drafted for each person who has not heard back from you. Read it, rewrite it on the spot if it does not sound like you, then press <b>Approve for posting</b> and tell Claude to post the approved ones. Nothing ever posts by itself. The same page holds the moderator messages to send <b>before</b> you post again, the tester-recruitment post drafts for one sub at a time, and the CMT UK and Muscular Dystrophy UK approach emails. Anything bound for r/CMT must be reworded in your own words first, that sub bans machine written text.</p>
   <div style="margin:0 0 6px">
     <a class="btn" href="./reddit.html" style="text-decoration:none;display:inline-block">Open outreach console &rarr;</a>
-    <span class="meta" id="redditCount" style="margin-left:10px">counting unanswered comments&hellip;</span>
+    <span class="meta" id="redditCount" style="margin-left:10px">reading your progress&hellip;</span>
+    <div style="margin-top:8px;height:6px;border-radius:6px;background:rgba(255,255,255,0.08);overflow:hidden;max-width:420px">
+      <div id="redditBar" style="height:100%;width:0;background:linear-gradient(90deg,#E63946,#FF758F);transition:width .4s"></div>
+    </div>
   </div>
 </section>
 
@@ -578,11 +581,17 @@ box.appendChild(reset);
       const who=item.who||'';
       // If the "where to look" names a #hashtag, deep-link straight to that feed;
       // otherwise fall back to Instagram's explore page.
+      // A real post link if the scout found one, which is now the normal case.
+      // Only fall back to a hashtag feed, or explore, when it did not.
       const tag=(who.match(/#([A-Za-z0-9_]+)/)||[])[1];
-      const openUrl= tag ? `https://www.instagram.com/explore/tags/${tag}/` : 'https://www.instagram.com/explore/';
-      const openLabel= tag ? `Open #${tag} on Instagram ↗` : 'Open Instagram ↗';
+      const openUrl= item.url ? item.url
+                   : tag ? `https://www.instagram.com/explore/tags/${tag}/`
+                   : 'https://www.instagram.com/explore/';
+      const openLabel= item.url ? 'Open the post on Instagram ↗'
+                     : tag ? `Open #${tag} on Instagram ↗`
+                     : 'Open Instagram ↗';
       const el=document.createElement('div'); el.className='card conv';
-      el.innerHTML=`<div class="meta">Where to look: ${esc(who)}</div>
+      el.innerHTML=`<div class="meta">${esc(who)}</div>
         <div class="meta" style="margin:6px 0;color:var(--muted)">${esc(item.why||'')}</div>
         <div class="reply">${esc(item.comment||'')}</div>
         <div class="yn"><a class="btn replybtn" target="_blank" rel="noopener" href="${esc(openUrl)}">${openLabel}</a><button class="copybtn">⧉ Copy reply</button></div>`;
@@ -633,7 +642,7 @@ box.appendChild(reset);
     function slotCard(c){
       const el=document.createElement('div');el.className='card conv';
       if(!c){el.innerHTML='<div class="meta">No more candidates in the queue.</div>';return el;}
-      el.innerHTML=`<div class="meta">Replying to <a target="_blank" rel="noopener" href="${esc(c.url)}">@${esc(c.author)}</a> on X</div>
+      el.innerHTML=`<div class="meta">Replying to <a target="_blank" rel="noopener" href="${esc(c.url)}">@${esc(c.author)}</a> on X${c.place ? ' &middot; <b>'+esc(c.place)+'</b>' : ''}${c.matchedOn ? ' <span style="opacity:.7">(found via &ldquo;'+esc(c.matchedOn)+'&rdquo;)</span>' : ''}</div>
         <div class="meta" style="margin:6px 0;color:var(--muted)">Their post: ${esc(c.post||'')}</div>
         <div class="reply">${esc(c.reply||'')}</div>
         <div class="yn"><a class="btn replybtn" target="_blank" rel="noopener" href="${esc(intentUrl(c))}">Reply on X ↗</a><button class="nobtn">✗ Swap</button></div>`;
@@ -682,6 +691,27 @@ box.appendChild(reset);
   }
 })();
 </script>
-<script>(function(){var el=document.getElementById('redditCount'); if(el) el.textContent='54 people waiting on a reply, 52 drafts written';})();</script>
+<script>(function(){
+  var TOTAL = 54;                     // comments in the snapshot
+  var el = document.getElementById('redditCount');
+  var bar = document.getElementById('redditBar');
+  if (!el) return;
+  var done = 0, approved = 0;
+  try {
+    var raw = localStorage.getItem('a2l_reddit_v1');
+    if (raw) {
+      var st = JSON.parse(raw);
+      Object.keys(st).forEach(function(k){
+        var v = st[k] || {};
+        if (v.done) done++;
+        else if (v.approved) approved++;
+      });
+    }
+  } catch (e) { /* a blank slate is fine, it just reads as none done */ }
+  var left = Math.max(0, TOTAL - done);
+  el.textContent = done + ' of ' + TOTAL + ' replied, ' + left + ' still waiting'
+    + (approved ? ', ' + approved + ' approved and ready for Claude to post' : '');
+  if (bar) bar.style.width = Math.round(done / TOTAL * 100) + '%';
+})();</script>
 </body>
 </html>

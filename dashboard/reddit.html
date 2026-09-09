@@ -92,6 +92,24 @@ const SNAP = '30 August 2026';
 
 let DRAFTS = {}, MODS = [], POSTS = [], AMPS = [], FACEBOOK = [], COMMENTS = [];
 let VOICE = '';
+
+// Added 2026-09-09 after two failures in a row: first a reply that answered
+// only the one sentence mentioning dating and ignored everything the person
+// had actually said, then the overcorrection, a reply that greeted someone by
+// their diagnosis and read their own symptom list back at them. Both read as
+// a machine. These rules ride on top of the vault's voice rules.
+var REPLY_RULES = [
+  '',
+  'HOW TO ANSWER A COMMENT, THIS OVERRIDES ANYTHING SHORTER ABOVE:',
+  'Answer the WHOLE comment, not just the sentence that mentions dating. If someone has written a paragraph about their condition, their years of feeling a certain way, their family, their job, then that is what they are telling you. The dating line is usually the smallest part of it.',
+  'Match the length of what they wrote. A one line comment gets a short reply. A paragraph about somebody\'s life gets a paragraph back. A stub in reply to someone who has just opened up reads as not having bothered.',
+  'NEVER greet or address anyone by their condition, diagnosis or subtype. Not "Hello Type 2C", not "as a fellow CMT-er". They are a person who happened to mention a diagnosis.',
+  'NEVER list their symptoms back at them. Repeating what they just wrote proves only that you skimmed it. Pick up at most ONE specific detail, and only where it shows real recognition, then go to the feeling underneath it. One is plenty. Two is a summary. Three is a robot.',
+  'Do not open by restating their comment. Start where a person would start.',
+  'The test: would a mate who has been through the same thing write this? A mate does not open with your diagnosis and a bullet list of your symptoms.',
+  ''
+].join(String.fromCharCode(10));
+
 const state = JSON.parse(localStorage.getItem(LS) || '{}');
 const save = () => localStorage.setItem(LS, JSON.stringify(state));
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -109,7 +127,7 @@ async function unlock(pass){
   const p = JSON.parse(new TextDecoder().decode(plain));
   DRAFTS = p.DRAFTS || {}; MODS = p.MODS || []; POSTS = p.POSTS || [];
   AMPS = p.AMPS || []; FACEBOOK = p.FACEBOOK || []; COMMENTS = p.COMMENTS || [];
-  VOICE = p.VOICE || '';
+  VOICE = (p.VOICE || '') + REPLY_RULES;
 }
 
 function lockScreen(msg){
@@ -312,8 +330,12 @@ function renderList(){
 }
 
 function rwCfg(){
-  return { provider: localStorage.getItem('a2l_rw_provider') || 'groq',
+  return { provider: localStorage.getItem('a2l_rw_provider') || 'gemini',
            key: localStorage.getItem('a2l_rw_key') || '',
+           // Gemini's free tier is 20 requests a day per project, so a busy
+           // evening runs it dry. A Groq key here keeps rewrites working
+           // instead of failing, exactly as the daily brief already does.
+           backup: localStorage.getItem('a2l_rw_backup') || '',
            model: localStorage.getItem('a2l_rw_model') || '' };
 }
 
@@ -323,14 +345,16 @@ function rwSetupCard(){
   return '<div class="rule" id="rwsetup">' +
     '<b>Instant rewrites ' + (ready ? 'are on.' : 'need one thing from you.') + '</b> ' +
     (ready ? 'Press Rewrite under any draft, say what you want instead, and a new one is written on the spot. Your key stays in this browser only.'
-           : 'Paste an API key once and every card gets a Rewrite button that writes a new draft on the spot. A free key from console.groq.com works. The key is kept in this browser only and is never part of the public page.') +
+           : 'Paste an API key once and every card gets a Rewrite button that writes a new draft on the spot. A free Gemini key from aistudio.google.com works, and costs nothing. The key is kept in this browser only and is never part of the public page.') +
     '<div class="acts" style="margin-top:9px">' +
       '<select id="rwprov">' +
+        '<option value="gemini"' + (cfg.provider==='gemini'?' selected':'') + '>Google Gemini (free)</option>' +
         '<option value="groq"' + (cfg.provider==='groq'?' selected':'') + '>Groq</option>' +
         '<option value="anthropic"' + (cfg.provider==='anthropic'?' selected':'') + '>Claude API</option>' +
       '</select>' +
       '<input id="rwkey" type="password" placeholder="' + (ready ? 'key saved, paste to replace' : 'paste your API key') + '" style="flex:1;min-width:150px">' +
       '<input id="rwmodel" placeholder="model (blank = automatic)" value="' + esc(cfg.model) + '" style="width:190px">' +
+      '<input id="rwbackup" type="password" placeholder="' + (cfg.backup ? 'Groq backup key saved' : 'optional Groq key, used when Gemini runs out') + '" style="flex:1;min-width:170px">' +
       '<button class="tiny" id="rwsave">Save</button>' +
       (ready ? '<button class="tiny" id="rwclear">Forget key</button>' : '') +
     '</div></div>';
@@ -342,6 +366,8 @@ function bindRwSetup(){
   sv.addEventListener('click', () => {
     const k = document.getElementById('rwkey').value.trim();
     localStorage.setItem('a2l_rw_provider', document.getElementById('rwprov').value);
+    const bk = (document.getElementById('rwbackup') || {}).value || '';
+    if (bk.trim()) localStorage.setItem('a2l_rw_backup', bk.trim());
     localStorage.setItem('a2l_rw_model', document.getElementById('rwmodel').value.trim());
     if(k) localStorage.setItem('a2l_rw_key', k);
     render();
@@ -361,6 +387,52 @@ async function generate(id, note){
     'The current draft reply:' + NL + draft + NL + NL +
     'What Brogan wants changed, in his own words:' + NL + (note || 'He has not said, he just wants a better, more natural version.') + NL + NL +
     'Write the new reply now. Return only the reply text.';
+  if(cfg.provider === 'gemini'){
+    // Google AI Studio keys work straight from the browser, so this needs no
+    // proxy and no server. Free tier, and far better than the small models.
+    const gm = cfg.model || 'gemini-3.6-flash';
+    // Gemini 3.x thinks before it answers and that thinking comes out of the
+    // same output budget, so a tight cap produces short, half-finished replies.
+    // Give it room, and if it still comes back thin, ask again with thinking
+    // switched off so the whole budget goes into the words.
+    async function askGemini(noThinking){
+      const body = {
+        systemInstruction: { parts: [{ text: VOICE }] },
+        contents: [{ role:'user', parts: [{ text: user }] }],
+        generationConfig: { temperature: 0.85, maxOutputTokens: 4096 }
+      };
+      if(noThinking) body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + gm + ':generateContent?key=' + encodeURIComponent(cfg.key), {
+        method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+      if(!res.ok) throw new Error('Gemini said ' + res.status + '. ' + (await res.text()).slice(0,160));
+      const j = await res.json();
+      const cand = (j.candidates || [])[0] || {};
+      const txt = (((cand.content || {}).parts) || []).map(function(x){ return x.text || ''; }).join('').trim();
+      return { txt: txt, finish: cand.finishReason || '' };
+    }
+    let r1;
+    try {
+      r1 = await askGemini(false);
+      if(!r1.txt || r1.finish === 'MAX_TOKENS' || r1.txt.length < 80){
+        try { const r2 = await askGemini(true); if(r2.txt && r2.txt.length > r1.txt.length) r1 = r2; }
+        catch(e){ /* keep whatever the first attempt gave */ }
+      }
+    } catch(err) {
+      // Out of free quota, or Gemini having a moment. Carry on with Groq
+      // rather than making him stare at an error.
+      if(cfg.backup){
+        console.warn('Gemini unavailable, using the Groq backup key.', err.message);
+        return await callGroqWith(cfg.backup, user);
+      }
+      throw new Error(String(err.message || err) +
+        ' — add a Groq key in the setup box above and rewrites will keep working when Gemini runs out.');
+    }
+    if(!r1.txt){
+      if(cfg.backup) return await callGroqWith(cfg.backup, user);
+      throw new Error('Gemini returned nothing usable. Try again, or pick another provider.');
+    }
+    return r1.txt;
+  }
   if(cfg.provider === 'anthropic'){
     const r = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{
       'x-api-key': cfg.key, 'anthropic-version':'2023-06-01',
@@ -371,6 +443,11 @@ async function generate(id, note){
     const j = await r.json();
     return j.content.map(x => x.text || '').join('').trim();
   }
+  return await callGroqWith(cfg.key, user, cfg.model);
+}
+
+async function callGroqWith(key, user, wanted){
+  const cfg = { key: key, model: wanted || localStorage.getItem('a2l_rw_model') || '' };
   let model = cfg.model;
   if(!model){
     try{

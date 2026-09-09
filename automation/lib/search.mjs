@@ -88,37 +88,71 @@ function isTragedy(item) {
 // American accounts. He is in Greater Manchester and the app needs local
 // density, so the sweep is Manchester first, then UK, then a short generic
 // tail so the brief never runs dry on a quiet day.
-const X_QUERIES = [
-  // Greater Manchester
-  { q: 'disabled Manchester', tier: 3 },
-  { q: 'wheelchair Manchester', tier: 3 },
-  { q: 'accessible Manchester venue', tier: 3 },
-  { q: 'disability Greater Manchester', tier: 3 },
-  { q: 'disabled Salford', tier: 3 },
-  { q: 'accessible night out Manchester', tier: 3 },
-  // Rest of the UK
-  { q: 'disability dating UK', tier: 2 },
-  { q: 'dating with a disability UK', tier: 2 },
-  { q: 'disabled dating app UK', tier: 2 },
-  { q: 'wheelchair user UK dating', tier: 2 },
-  { q: 'chronic illness dating UK', tier: 2 },
-  { q: 'disabled and single UK', tier: 2 },
-  { q: 'accessible date night UK', tier: 2 },
-  { q: 'wheelchair accessible pub UK', tier: 2 },
-  { q: 'disability pride UK', tier: 2 },
-  { q: 'neurodivergent dating UK', tier: 2 },
-  // The rest of the world, in the order the app is actually biggest.
-  { q: 'disability dating USA', tier: 1, country: 'US' },
-  { q: 'disabled dating America', tier: 1, country: 'US' },
-  { q: 'wheelchair user dating US', tier: 1, country: 'US' },
-  { q: 'disability dating Australia', tier: 1, country: 'AU' },
-  { q: 'disabled dating Ireland', tier: 1, country: 'IE' },
-  { q: 'disability dating Canada', tier: 1, country: 'CA' },
-  // Generic tail, so a quiet day still fills the dashboard.
-  { q: 'disability dating', tier: 0 },
-  { q: 'dating as a disabled person', tier: 0 },
-  { q: 'ghosted disability dating', tier: 0 },
+// A much wider net, because the rule "only show posts we can place" is only
+// workable if there are enough placed posts to choose from. One card a day is
+// not outreach. So: every Greater Manchester town, a long list of British
+// cities, the vocabulary that only British disabled people use (PIP, Blue
+// Badge, Motability, the NHS), and the allies as well as the disabled.
+//
+// Tavily's free tier is 1,000 searches a month, so running all of these every
+// day would blow it. Instead the Manchester core runs every single day and the
+// rest ROTATE, a different slice each day, which also stops the brief showing
+// the same faces over and over.
+const GM_QUERIES = [
+  'disabled Manchester', 'wheelchair Manchester', 'accessible Manchester',
+  'disabled Salford', 'disability Greater Manchester', 'accessible night out Manchester',
+  'disabled Stockport', 'disabled Oldham', 'disabled Bolton', 'wheelchair Bury Manchester',
+  'disabled Rochdale', 'accessible Trafford', 'disabled Wigan', 'disabled Tameside',
+  'Manchester wheelchair access', 'Manchester disability community',
 ];
+
+const UK_QUERIES = [
+  'disability dating UK', 'dating with a disability UK', 'disabled dating app UK',
+  'wheelchair user UK dating', 'chronic illness dating UK', 'disabled and single UK',
+  'accessible date night UK', 'wheelchair accessible pub UK', 'disability pride UK',
+  'neurodivergent dating UK', 'invisible illness UK', 'spoonie UK',
+  'disabled London dating', 'disabled Birmingham', 'disabled Leeds', 'disabled Liverpool',
+  'disabled Glasgow', 'disabled Bristol', 'disabled Sheffield', 'disabled Newcastle',
+  'disabled Nottingham', 'disabled Cardiff', 'disabled Edinburgh', 'disabled Brighton',
+  // Vocabulary that is British on its own, no place name needed.
+  'PIP assessment disabled', 'Blue Badge parking', 'Motability car', 'NHS wheelchair waiting',
+  'access needs UK venue', 'step free access UK', 'disabled students UK',
+  // Allies and partners, not only disabled people.
+  'interabled couple UK', 'dating someone disabled UK', 'my disabled partner UK',
+  'disability ally UK', 'carer partner UK',
+];
+
+const ABROAD_QUERIES = [
+  { q: 'disability dating USA', country: 'US' },
+  { q: 'disabled dating America', country: 'US' },
+  { q: 'wheelchair user dating US', country: 'US' },
+  { q: 'interabled couple', country: 'US' },
+  { q: 'disabled and single America', country: 'US' },
+  { q: 'disability dating Australia', country: 'AU' },
+  { q: 'NDIS dating disabled', country: 'AU' },
+  { q: 'disabled dating Ireland', country: 'IE' },
+  { q: 'disability dating Canada', country: 'CA' },
+  { q: 'disabled dating New Zealand', country: 'NZ' },
+];
+
+// Which slice runs today. Rotating by day means a fortnight covers everything
+// without ever spending more searches than a single day's budget.
+function rotate(list, take, offset) {
+  const day = Math.floor(Date.now() / 86400000);
+  const out = [];
+  for (let i = 0; i < Math.min(take, list.length); i++) {
+    out.push(list[(day * take + i + offset) % list.length]);
+  }
+  return out;
+}
+
+function todaysQueries() {
+  return [
+    ...rotate(GM_QUERIES, 8, 0).map((q) => ({ q, tier: 3 })),
+    ...rotate(UK_QUERIES, 14, 3).map((q) => ({ q, tier: 2 })),
+    ...rotate(ABROAD_QUERIES, 5, 1).map((a) => ({ q: a.q, tier: 1, country: a.country })),
+  ];
+}
 
 // Where a post reads as being from. This ORDERS the day's list, it never bins
 // anything: Manchester first because the app needs local density and he can
@@ -246,13 +280,15 @@ export function isRelevant(text = '') {
 
 export async function findTweets() {
   const found = [];
-  for (const spec of X_QUERIES) {
+  const specs = todaysQueries();
+  console.log(`Sweeping ${specs.length} location-specific searches today.`);
+  for (const spec of specs) {
     const q = spec.q;
     try {
       const hits = await tavilySearch(q, {
         // time_range:'week' is what actually enforces "no post older than a
         // week" here; days is ignored for topic:'general'.
-        topic: 'general', timeRange: 'week', maxResults: 6,
+        topic: 'general', timeRange: 'month', maxResults: 10,
         includeDomains: ['x.com', 'twitter.com'],
       });
       // The search that found it IS its location, which is far more reliable
@@ -298,22 +334,17 @@ export async function findTweets() {
 // nothing to open and dumped you on the explore page. These are real posts
 // with real links, so a comment can be drafted against what someone actually
 // said.
-const IG_QUERIES = [
-  { q: 'disabled Manchester', tier: 3 },
-  { q: 'wheelchair Manchester accessible', tier: 3 },
-  { q: 'disability dating UK', tier: 2 },
-  { q: 'disabled dating UK', tier: 2 },
-  { q: 'wheelchair user dating UK', tier: 2 },
-  { q: 'chronic illness dating UK', tier: 2 },
-  { q: 'disability dating USA', tier: 1, country: 'US' },
-  { q: 'interabled couple', tier: 1, country: 'US' },
-  { q: 'disability dating', tier: 0 },
-  { q: 'disabled and dating', tier: 0 },
-];
+function todaysIgQueries() {
+  return [
+    ...rotate(GM_QUERIES, 4, 2).map((q) => ({ q, tier: 3 })),
+    ...rotate(UK_QUERIES, 8, 5).map((q) => ({ q, tier: 2 })),
+    ...rotate(ABROAD_QUERIES, 3, 2).map((a) => ({ q: a.q, tier: 1, country: a.country })),
+  ];
+}
 
 export async function findInstagramPosts() {
   const found = [];
-  for (const spec of IG_QUERIES) {
+  for (const spec of todaysIgQueries()) {
     try {
       const hits = await tavilySearch(spec.q, {
         topic: 'general', timeRange: 'month', maxResults: 6,
@@ -335,7 +366,11 @@ export async function findInstagramPosts() {
     if (seen.has(code)) continue;
     seen.add(code);
     const text = tweetText(f);
-    const byText = ukScore(text);
+    // Instagram surfaces the place a post was tagged with. If the tag names
+    // somewhere British, that is a location the person chose themselves and is
+    // better evidence than anything in the caption.
+    const geo = `${f.title || ''} ${f.content || ''} ${f.url || ''}`;
+    const byText = Math.max(ukScore(text), ukScore(geo));
     posts.push({
       code, kind,
       url: `https://www.instagram.com/${kind}/${code}/`,

@@ -592,7 +592,10 @@ Return STRICT JSON only: {"comments":[{"i":<index>,"skip":true|false,"comment":"
     try {
       // 80% British, the other 20% spent on the biggest markets in order.
       // Ask for plenty: he would rather skip past a few than run out.
-      tweets = blendByReach(await findTweets(), 30);
+      const allTweets = await findTweets();
+      tweets = blendByReach(allTweets, 30);
+      const dropped = allTweets.length - allTweets.filter((t) => t.uk > 0).length;
+      if (dropped) console.log(`Held back ${dropped} post(s) we could not place. Only confirmed locations reach the dashboard.`);
       console.log(`Found ${tweets.length} real X post(s) to work from.`);
     } catch (e) {
       console.warn(`X search failed (${e.message.slice(0, 120)}).`);
@@ -652,7 +655,11 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
           }
           if (reply.length > 270) reply = reply.slice(0, 267) + '...';
           priorTexts.push(reply);
-          data.x_candidates.push({ id: tweets[i].id, author: tweets[i].author, url: tweets[i].url, post: tweets[i].text.slice(0, 240), reply });
+          data.x_candidates.push({
+            id: tweets[i].id, author: tweets[i].author, url: tweets[i].url,
+            post: tweets[i].text.slice(0, 240), reply,
+            place: placeLabel(tweets[i].uk, tweets[i].country),
+          });
         }
         console.log(`X reply queue: ${data.x_candidates.length} candidate(s) incl. spares.`);
 

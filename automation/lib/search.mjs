@@ -178,10 +178,13 @@ export function placeLabel(score, code) {
 // British supply on these topics is thin enough that 80 could rarely be met. Falls back rather
 // than starves: if Britain cannot fill its share the rest of the world takes
 // up the slack, and the other way round.
-export function blendByReach(items, want, britishShare = 0.7) {
+export function blendByReach(items, want, britishShare = 0.7, allowUnplaced = false) {
   const british = items.filter((i) => i.uk >= 2);
   const abroad = items.filter((i) => i.uk === 1);
-  const unplaced = items.filter((i) => i.uk === 0);
+  // Unplaced means we do not actually know where this person is. Showing those
+  // makes the 70/30 split meaningless, so by default they never reach the
+  // dashboard at all, not even as filler on a thin day.
+  const unplaced = allowUnplaced ? items.filter((i) => i.uk === 0) : [];
 
   // Abroad is ordered by the reach list, so the US is spent before Australia.
   const rank = (c) => { const n = REACH_ORDER.findIndex((r) => r.code === c); return n < 0 ? 99 : n; };
@@ -190,7 +193,8 @@ export function blendByReach(items, want, britishShare = 0.7) {
   const wantBritish = Math.round(want * britishShare);
   const out = [...british.slice(0, wantBritish), ...abroad.slice(0, want - wantBritish)];
 
-  // Top up from whatever is left so a thin day still fills the dashboard.
+  // Top up from the other placed pools. A short day is better than a day full
+  // of people we cannot place.
   for (const pool of [british.slice(wantBritish), abroad.slice(want - wantBritish), unplaced]) {
     for (const item of pool) { if (out.length >= want) break; out.push(item); }
   }

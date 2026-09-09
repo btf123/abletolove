@@ -1,0 +1,66 @@
+name: Screen room name requests
+
+# Members can propose their own Circle room. Names built only from the
+# allow-list are marked clean; anything else is screened by the AI here.
+# Either way nothing goes live until Brogan approves it in the Studio. This
+# job keeps ONE open issue ("Room requests waiting") up to date, and GitHub
+# emails him whenever it changes. Needs the SUPABASE_SERVICE_ROLE_KEY secret.
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: room-name-screen
+  cancel-in-progress: false
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Screen pending names
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::warning::SUPABASE_SERVICE_ROLE_KEY secret is not set; nothing screened."
+            echo '{"pending":0}' > room-review.json
+            : > room-review.md
+            exit 0
+          fi
+          node automation/screen-room-names.mjs
+
+      - name: Keep the review issue current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PENDING=$(node -e "console.log(JSON.parse(require('fs').readFileSync('room-review.json','utf8')).pending||0)")
+          TITLE="Room requests waiting for your yes or no"
+          NUM=$(gh issue list --state open --search "\"$TITLE\" in:title" --json number --jq '.[0].number')
+          if [ "$PENDING" = "0" ]; then
+            if [ -n "$NUM" ]; then
+              gh issue close "$NUM" --comment "Queue is empty. Nothing waiting."
+            fi
+            exit 0
+          fi
+          if [ -n "$NUM" ]; then
+            gh issue edit "$NUM" --body-file room-review.md
+            gh issue comment "$NUM" --body-file room-review.md
+          else
+            gh issue create --title "$TITLE" --body-file room-review.md --label "room-requests" || \
+            gh issue create --title "$TITLE" --body-file room-review.md
+          fi

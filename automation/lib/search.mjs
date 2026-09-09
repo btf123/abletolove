@@ -199,11 +199,14 @@ export function ukScore(text = '') {
   return 0;
 }
 
-export function placeLabel(score, code) {
-  return score >= 3 ? 'Greater Manchester'
+export function placeLabel(score, code, confirmed) {
+  const where = score >= 3 ? 'Greater Manchester'
     : score === 2 ? 'UK'
     : score === 1 ? (code ? 'Outside the UK: ' + code : 'Outside the UK')
     : 'Location not clear';
+  if (score === 0) return where;
+  // Never state a place as fact when only the search implied it.
+  return confirmed ? where + ' (confirmed)' : 'Likely ' + where;
 }
 
 // Build the day's list at roughly 70% British, 30% everywhere else, with that
@@ -293,7 +296,7 @@ export async function findTweets() {
       });
       // The search that found it IS its location, which is far more reliable
       // than hunting for a place name in the post itself.
-      hits.forEach((h) => { h.fromTier = spec.tier; h.fromCountry = spec.country || null; });
+      hits.forEach((h) => { h.fromTier = spec.tier; h.fromCountry = spec.country || null; h.fromQuery = q; });
       found.push(...hits);
     } catch (e) {
       console.warn(`tweet search "${q}" failed: ${e.message.slice(0, 100)}`);
@@ -313,6 +316,10 @@ export async function findTweets() {
     tweets.push({
       id, author, url: `https://x.com/${author}/status/${id}`, text, uk,
       country: reachCountry(text) || f.fromCountry || null,
+      // The post's own words placed it, rather than the search we happened
+      // to find it through.
+      confirmed: byText > 0,
+      matchedQuery: f.fromQuery || '',
     });
   }
   const notTragedy = tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
@@ -372,7 +379,7 @@ export async function findInstagramPosts() {
     const geo = `${f.title || ''} ${f.content || ''} ${f.url || ''}`;
     const byText = Math.max(ukScore(text), ukScore(geo));
     posts.push({
-      code, kind,
+      code, kind, confirmed: byText > 0, matchedQuery: spec.q,
       url: `https://www.instagram.com/${kind}/${code}/`,
       text,
       uk: Math.max(byText, f.fromTier || 0),

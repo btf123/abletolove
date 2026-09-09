@@ -528,7 +528,7 @@ Return STRICT JSON only: {"comments":[{"i":<index>,"skip":true|false,"comment":"
           const post = igPosts[i];
           data.instagram_hitlist.push({
             who: post.text.slice(0, 140),
-            why: `${placeLabel(post.uk, post.country)} · a real ${post.kind === 'reel' ? 'reel' : 'post'}, open it and comment`,
+            why: `${placeLabel(post.uk, post.country, post.confirmed)} · a real ${post.kind === 'reel' ? 'reel' : 'post'}, open it and comment`,
             comment: scrub(r.comment),
             action: 'comment',
             url: post.url,
@@ -616,7 +616,7 @@ Return STRICT JSON only: {"comments":[{"i":<index>,"skip":true|false,"comment":"
           url: `https://x.com/${t.author}`,
           // Say plainly where the account reads as being from, so a glance at
           // the dashboard shows whether today's list is actually local.
-          why: `${placeLabel(t.uk, t.country)} | posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
+          why: `${placeLabel(t.uk, t.country, t.confirmed)} | posted about disability dating: "${t.text.slice(0, 90)}${t.text.length > 90 ? '...' : ''}"`,
           followUrl: `https://x.com/intent/follow?screen_name=${encodeURIComponent(t.author)}`,
         });
         if (data.follow_suggestions.length >= 25) break;
@@ -641,10 +641,17 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
         const byIdx = new Map((raw.replies || []).map((r) => [r.i, r]));
         data.x_candidates = [];
         const priorTexts = [];
+        // Anything this thin is filler, not a reply, and it goes out under his
+        // name. "Nice vibe, keep sharing!" is not outreach.
+        const TOO_THIN = /^(nice|great|love it|cool|amazing|so true|this|agreed|well said)\b[^.!?]{0,30}[.!]?$/i;
         for (let i = 0; i < tweets.length; i++) {
           const r = byIdx.get(i);
           if (!r || r.skip || !scrub(r.reply)) continue;
           let reply = scrub(r.reply);
+          if (reply.length < 60 || TOO_THIN.test(reply)) {
+            console.log(`Dropped a thin reply to @${tweets[i].author}: "${reply.slice(0, 50)}"`);
+            continue;
+          }
           const avoid = new Set(burnedIn(reply));
           for (const prev of priorTexts) { const run = sharedRun(prev, reply); if (run) avoid.add(run); }
           if (avoid.size) {
@@ -658,7 +665,8 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
           data.x_candidates.push({
             id: tweets[i].id, author: tweets[i].author, url: tweets[i].url,
             post: tweets[i].text.slice(0, 240), reply,
-            place: placeLabel(tweets[i].uk, tweets[i].country),
+            place: placeLabel(tweets[i].uk, tweets[i].country, tweets[i].confirmed),
+            matchedOn: tweets[i].confirmed ? '' : tweets[i].matchedQuery,
           });
         }
         console.log(`X reply queue: ${data.x_candidates.length} candidate(s) incl. spares.`);

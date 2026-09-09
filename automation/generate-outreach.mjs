@@ -610,6 +610,22 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
           data.x_candidates.push({ id: tweets[i].id, author: tweets[i].author, url: tweets[i].url, post: tweets[i].text.slice(0, 240), reply });
         }
         console.log(`X reply queue: ${data.x_candidates.length} candidate(s) incl. spares.`);
+
+        // Rebuild the follow list around what survived. Anything the model
+        // marked skip was not worth replying to, so it is not worth following.
+        const kept = new Set(data.x_candidates.map((c) => c.author.toLowerCase()));
+        const skipped = new Set();
+        for (let i = 0; i < tweets.length; i++) {
+          const r = byIdx.get(i);
+          if (r && r.skip) skipped.add(tweets[i].author.toLowerCase());
+        }
+        const before = data.follow_suggestions.length;
+        const good = data.follow_suggestions.filter((f) => kept.has(f.author.toLowerCase()));
+        const rest = data.follow_suggestions.filter((f) => !kept.has(f.author.toLowerCase())
+          && !skipped.has(f.author.toLowerCase()));
+        data.follow_suggestions = [...good, ...rest].slice(0, 25);
+        console.log(`Follow list: ${before} -> ${data.follow_suggestions.length} `
+          + `(${good.length} worth replying to, ${skipped.size} thrown out as off topic).`);
       }
     } catch (e) {
       console.warn(`X reply drafting skipped (${e.message.slice(0, 120)}).`);

@@ -89,14 +89,35 @@ function isTragedy(item) {
 // density, so the sweep is Manchester first, then UK, then a short generic
 // tail so the brief never runs dry on a quiet day.
 const X_QUERIES = [
-  'disabled Manchester', 'wheelchair Manchester', 'accessible Manchester venue',
-  'disability Greater Manchester', 'disabled Salford', 'accessible night out Manchester',
-  'disability dating UK', 'dating with a disability UK', 'disabled dating app UK',
-  'wheelchair user UK dating', 'chronic illness dating UK', 'spoonie UK',
-  'disabled and single UK', 'accessible date night UK', 'inaccessible venue UK',
-  'wheelchair accessible pub UK', 'accessible nightlife UK', 'disability pride UK',
-  'neurodivergent dating UK', 'dating apps ableism UK', 'invisible illness UK',
-  'disability dating', 'dating as a disabled person', 'ghosted disability dating',
+  // Greater Manchester
+  { q: 'disabled Manchester', tier: 3 },
+  { q: 'wheelchair Manchester', tier: 3 },
+  { q: 'accessible Manchester venue', tier: 3 },
+  { q: 'disability Greater Manchester', tier: 3 },
+  { q: 'disabled Salford', tier: 3 },
+  { q: 'accessible night out Manchester', tier: 3 },
+  // Rest of the UK
+  { q: 'disability dating UK', tier: 2 },
+  { q: 'dating with a disability UK', tier: 2 },
+  { q: 'disabled dating app UK', tier: 2 },
+  { q: 'wheelchair user UK dating', tier: 2 },
+  { q: 'chronic illness dating UK', tier: 2 },
+  { q: 'disabled and single UK', tier: 2 },
+  { q: 'accessible date night UK', tier: 2 },
+  { q: 'wheelchair accessible pub UK', tier: 2 },
+  { q: 'disability pride UK', tier: 2 },
+  { q: 'neurodivergent dating UK', tier: 2 },
+  // The rest of the world, in the order the app is actually biggest.
+  { q: 'disability dating USA', tier: 1, country: 'US' },
+  { q: 'disabled dating America', tier: 1, country: 'US' },
+  { q: 'wheelchair user dating US', tier: 1, country: 'US' },
+  { q: 'disability dating Australia', tier: 1, country: 'AU' },
+  { q: 'disabled dating Ireland', tier: 1, country: 'IE' },
+  { q: 'disability dating Canada', tier: 1, country: 'CA' },
+  // Generic tail, so a quiet day still fills the dashboard.
+  { q: 'disability dating', tier: 0 },
+  { q: 'dating as a disabled person', tier: 0 },
+  { q: 'ghosted disability dating', tier: 0 },
 ];
 
 // Where a post reads as being from. This ORDERS the day's list, it never bins
@@ -221,14 +242,19 @@ export function isRelevant(text = '') {
 
 export async function findTweets() {
   const found = [];
-  for (const q of X_QUERIES) {
+  for (const spec of X_QUERIES) {
+    const q = spec.q;
     try {
-      found.push(...(await tavilySearch(q, {
+      const hits = await tavilySearch(q, {
         // time_range:'week' is what actually enforces "no post older than a
         // week" here; days is ignored for topic:'general'.
         topic: 'general', timeRange: 'week', maxResults: 6,
         includeDomains: ['x.com', 'twitter.com'],
-      })));
+      });
+      // The search that found it IS its location, which is far more reliable
+      // than hunting for a place name in the post itself.
+      hits.forEach((h) => { h.fromTier = spec.tier; h.fromCountry = spec.country || null; });
+      found.push(...hits);
     } catch (e) {
       console.warn(`tweet search "${q}" failed: ${e.message.slice(0, 100)}`);
     }
@@ -242,7 +268,12 @@ export async function findTweets() {
     if (seen.has(id) || author.toLowerCase() === 'able2loveapp') continue;
     seen.add(id);
     const text = tweetText(f);
-    tweets.push({ id, author, url: `https://x.com/${author}/status/${id}`, text, uk: ukScore(text), country: reachCountry(text) });
+    const byText = ukScore(text);
+    const uk = Math.max(byText, f.fromTier || 0);
+    tweets.push({
+      id, author, url: `https://x.com/${author}/status/${id}`, text, uk,
+      country: reachCountry(text) || f.fromCountry || null,
+    });
   }
   const notTragedy = tweets.filter((t) => !isTragedy({ title: t.text, content: '' }));
   const kept = notTragedy.filter((t) => isRelevant(t.text));

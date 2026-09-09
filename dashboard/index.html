@@ -572,31 +572,46 @@ box.appendChild(reset);
     return JSON.parse(new TextDecoder().decode(plain));
   }
 
-  function askPass(){
+  function askPass(errMsg){
     return new Promise((resolve)=>{
-      box.innerHTML='<div class="card"><div class="meta">Today\'s brief is encrypted. Enter the passphrase to read it.</div>'
+      box.innerHTML='<div class="card"><div class="meta">Today’s brief is encrypted. Enter the passphrase to read it.</div>'
         +'<div class="acts" style="margin-top:10px">'
-        +'<input id="dashpass" type="password" placeholder="passphrase" style="flex:1;min-width:180px">'
+        +'<input id="dashpass" type="password" placeholder="passphrase" style="flex:1;min-width:180px" autocomplete="current-password">'
         +'<button class="btn" id="dashgo">Unlock</button></div>'
         +'<div class="meta" id="dasherr" style="color:var(--bad);margin-top:8px"></div></div>';
-      const go=()=>resolve(document.getElementById('dashpass').value||'');
+      if(errMsg) document.getElementById('dasherr').textContent=errMsg;
+      const ig=document.getElementById('ig-outreach');
+      if(ig) ig.innerHTML='<div class="card"><div class="meta">Locked. Enter the passphrase in the X section above and this fills in too.</div></div>';
+      const go=()=>{
+        const v=document.getElementById('dashpass').value||'';
+        if(!v){ document.getElementById('dasherr').textContent='Type the passphrase first.'; return; }
+        const b=document.getElementById('dashgo'); b.disabled=true; b.textContent='Checking…';
+        resolve(v);
+      };
       document.getElementById('dashgo').onclick=go;
       document.getElementById('dashpass').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
       document.getElementById('dashpass').focus();
     });
   }
 
-  // Try the remembered passphrase first, then ask, and keep asking until it opens.
+  // Try the remembered passphrase first, then ask, and keep asking until it
+  // opens. A miss SAYS so: a box that silently redraws itself reads as broken.
   async function openBrief(env){
     if(!(env && env.alg==='AES-256-GCM' && env.salt && env.iv && env.data)) return env; // already plain
     let pass=localStorage.getItem(PASS_KEY)||'';
+    let misses=0, err='';
     for(;;){
       if(pass){
         try{ const out=await unseal(env,pass); localStorage.setItem(PASS_KEY,pass); return out; }
-        catch(e){ localStorage.removeItem(PASS_KEY); }
+        catch(e){
+          localStorage.removeItem(PASS_KEY);
+          misses++;
+          err = misses < 2
+            ? 'That passphrase did not open today’s brief. Check it and try again.'
+            : 'Still not opening. If you are certain the passphrase is right, then the GitHub secret DASH_PASSPHRASE was saved as something different. Re-save that secret and re-run the brief.';
+        }
       }
-      pass=await askPass();
-      if(!pass) throw new Error('locked');
+      pass=await askPass(err);
     }
   }
 

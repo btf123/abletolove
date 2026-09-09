@@ -198,7 +198,16 @@ async function callGemini(prompt, temperature, search) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const body = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature } };
+        // Gemini 3.x models THINK before they answer, and that thinking is paid
+        // for out of the same output budget. Left alone they spend most of it
+        // reasoning and hand back a short or half-finished reply, which is
+        // exactly what was showing up in the drafts. So: give the answer room,
+        // and on the second attempt turn thinking off entirely.
+        const body = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature, maxOutputTokens: 4096 },
+        };
+        if (attempt > 1) body.generationConfig.thinkingConfig = { thinkingBudget: 0 };
         if (search) body.tools = [{ google_search: {} }];
         const res = await fetch(url, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
@@ -208,9 +217,16 @@ async function callGemini(prompt, temperature, search) {
         }
         if (!res.ok) throw new Error(`Gemini ${model} HTTP ${res.status}: ${await res.text()}`);
         const data = await res.json();
-        const parts = data.candidates?.[0]?.content?.parts || [];
+        const cand = data.candidates?.[0] || {};
+        const parts = cand.content?.parts || [];
         const text = parts.map((p) => p.text || '').join('');
-        if (!text) throw new Error(`Gemini ${model} returned no text`);
+        if (!text) {
+          throw new Error(`Gemini ${model} returned no text`
+            + (cand.finishReason ? ` (finishReason ${cand.finishReason})` : ''));
+        }
+        if (cand.finishReason === 'MAX_TOKENS') {
+          console.warn(`${model} hit the output cap and the reply may be cut short.`);
+        }
         console.log(`Model used: ${model}`);
         return text;
       } catch (error) {

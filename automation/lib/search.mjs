@@ -146,11 +146,15 @@ function rotate(list, take, offset) {
   return out;
 }
 
+// THE BUDGET. Tavily free is 1,000 searches a month, so a daily brief can
+// spend about 32. Going over does not cost money, it just stops working
+// halfway through the month, which is worse. Anything added here has to come
+// out of somewhere else.
 function todaysQueries() {
   return [
-    ...rotate(GM_QUERIES, 8, 0).map((q) => ({ q, tier: 3 })),
-    ...rotate(UK_QUERIES, 14, 3).map((q) => ({ q, tier: 2 })),
-    ...rotate(ABROAD_QUERIES, 5, 1).map((a) => ({ q: a.q, tier: 1, country: a.country })),
+    ...rotate(GM_QUERIES, 6, 0).map((q) => ({ q, tier: 3 })),
+    ...rotate(UK_QUERIES, 8, 3).map((q) => ({ q, tier: 2 })),
+    ...rotate(ABROAD_QUERIES, 3, 1).map((a) => ({ q: a.q, tier: 1, country: a.country })),
   ];
 }
 
@@ -343,9 +347,9 @@ export async function findTweets() {
 // said.
 function todaysIgQueries() {
   return [
-    ...rotate(GM_QUERIES, 4, 2).map((q) => ({ q, tier: 3 })),
-    ...rotate(UK_QUERIES, 8, 5).map((q) => ({ q, tier: 2 })),
-    ...rotate(ABROAD_QUERIES, 3, 2).map((a) => ({ q: a.q, tier: 1, country: a.country })),
+    ...rotate(GM_QUERIES, 3, 2).map((q) => ({ q, tier: 3 })),
+    ...rotate(UK_QUERIES, 3, 5).map((q) => ({ q, tier: 2 })),
+    ...rotate(ABROAD_QUERIES, 2, 2).map((a) => ({ q: a.q, tier: 1, country: a.country })),
   ];
 }
 
@@ -393,7 +397,7 @@ export async function findInstagramPosts() {
 
 export async function gatherLiveItems(target) {
   const items = [];
-  for (const q of QUERIES) {
+  for (const q of rotate(QUERIES, 7, 0)) {
     try {
       items.push(...(await tavilySearch(q, { topic: 'news', days: 4, maxResults: 3 })));
     } catch (e) {

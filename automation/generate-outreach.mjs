@@ -17,6 +17,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
 import { hasTavily, gatherLiveItems, findTweets, findInstagramPosts, placeLabel, blendByReach } from './lib/search.mjs';
+import { seal } from './lib/vault.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -710,8 +711,31 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
   data.moment = scrub(data.moment);
 
   await mkdir(OUT_DIR, { recursive: true });
-  await writeFile(path.join(OUT_DIR, `brief-${dateStr}.json`), JSON.stringify({ date: dateStr, ...data }, null, 2));
-  await writeFile(path.join(OUT_DIR, `brief-${dateStr}.md`), renderMarkdown(dateStr, data, warnings));
+  // The repo is public, because GitHub Pages on the free plan requires it. So
+  // if a passphrase is configured the brief is SEALED before it is committed,
+  // and the plain text never touches the repo at all. Encrypting the dashboard
+  // page instead would have been theatre: the data is what leaks.
+  const passphrase = process.env.DASH_PASSPHRASE || '';
+  const full = { date: dateStr, ...data };
+  const sealed = await seal(full, passphrase);
+
+  if (sealed) {
+    await writeFile(path.join(OUT_DIR, `brief-${dateStr}.enc.json`), JSON.stringify(sealed, null, 2));
+    // The daily issue is public too, so it becomes a notification rather than
+    // a copy of everything. The content lives behind the passphrase now.
+    await writeFile(path.join(OUT_DIR, `brief-${dateStr}.md`),
+      `Today's outreach brief is ready.\n\n`
+      + `It is encrypted, so it is not reproduced here. Open Mission Control and enter the passphrase:\n\n`
+      + `https://btf123.github.io/abletolove/dashboard/\n\n`
+      + `${(data.x_candidates || []).length} replies on X, `
+      + `${(data.instagram_hitlist || []).length} on Instagram, `
+      + `${(data.follow_suggestions || []).length} accounts worth following.\n`);
+    console.log('Brief sealed. No plain text was written to the repo.');
+  } else {
+    await writeFile(path.join(OUT_DIR, `brief-${dateStr}.json`), JSON.stringify(full, null, 2));
+    await writeFile(path.join(OUT_DIR, `brief-${dateStr}.md`), renderMarkdown(dateStr, data, warnings));
+    console.warn('No DASH_PASSPHRASE set, so the brief was written in PLAIN TEXT to a public repo.');
+  }
   console.log(`Wrote outreach brief (${data.conversations.length} conversations) for ${dateStr}`);
 }
 

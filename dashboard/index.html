@@ -555,14 +555,63 @@ box.appendChild(reset);
   // ban-safe, and no token needed anywhere.
   const intentUrl=(c)=>`https://x.com/intent/tweet?in_reply_to=${encodeURIComponent(c.id)}&text=${encodeURIComponent(c.reply||'')}`;
 
+
+  // The brief is encrypted before it is ever committed, because this repo has
+  // to stay public for GitHub Pages. Same scheme as the Reddit console's vault:
+  // PBKDF2-SHA256 at 250,000 iterations, then AES-256-GCM. The passphrase never
+  // leaves this browser and is not in the page.
+  const PASS_KEY='a2l_dash_pass';
+  const b64ToBytes=(b)=>Uint8Array.from(atob(b),c=>c.charCodeAt(0));
+
+  async function unseal(env, pass){
+    const base=await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+    const key=await crypto.subtle.deriveKey(
+      { name:'PBKDF2', salt:b64ToBytes(env.salt), iterations:250000, hash:'SHA-256' },
+      base, { name:'AES-GCM', length:256 }, false, ['decrypt']);
+    const plain=await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64ToBytes(env.iv) }, key, b64ToBytes(env.data));
+    return JSON.parse(new TextDecoder().decode(plain));
+  }
+
+  function askPass(){
+    return new Promise((resolve)=>{
+      box.innerHTML='<div class="card"><div class="meta">Today\'s brief is encrypted. Enter the passphrase to read it.</div>'
+        +'<div class="acts" style="margin-top:10px">'
+        +'<input id="dashpass" type="password" placeholder="passphrase" style="flex:1;min-width:180px">'
+        +'<button class="btn" id="dashgo">Unlock</button></div>'
+        +'<div class="meta" id="dasherr" style="color:var(--bad);margin-top:8px"></div></div>';
+      const go=()=>resolve(document.getElementById('dashpass').value||'');
+      document.getElementById('dashgo').onclick=go;
+      document.getElementById('dashpass').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+      document.getElementById('dashpass').focus();
+    });
+  }
+
+  // Try the remembered passphrase first, then ask, and keep asking until it opens.
+  async function openBrief(env){
+    if(!(env && env.alg==='AES-256-GCM' && env.salt && env.iv && env.data)) return env; // already plain
+    let pass=localStorage.getItem(PASS_KEY)||'';
+    for(;;){
+      if(pass){
+        try{ const out=await unseal(env,pass); localStorage.setItem(PASS_KEY,pass); return out; }
+        catch(e){ localStorage.removeItem(PASS_KEY); }
+      }
+      pass=await askPass();
+      if(!pass) throw new Error('locked');
+    }
+  }
+
   function load(){
     box.className='loading'; box.textContent='Loading today’s replies…';
     // cache-bust so Refresh always pulls the freshest brief, never a stale cached copy
     fetch(`${API}/contents/content-queue/outreach?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json()).then(list=>{
-      const files=(Array.isArray(list)?list:[]).filter(f=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f=>f.name).sort();
-      if(!files.length) throw new Error('none');
-      return fetch(`${RAWBASE}/${files[files.length-1]}?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json());
-    }).then(render).catch(()=>{
+      const all=(Array.isArray(list)?list:[]).map(f=>f.name);
+      const sealed=all.filter(n=>/^brief-\d{4}-\d{2}-\d{2}\.enc\.json$/.test(n)).sort();
+      const plain=all.filter(n=>/^brief-\d{4}-\d{2}-\d{2}\.json$/.test(n)).sort();
+      const pick=sealed.length?sealed[sealed.length-1]:(plain.length?plain[plain.length-1]:null);
+      if(!pick) throw new Error('none');
+      return fetch(`${RAWBASE}/${pick}?t=${Date.now()}`,{cache:'no-store'}).then(r=>r.json()).then(openBrief);
+    }).then(render).catch((e)=>{
+      if(e && e.message==='locked'){ return; }
       box.innerHTML='<div class="card"><div class="meta">No outreach brief yet. It lands each morning, or run the Outreach scout (in The robots below).</div></div>';
       document.getElementById('followsug').innerHTML='<div class="card"><div class="meta">No brief yet, so no suggestions either.</div></div>';
       document.getElementById('ig-outreach').innerHTML='<div class="card"><div class="meta">No brief yet, so no Instagram list either.</div></div>';

@@ -289,6 +289,62 @@ export async function findTweets() {
 
 // Gather fresh, REAL items (deduped, tragedy stripped). One query failing never
 // sinks the run.
+// Instagram, found the same way as X. Until now the hit-list was a list of
+// posts to go and LOOK for, written by the model, so "Open on Instagram" had
+// nothing to open and dumped you on the explore page. These are real posts
+// with real links, so a comment can be drafted against what someone actually
+// said.
+const IG_QUERIES = [
+  { q: 'disabled Manchester', tier: 3 },
+  { q: 'wheelchair Manchester accessible', tier: 3 },
+  { q: 'disability dating UK', tier: 2 },
+  { q: 'disabled dating UK', tier: 2 },
+  { q: 'wheelchair user dating UK', tier: 2 },
+  { q: 'chronic illness dating UK', tier: 2 },
+  { q: 'disability dating USA', tier: 1, country: 'US' },
+  { q: 'interabled couple', tier: 1, country: 'US' },
+  { q: 'disability dating', tier: 0 },
+  { q: 'disabled and dating', tier: 0 },
+];
+
+export async function findInstagramPosts() {
+  const found = [];
+  for (const spec of IG_QUERIES) {
+    try {
+      const hits = await tavilySearch(spec.q, {
+        topic: 'general', timeRange: 'month', maxResults: 6,
+        includeDomains: ['instagram.com'],
+      });
+      hits.forEach((h) => { h.fromTier = spec.tier; h.fromCountry = spec.country || null; });
+      found.push(...hits);
+    } catch (e) {
+      console.warn(`instagram search "${spec.q}" failed: ${e.message.slice(0, 100)}`);
+    }
+  }
+  const seen = new Set();
+  const posts = [];
+  for (const f of found) {
+    // Only real posts and reels, never profile or explore pages.
+    const m = (f.url || '').match(/instagram\.com\/(?:[A-Za-z0-9_.]+\/)?(p|reel)\/([A-Za-z0-9_-]+)/);
+    if (!m) continue;
+    const [, kind, code] = m;
+    if (seen.has(code)) continue;
+    seen.add(code);
+    const text = tweetText(f);
+    const byText = ukScore(text);
+    posts.push({
+      code, kind,
+      url: `https://www.instagram.com/${kind}/${code}/`,
+      text,
+      uk: Math.max(byText, f.fromTier || 0),
+      country: reachCountry(text) || f.fromCountry || null,
+    });
+  }
+  const kept = posts.filter((x) => !isTragedy({ title: x.text, content: '' }) && isRelevant(x.text));
+  console.log(`Instagram posts found: ${kept.length} real post(s) of ${posts.length} matched.`);
+  return kept;
+}
+
 export async function gatherLiveItems(target) {
   const items = [];
   for (const q of QUERIES) {

@@ -16,7 +16,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
-import { hasTavily, gatherLiveItems, findTweets, placeLabel, blendByReach } from './lib/search.mjs';
+import { hasTavily, gatherLiveItems, findTweets, findInstagramPosts, placeLabel, blendByReach } from './lib/search.mjs';
 import { lessonsPromptBlock } from './lib/lessons.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -503,8 +503,46 @@ async function main() {
     }
     if (salvaged) console.log(`Salvage loop rescued ${salvaged} repl${salvaged === 1 ? 'y' : 'ies'}.`);
 
-    // Assisted Instagram hit-list. Best-effort; a failure never sinks the brief.
+    // Real Instagram posts first, with a comment drafted against what the
+    // person actually wrote. Only if the search finds nothing do we fall back
+    // to the old "go and look for something like this" list.
     try {
+      const igPosts = blendByReach(await findInstagramPosts(), 25);
+      if (igPosts.length) {
+        const list = igPosts.map((x, i) => `[${i}] ${x.text}`).join('\n');
+        const raw = await generateJson(`You are the voice of Able2Love.
+
+${VOICE}
+
+Below are REAL Instagram posts and reels found by search. For each, write the comment you would leave, the way a warm real person on their side would. If a post is hostile, sexual, about grief, from a brand rather than a person, or nothing genuine fits, mark it skip.
+
+POSTS:
+${list}
+
+Return STRICT JSON only: {"comments":[{"i":<index>,"skip":true|false,"comment":"<text if not skip>"}]}. One entry per index. Never use these banned words or phrases anywhere: ${banned}.`, { temperature: 0.85 });
+        const byI = new Map((raw.comments || []).map((r) => [r.i, r]));
+        data.instagram_hitlist = [];
+        for (let i = 0; i < igPosts.length; i++) {
+          const r = byI.get(i);
+          if (!r || r.skip || !scrub(r.comment)) continue;
+          const post = igPosts[i];
+          data.instagram_hitlist.push({
+            who: post.text.slice(0, 140),
+            why: `${placeLabel(post.uk, post.country)} · a real ${post.kind === 'reel' ? 'reel' : 'post'}, open it and comment`,
+            comment: scrub(r.comment),
+            action: 'comment',
+            url: post.url,
+          });
+        }
+        console.log(`Instagram hit-list: ${data.instagram_hitlist.length} REAL post(s) with drafted comments.`);
+      }
+    } catch (e) {
+      console.warn(`Real Instagram search skipped (${e.message.slice(0, 120)}).`);
+    }
+
+    // Fallback: the old descriptive list, only when no real posts were found.
+    try {
+      if ((data.instagram_hitlist || []).length) throw new Error('already have real posts');
       const hl = await generateJson(buildHitlistPrompt(lessonsBlock), { temperature: 0.8 });
       data.instagram_hitlist = (hl.instagram_hitlist || []).slice(0, 25).map((h) => ({
         who: scrub(h.who), why: scrub(h.why), comment: scrub(h.comment),

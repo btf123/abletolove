@@ -12,7 +12,7 @@
  * is human, and that approval is the safety.
  */
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, rm} from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateText, hasLiveSearch } from './lib/llm.mjs';
@@ -730,6 +730,11 @@ Return STRICT JSON only: {"replies":[{"i":<index>,"skip":true|false,"reply":"<te
       + `${(data.x_candidates || []).length} replies on X, `
       + `${(data.instagram_hitlist || []).length} on Instagram, `
       + `${(data.follow_suggestions || []).length} accounts worth following.\n`);
+    // An earlier unsealed run today would have left a plain copy sitting next
+    // to the sealed one, which makes the sealing pointless. Clear it.
+    try {
+      await rm(path.join(OUT_DIR, `brief-${dateStr}.json`), { force: true });
+    } catch { /* nothing to clear */ }
     console.log('Brief sealed. No plain text was written to the repo.');
   } else {
     await writeFile(path.join(OUT_DIR, `brief-${dateStr}.json`), JSON.stringify(full, null, 2));

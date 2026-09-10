@@ -8,6 +8,17 @@ export function hasTavily() {
   return !!process.env.TAVILY_API_KEY;
 }
 
+// Brave Search API gives 2,000 queries/month free with no card. Get a key at
+// https://api.search.brave.com (create a free "Data for Search" subscription,
+// no card asked) and save it as the BRAVE_API_KEY repo secret. It is the
+// reliable, high-quota provider and its index of x.com and instagram.com is
+// dense (Bing-class), which is exactly where Tavily is thin. When this key
+// exists the daily sweep widens and Brave carries it; Tavily is then spared
+// entirely for the news pass.
+export function hasBrave() {
+  return !!process.env.BRAVE_API_KEY;
+}
+
 export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'news', includeDomains, timeRange } = {}) {
   const key = process.env.TAVILY_API_KEY;
   const res = await fetch('https://api.tavily.com/search', {
@@ -34,6 +45,165 @@ export async function tavilySearch(query, { days = 4, maxResults = 3, topic = 'n
     url: r.url || '',
     content: (r.content || '').replace(/\s+/g, ' ').slice(0, 320),
   }));
+}
+
+// Brave Search API. Domain scoping is done with the site: operator in the query
+// (Brave has no include_domains param). Freshness maps our day/week/month/year
+// to Brave's pd/pw/pm/py. Returns the same {title,url,content} shape as Tavily.
+async function braveSearch(query, { maxResults = 10, includeDomains, timeRange } = {}) {
+  const key = process.env.BRAVE_API_KEY;
+  const q = includeDomains && includeDomains.length
+    ? `${query} (${includeDomains.map((d) => 'site:' + d).join(' OR ')})`
+    : query;
+  const params = new URLSearchParams({
+    q,
+    count: String(Math.min(Math.max(maxResults, 1), 20)),
+    country: 'GB',
+    search_lang: 'en',
+    safesearch: 'off',
+    text_decorations: 'false',
+    spellcheck: 'false',
+  });
+  const fresh = { day: 'pd', week: 'pw', month: 'pm', year: 'py' }[timeRange];
+  if (fresh) params.set('freshness', fresh);
+  const res = await fetch(`https://api.search.brave.com/res/v1/web/search?${params}`, {
+    headers: {
+      Accept: 'application/json',
+      'Accept-Encoding': 'gzip',
+      'X-Subscription-Token': key,
+    },
+  });
+  if (!res.ok) throw new Error(`Brave HTTP ${res.status}: ${(await res.text()).slice(0, 140)}`);
+  const data = await res.json();
+  const results = (data.web && data.web.results) || [];
+  return results.map((r) => ({
+    title: r.title || '',
+    url: r.url || '',
+    content: String(r.description || '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&#x27;/g, "'").replace(/&amp;/g, '&').replace(/&quot;/g, '"')
+      .replace(/\s+/g, ' ')
+      .slice(0, 320),
+  }));
+}
+
+// DuckDuckGo's HTML endpoint: no key, no monthly cap, but fragile. It soft-blocks
+// a busy IP with an HTTP 202 and a challenge page instead of results, and a
+// datacenter IP (a CI runner) is blocked sooner than a home one. So it is
+// best-effort only: on a 202 it returns this sentinel and webSearch rests it for
+// the remainder of the run. Real result links arrive wrapped as
+// //duckduckgo.com/l/?uddg=<urlencoded target>; ad rows point back at
+// duckduckgo.com and are dropped.
+const DDG_BLOCKED = Symbol('ddg-blocked');
+
+async function ddgSearch(query, { includeDomains, maxResults = 12 } = {}) {
+  const q = includeDomains && includeDomains.length
+    ? `${query} ${includeDomains.map((d) => 'site:' + d).join(' OR ')}`
+    : query;
+  const res = await fetch('https://html.duckduckgo.com/html/', {
+    method: 'POST',
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'text/html,application/xhtml+xml',
+      'Accept-Language': 'en-GB,en;q=0.9',
+      Referer: 'https://html.duckduckgo.com/',
+    },
+    body: new URLSearchParams({ q, kl: 'uk-en' }).toString(),
+  });
+  // 202 (and 403/429) is DuckDuckGo's soft block, not a result page.
+  if (res.status === 202 || res.status === 403 || res.status === 429) return DDG_BLOCKED;
+  if (!res.ok) throw new Error(`DDG HTTP ${res.status}`);
+  const html = await res.text();
+
+  // Pair each result link with the snippet that follows it, by string position,
+  // so previews line up with URLs even when ad rows are dropped.
+  const unwrap = (href) => {
+    const m = href.match(/uddg=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : href;
+  };
+  const links = [];
+  const linkRe = /<a[^>]+class="[^"]*result__a[^"]*"[^>]+href="([^"]+)"[^>]*>(.*?)<\/a>/gs;
+  let m;
+  while ((m = linkRe.exec(html))) {
+    const url = unwrap(m[1]);
+    if (/duckduckgo\.com/i.test(url)) continue; // ad row or unresolved redirect
+    links.push({ at: m.index, url, title: m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() });
+  }
+  const snips = [];
+  const snipRe = /<a[^>]+class="[^"]*result__snippet[^"]*"[^>]*>(.*?)<\/a>/gs;
+  while ((m = snipRe.exec(html))) {
+    snips.push({ at: m.index, text: m[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() });
+  }
+  return links.slice(0, maxResults).map((l) => {
+    const s = snips.find((sn) => sn.at > l.at);
+    return { title: l.title, url: l.url, content: (s ? s.text : '').slice(0, 320) };
+  });
+}
+
+// Per-run scratchpad. A provider that has hit its monthly wall or been soft
+// blocked is rested for the rest of THIS brief rather than retried on all ~40
+// queries. ddgLast keeps DuckDuckGo calls politely spaced.
+const runState = { tavilyDown: false, braveDown: false, ddgDown: false, ddgLast: 0 };
+
+// One search entry point for the whole scout, free by design. Providers are
+// tried in order of reliable quota, and once we have enough hits we stop, so a
+// good provider is never topped up for no reason:
+//   Brave (2,000/month, dense index)  ->  Tavily (1,000/month, thin on x/IG)
+//   ->  DuckDuckGo (no cap, fragile).
+// Brave and Tavily are the two KEYED discovery providers and are mutually
+// exclusive here: when a Brave key exists Tavily is left completely alone so its
+// budget stays whole for the news pass, and only if Brave is absent or spent
+// does Tavily take the discovery load. DuckDuckGo tops up either of them, for
+// free, until the IP is blocked. Results are merged and deduped by URL.
+export async function webSearch(query, {
+  maxResults = 10, includeDomains, timeRange = 'month', topic,
+} = {}) {
+  const results = [];
+  const seen = new Set();
+  const add = (arr) => {
+    for (const r of arr || []) {
+      const key = String(r.url || '').split('?')[0].replace(/\/+$/, '').toLowerCase();
+      if (key && !seen.has(key)) { seen.add(key); results.push(r); }
+    }
+  };
+  const enough = () => results.length >= maxResults;
+
+  if (hasBrave() && !runState.braveDown) {
+    try {
+      add(await braveSearch(query, { maxResults, includeDomains, timeRange }));
+    } catch (e) {
+      if (/\b(429|402|403)\b/.test(e.message)) { runState.braveDown = true; console.warn('Brave hit its wall, resting it for the rest of the run.'); }
+      else console.warn(`Brave "${query.slice(0, 40)}": ${e.message.slice(0, 80)}`);
+    }
+  }
+
+  // Tavily only when there is no Brave key to spare, or Brave is spent.
+  const tavilyForDiscovery = !hasBrave() || runState.braveDown;
+  if (!enough() && tavilyForDiscovery && hasTavily() && !runState.tavilyDown) {
+    try {
+      add(await tavilySearch(query, { topic: topic || 'general', timeRange, maxResults, includeDomains }));
+    } catch (e) {
+      if (/\b(429|432|433)\b/.test(e.message)) { runState.tavilyDown = true; console.warn('Tavily hit its monthly wall, resting it for the rest of the run.'); }
+      else console.warn(`Tavily "${query.slice(0, 40)}": ${e.message.slice(0, 80)}`);
+    }
+  }
+
+  if (!enough() && !runState.ddgDown) {
+    try {
+      const gap = 1500 - (Date.now() - runState.ddgLast);
+      if (gap > 0) await new Promise((r) => setTimeout(r, gap));
+      runState.ddgLast = Date.now();
+      const r = await ddgSearch(query, { includeDomains, maxResults });
+      if (r === DDG_BLOCKED) { runState.ddgDown = true; console.warn('DuckDuckGo soft-blocked this IP (202), resting it for the rest of the run.'); }
+      else add(r);
+    } catch (e) {
+      console.warn(`DuckDuckGo "${query.slice(0, 40)}": ${e.message.slice(0, 80)}`);
+    }
+  }
+
+  return results;
 }
 
 // Queries the scout sweeps each morning. UK-weighted, global-aware.
@@ -146,15 +316,24 @@ function rotate(list, take, offset) {
   return out;
 }
 
-// THE BUDGET. Tavily free is 1,000 searches a month, so a daily brief can
-// spend about 32. Going over does not cost money, it just stops working
-// halfway through the month, which is worse. Anything added here has to come
-// out of somewhere else.
+// THE BUDGET, and how it decides the sweep size. With a Brave key the sweep
+// widens (Brave carries it at 2,000/month, ~66 a day, and Tavily is untouched),
+// so the brief can reach 20 X + 20 Instagram. Without Brave the sweep stays
+// small so Tavily's 1,000/month is never blown: going over does not cost money,
+// it just stops working halfway through the month, which is worse. DuckDuckGo
+// then tops the small sweep up for free while the IP holds.
+function sweepSizes() {
+  return hasBrave()
+    ? { gmX: 8, ukX: 10, abX: 4, gmI: 6, ukI: 6, abI: 3 }
+    : { gmX: 6, ukX: 8, abX: 3, gmI: 3, ukI: 3, abI: 2 };
+}
+
 function todaysQueries() {
+  const s = sweepSizes();
   return [
-    ...rotate(GM_QUERIES, 6, 0).map((q) => ({ q, tier: 3 })),
-    ...rotate(UK_QUERIES, 8, 3).map((q) => ({ q, tier: 2 })),
-    ...rotate(ABROAD_QUERIES, 3, 1).map((a) => ({ q: a.q, tier: 1, country: a.country })),
+    ...rotate(GM_QUERIES, s.gmX, 0).map((q) => ({ q, tier: 3 })),
+    ...rotate(UK_QUERIES, s.ukX, 3).map((q) => ({ q, tier: 2 })),
+    ...rotate(ABROAD_QUERIES, s.abX, 1).map((a) => ({ q: a.q, tier: 1, country: a.country })),
   ];
 }
 
@@ -292,10 +471,9 @@ export async function findTweets() {
   for (const spec of specs) {
     const q = spec.q;
     try {
-      const hits = await tavilySearch(q, {
-        // time_range:'week' is what actually enforces "no post older than a
-        // week" here; days is ignored for topic:'general'.
-        topic: 'general', timeRange: 'month', maxResults: 10,
+      const hits = await webSearch(q, {
+        // time_range:'month' bounds recency for the providers that honour it.
+        timeRange: 'month', maxResults: 12,
         includeDomains: ['x.com', 'twitter.com'],
       });
       // The search that found it IS its location, which is far more reliable
@@ -346,10 +524,11 @@ export async function findTweets() {
 // with real links, so a comment can be drafted against what someone actually
 // said.
 function todaysIgQueries() {
+  const s = sweepSizes();
   return [
-    ...rotate(GM_QUERIES, 3, 2).map((q) => ({ q, tier: 3 })),
-    ...rotate(UK_QUERIES, 3, 5).map((q) => ({ q, tier: 2 })),
-    ...rotate(ABROAD_QUERIES, 2, 2).map((a) => ({ q: a.q, tier: 1, country: a.country })),
+    ...rotate(GM_QUERIES, s.gmI, 2).map((q) => ({ q, tier: 3 })),
+    ...rotate(UK_QUERIES, s.ukI, 5).map((q) => ({ q, tier: 2 })),
+    ...rotate(ABROAD_QUERIES, s.abI, 2).map((a) => ({ q: a.q, tier: 1, country: a.country })),
   ];
 }
 
@@ -357,8 +536,8 @@ export async function findInstagramPosts() {
   const found = [];
   for (const spec of todaysIgQueries()) {
     try {
-      const hits = await tavilySearch(spec.q, {
-        topic: 'general', timeRange: 'month', maxResults: 6,
+      const hits = await webSearch(spec.q, {
+        timeRange: 'month', maxResults: 12,
         includeDomains: ['instagram.com'],
       });
       hits.forEach((h) => { h.fromTier = spec.tier; h.fromCountry = spec.country || null; });
@@ -397,17 +576,22 @@ export async function findInstagramPosts() {
 
 export async function gatherLiveItems(target) {
   const items = [];
-  for (const q of rotate(QUERIES, 7, 0)) {
-    try {
-      items.push(...(await tavilySearch(q, { topic: 'news', days: 4, maxResults: 3 })));
-    } catch (e) {
-      console.warn(`search "${q}" failed: ${e.message.slice(0, 120)}`);
+  // News stays on Tavily: recent-news is its strength and this is only a
+  // handful of calls a day, well inside its budget even alongside a wide Brave
+  // sweep. If there is no Tavily key the news ammo is simply skipped.
+  if (hasTavily() && !runState.tavilyDown) {
+    for (const q of rotate(QUERIES, 7, 0)) {
+      try {
+        items.push(...(await tavilySearch(q, { topic: 'news', days: 4, maxResults: 3 })));
+      } catch (e) {
+        console.warn(`search "${q}" failed: ${e.message.slice(0, 120)}`);
+      }
     }
   }
-  // The outreach target of the day, searched by name.
+  // The outreach target of the day, searched by name, through the free chain.
   try {
     const name = target.split('(')[0].trim();
-    items.push(...(await tavilySearch(name, { topic: 'general', timeRange: 'week', maxResults: 2 })));
+    items.push(...(await webSearch(name, { topic: 'general', timeRange: 'week', maxResults: 3 })));
   } catch (e) {
     console.warn(`target search failed: ${e.message.slice(0, 120)}`);
   }

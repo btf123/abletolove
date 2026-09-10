@@ -240,7 +240,7 @@ function buildMission(data, target, dateStr) {
 
 APPROVAL RULE, NEVER BREAK IT: before posting anything, show me the post you found and your drafted reply, and wait for my yes. Never post without a yes for that specific item. If I say no or skip, find a replacement candidate so we still hit today's targets.
 
-TARGETS: 10 replies on X and 5 comments on Instagram, found and posted a few at a time (pause whenever I say pause). Skip and tell me if we run out of genuinely good candidates; never pad with weak ones.
+TARGETS: 20 replies on X and 20 comments on Instagram, found and posted a few at a time (pause whenever I say pause). Skip and tell me if we run out of genuinely good candidates; never pad with weak ones.
 
 FINDING CANDIDATES:
 - X: use x.com search (Latest tab) for: disability dating, dating with a disability, accessible venue, wheelchair nightlife, #DisabilityDating, #DisabledAndDating, chronic illness dating, plus anything matching today's ammo below. Real people only: skip news outlets, brands, giveaways, and anything about death, grief, tragedy or self-harm.

@@ -316,15 +316,21 @@ function rotate(list, take, offset) {
   return out;
 }
 
-// THE BUDGET, and how it decides the sweep size. With a Brave key the sweep
-// widens (Brave carries it at 2,000/month, ~66 a day, and Tavily is untouched),
-// so the brief can reach 20 X + 20 Instagram. Without Brave the sweep stays
-// small so Tavily's 1,000/month is never blown: going over does not cost money,
-// it just stops working halfway through the month, which is worse. DuckDuckGo
-// then tops the small sweep up for free while the IP holds.
+// THE BUDGET, and how it decides the sweep size. Brave's free tier is $5 of
+// credit a month, which is exactly 1,000 requests ($5 per 1,000), so the whole
+// month has to fit under 1,000 Brave calls to stay genuinely free. Brave is
+// called once per query and returns up to 20 results a call, so volume comes
+// from asking richer queries, NOT more of them: with the Brave key on, the
+// sweep is 15 X + 12 Instagram + 1 target = 28 calls a day (~868 in a 31-day
+// month, comfortably under the free 1,000) and each of those pulls up to 20
+// posts, which is plenty to fill a 20 + 20 brief after de-duping. News stays on
+// Tavily and costs no Brave calls.
+//
+// Without a Brave key the sweep stays small so Tavily's own 1,000/month is
+// never blown, and DuckDuckGo tops it up for free while its IP holds.
 function sweepSizes() {
   return hasBrave()
-    ? { gmX: 8, ukX: 10, abX: 4, gmI: 6, ukI: 6, abI: 3 }
+    ? { gmX: 6, ukX: 7, abX: 2, gmI: 5, ukI: 5, abI: 2 }
     : { gmX: 6, ukX: 8, abX: 3, gmI: 3, ukI: 3, abI: 2 };
 }
 
@@ -473,7 +479,9 @@ export async function findTweets() {
     try {
       const hits = await webSearch(q, {
         // time_range:'month' bounds recency for the providers that honour it.
-        timeRange: 'month', maxResults: 12,
+        // maxResults 20 is Brave's per-request maximum, and one Brave request
+        // costs the same whether it returns 1 result or 20, so we take the lot.
+        timeRange: 'month', maxResults: 20,
         includeDomains: ['x.com', 'twitter.com'],
       });
       // The search that found it IS its location, which is far more reliable
@@ -537,7 +545,7 @@ export async function findInstagramPosts() {
   for (const spec of todaysIgQueries()) {
     try {
       const hits = await webSearch(spec.q, {
-        timeRange: 'month', maxResults: 12,
+        timeRange: 'month', maxResults: 20,
         includeDomains: ['instagram.com'],
       });
       hits.forEach((h) => { h.fromTier = spec.tier; h.fromCountry = spec.country || null; });

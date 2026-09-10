@@ -1,0 +1,52 @@
+name: Check the watch-together streams
+
+# Live stream ids go stale constantly, and when one dies the room shows
+# YouTube's "Video unavailable" card. This checks every video entry in the
+# whitelist once a day, switches off anything that has stopped working, and
+# tells Brogan so he can add a replacement. Channel entries are skipped: a
+# channel embed follows whatever that channel is live with, so it cannot rot.
+
+on:
+  schedule:
+    - cron: '20 6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: check-streams
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check every stream
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::warning::SUPABASE_SERVICE_ROLE_KEY secret is not set; nothing checked."
+            echo '{"broken":0}' > stream-check.json
+            : > stream-check.md
+            exit 0
+          fi
+          node automation/check-streams.mjs
+
+      - name: Tell Brogan if anything died
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BROKEN=$(node -e "console.log(JSON.parse(require('fs').readFileSync('stream-check.json','utf8')).broken||0)")
+          [ "$BROKEN" = "0" ] && exit 0
+          gh issue create \
+            --title "Watch together: $BROKEN stream(s) stopped working" \
+            --body-file stream-check.md

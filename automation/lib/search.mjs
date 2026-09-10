@@ -170,17 +170,23 @@ export async function webSearch(query, {
   };
   const enough = () => results.length >= maxResults;
 
+  let braveContributed = false;
   if (hasBrave() && !runState.braveDown) {
     try {
+      const before = results.length;
       add(await braveSearch(query, { maxResults, includeDomains, timeRange }));
+      braveContributed = results.length > before;
     } catch (e) {
       if (/\b(429|402|403)\b/.test(e.message)) { runState.braveDown = true; console.warn('Brave hit its wall, resting it for the rest of the run.'); }
       else console.warn(`Brave "${query.slice(0, 40)}": ${e.message.slice(0, 80)}`);
     }
   }
 
-  // Tavily only when there is no Brave key to spare, or Brave is spent.
-  const tavilyForDiscovery = !hasBrave() || runState.braveDown;
+  // Tavily steps in when there is no Brave key to spare, when Brave is spent, OR
+  // when Brave returned nothing usable for this particular query (an error or an
+  // empty index corner): better to spend one Tavily call than to hand back an
+  // empty result and rely on DuckDuckGo, which is blocked on CI runners.
+  const tavilyForDiscovery = !hasBrave() || runState.braveDown || !braveContributed;
   if (!enough() && tavilyForDiscovery && hasTavily() && !runState.tavilyDown) {
     try {
       add(await tavilySearch(query, { topic: topic || 'general', timeRange, maxResults, includeDomains }));
